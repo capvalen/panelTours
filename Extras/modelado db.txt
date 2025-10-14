@@ -1,5 +1,7 @@
 * Cliente:
 - id
+- ruc
+- razon social
 - nombres
 - apellidos
 - dni
@@ -11,8 +13,10 @@
 - dirección
 - nacionalidad
 - ciudad (texto)
-- pasaporte //vigencia de 6 meses
+- pasaporte
+- vigencia de 6 meses
 - visado
+- valido visa
 - vacunación (texto)
 - tiene seguro (true, false)
 - seguro (texto)
@@ -125,6 +129,8 @@ Listo
 - dirección
 - contacto
 - celular
+- cuenta bancaria
+- numero cuenta
 - categoría enum(alojamiento, transporte, restaurant, local, agencia)
 - archivos
 - activo

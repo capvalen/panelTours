@@ -22,7 +22,7 @@
 							<button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col d-flex justify-content-center">
-							<button class="btn btn-outline-primary"><i class="bi bi-star"></i> Aperturar nueva caja</button>
+							<router-link to="/caja/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Aperturar nueva caja</router-link>
 						</div>
 					</div>
 				</div>

@@ -25,7 +25,7 @@
 							<button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col d-flex justify-content-center">
-							<button class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</button>
+							<router-link to="/proveedor/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</router-link>
 						</div>
 					</div>
 				</div>

@@ -15,6 +15,11 @@ const router = createRouter({
 			component: () => import('../views/Clientes/ClientesView.vue'),
 		},
 		{
+			path: '/cliente/nuevo',
+			name: 'nuevoCliente',
+			component: () => import('../views/Clientes/NuevoCliente.vue'),
+		},
+		{
 			path: '/cliente/perfil/:id',
 			name: 'perfilCliente',
 			component: () => import('../views/Clientes/PerfilCliente.vue'),
@@ -32,6 +37,11 @@ const router = createRouter({
 			props: true
 		},
 		{
+			path: '/proveedor/nuevo',
+			name: 'nuevoProveedor',
+			component: () => import('../views/Proveedores/NuevoProveedor.vue'),
+		},
+		{
 			path: '/cajas',
 			name: 'Cajas',
 			component: () => import('../views/Cajas/CajasView.vue'),
@@ -41,6 +51,27 @@ const router = createRouter({
 			name: 'detalleCaja',
 			component: () => import('../views/Cajas/DetalleCaja.vue'),
 			props: true
+		},
+		{
+			path: '/caja/nueva',
+			name: 'nuevaCaja',
+			component: () => import('../views/Cajas/NuevaCaja.vue'),
+		},
+		{
+			path: '/ventas',
+			name: 'Ventas',
+			component: () => import('../views/Ventas/VentasView.vue'),
+		},
+		{
+			path: '/venta/detalle/:id',
+			name: 'detalleVenta',
+			component: () => import('../views/Ventas/DetalleVenta.vue'),
+			props: true
+		},
+		{
+			path: '/venta/nueva',
+			name: 'nuevaVenta',
+			component: () => import('../views/Ventas/NuevaVenta.vue'),
 		},
 	],
 })

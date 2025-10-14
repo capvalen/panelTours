@@ -15,8 +15,9 @@
 				<router-link to="/cajas">
 					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
 				</router-link>
-				<div class="menuFila"><i class="bi bi-cart"></i> Ventas</div>
-				<div class="menuFila"><i class="bi bi-ticket-perforated"></i> Reservas</div>
+				<router-link to="/ventas">
+					<div class="menuFila"><i class="bi bi-cart"></i> Ventas y reservas</div>
+				</router-link>
 				<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
 				<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
 				<div class="menuFila"><i class="bi bi-stickies"></i> Reportes</div>
@@ -73,5 +74,8 @@ a{
 .breadcrumb-item + .breadcrumb-item::before {
 	font-family:bootstrap-icons !important ;
 	content:"\F285"!important
+}
+.tdLargo{
+	white-space: nowrap;
 }
 </style>

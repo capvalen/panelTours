@@ -48,7 +48,7 @@
 					<p><strong>Vacunación:</strong> Completada (2 dosis + refuerzo)</p>
 					<p><strong>Tiene seguro:</strong> Sí</p>
 					<p><strong>Seguro:</strong> Mapfre Viajes Internacional</p>
-					<p><strong>Autorización de viaje:</strong> No aplica (mayor de edad)</p>
+					<p><strong>Autorización de viaje:</strong> No aplica</p>
 					<p><strong>Archivos adjuntos:</strong></p>
 
 
@@ -77,5 +77,76 @@
 			</div>
 		</div>
 	</div>
-
+	<div class="row mt-3">
+		<div class="col table-responsive">
+			<p><strong>Compras realizadas</strong></p>
+			<table class="table table-hover align-middle">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Tipo</th>
+						<th>Servicio</th>
+						<th>Concepto</th>
+						<th>Fecha de registro</th>
+						<th>Fecha de salida</th>
+						<th>Monto (S/)</th>
+						<th>Estado</th>
+						<th>Método de Pago</th>
+						<th>Observaciones</th>
+						<th>Acciones</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>1</td>
+						<td><span class="badge bg-info text-white">Venta</span></td>
+						<td>Paquete</td>
+						<td class="tdLargo">Turismo vivencial en Cusco</td>
+						<td>10/10/2025</td>
+						<td class="tdLargo">25/11/2025 05:00 a.m.</td>
+						<td>1,450.00</td>
+						<td><span class="badge bg-secondary">Pendiente</span></td>
+						<td>Transferencia</td>
+						<td>Incluye Machu Picchu</td>
+						<td>
+							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
+							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+						</td>
+					</tr>
+					<tr>
+						<td>2</td>
+						<td><span class="badge bg-warning text-dark">Reserva</span></td>
+						<td>Movibilidad</td>
+						<td class="tdLargo">Servicio ida y vuelta</td>
+						<td>12/10/2025</td>
+						<td class="tdLargo">12/10/2025 3:45 p.m.</td>
+						<td>120.00</td>
+						<td><span class="badge bg-success">Pagado</span></td>
+						<td>Efectivo</td>
+						<td>Vehículo SUV</td>
+						<td>
+							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
+							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+						</td>
+					</tr>
+					<tr>
+						<td>3</td>
+						<td><span class="badge bg-info text-white">Venta</span></td>
+						<td>Tour y vehículo</td>
+						<td class="tdLargo">Tour Paracas</td>
+						<td>14/10/2025</td>
+						<td class="tdLargo">15/10/2025 05:00 a.m.</td>
+						<td>280.50</td>
+						<td><span class="badge bg-warning text-dark">Con adelanto</span></td>
+						<td>Tarjeta</td>
+						<td>Con almuerzo incluido</td>
+						<td>
+							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
+							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
 </template>
