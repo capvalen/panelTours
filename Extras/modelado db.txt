@@ -1,0 +1,149 @@
+* Cliente:
+- id
+- nombres
+- apellidos
+- dni
+- carnet de extranjería (permitir letras)
+- fecha nacimiento
+- correo
+- celular
+- telefono
+- dirección
+- nacionalidad
+- ciudad (texto)
+- pasaporte //vigencia de 6 meses
+- visado
+- vacunación (texto)
+- tiene seguro (true, false)
+- seguro (texto)
+- autorización de viaje // (si es menor de edad)
+- archivos (json)
+
+* Tour (producto)
+Listo
+
+* Vehículos
+- id
+- tipo de vehículo
+- placa
+- dni conductor
+- nombre conductor
+- licencia conductor
+- edad conductor
+- archivos (json)
+
+* Venta:
+- id
+- id cliente
+- fecha inicio
+- fecha final
+- es reserva (true, false)
+- reserva (confirmado, cancelado, finalizado)
+- estado pago (pendiente, adelantado, pagado)
+- deuda //default 0
+- adelanto
+- costo
+- descuento
+- motivo de descuento
+- total
+- pasajeros (número)
+- check in (true, false)
+- metodo pago (yape, tarjeta, depósito, efectivo)
+- silla de ruedas (true, false)
+- enfermedades (true, false)
+- enfermedad
+- cama extra (true, false)
+- cuantas camas
+- cuna (true, false)
+- dieta especial (true, false)
+- dieta
+- estado (activo, eliminado)
+- id usuario
+
+* Venta detalle:
+- id
+- venta id
+- tipo de servicio // Puede ser tour, paquete o vehículo
+- nombre
+- id servicio
+- subtotal
+
+* Requisitos venta detalle
+- id
+- id venta detalle
+- tipo de servicio
+//si fuera tour o paquete
+- id habitación (numérico)
+- cantidad habitaciones
+- observación habitación
+- silla de ruedas
+//si fuera alquiler de vehículo
+- id vehículo
+- lugar recogida
+- viaje (nacional, internacional)
+- destino final
+- hora inicio
+- hora final
+- fecha recogida
+
+* Caja:
+- id
+- id usuario
+- fecha apertura (fecha y hora)
+- fecha cierre (fecha y hora) (null)
+- monto inicial
+- monto final
+- estado enum(abierta, cerrada), default abierta
+- observaciones text null
+
+* Caja Detalle:
+- id
+- id caja
+- tipo enum(ingreso, egreso)
+- categoria enum('venta_turismo', 'gasto_operativo', 'servicios_basicos', 'pago_personal', 'otros')
+- monto
+- concepto
+- fecha (con hora)
+- comprobante de pago (ticket, boleta, factura, proforma)
+- serie (correlativo en boleta o factura)
+- id venta (null)  -- Solo para ingresos por ventas
+- observaciones
+
+* Calendario
+- id
+- tipo de evento enum(pagos, boletos)
+- fecha y hora
+- estado enum(activo, pendiente, finalizado, anulado)
+- titulo
+- comentario
+- id usuario
+
+* Proveedores
+- id
+- ruc
+- razon social
+- dirección
+- contacto
+- celular
+- categoría enum(alojamiento, transporte, restaurant, local, agencia)
+- archivos
+- activo
+
+* Pagos
+- id
+- id venta
+- fecha
+- monto abonado
+- saldo pendiente
+- metodo pago enum(yape, tarjeta, depósito, efectivo)
+- estado pago enum(pendiente, completado, fallido, reembolsado)
+- codigo referencia //para transferencias o depósitos
+
+* Usuarios
+- id
+- nombre
+- perfil enum(administrador, agente, contador)
+
+
+
+
