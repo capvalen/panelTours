@@ -68,7 +68,7 @@ Listo
 - id
 - venta id
 - tipo de servicio // Puede ser tour, paquete o vehículo
-- nombre
+- concepto
 - id servicio
 - subtotal
 
@@ -144,6 +144,18 @@ Listo
 - metodo pago enum(yape, tarjeta, depósito, efectivo)
 - estado pago enum(pendiente, completado, fallido, reembolsado)
 - codigo referencia //para transferencias o depósitos
+
+* Deudas
+- id
+- fecha de pago
+- monto
+- informacion (texto)
+- contacto a pagar
+- comprobante
+- medio de pago enum(yape, tarjeta, depósito, efectivo, banco)
+- estado pago enum(pendiente, completado, fallido, condonado)
+- codigo referencia //para transferencias o depósitos
+- activo (0/1)
 
 * Usuarios
 - id
