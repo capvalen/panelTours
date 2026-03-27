@@ -20,8 +20,11 @@
 				</router-link>
 				<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
 				<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
+				<router-link to="/tarifario">
+					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
+				</router-link>
 				<div class="menuFila"><i class="bi bi-stickies"></i> Reportes</div>
-				<div class="menuFila"><i class="bi bi-gear"></i> Configuración</div>
+				<div class="menuFila d-none"><i class="bi bi-gear"></i> Configuración</div>
 				<div class="menuFila"><i class="bi bi-door-open"></i> Salir</div>
 			</div>
 			<div class="col col-md-9 col-lg-10 pt-3">

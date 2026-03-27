@@ -58,6 +58,11 @@ const router = createRouter({
 			component: () => import('../views/Cajas/NuevaCaja.vue'),
 		},
 		{
+			path: '/tarifario',
+			name: 'Tarifario',
+			component: () => import('../views/Tarifario/Tarifario.vue'),
+		},
+		{
 			path: '/ventas',
 			name: 'Ventas',
 			component: () => import('../views/Ventas/VentasView.vue'),

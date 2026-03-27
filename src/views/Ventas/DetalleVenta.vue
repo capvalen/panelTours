@@ -16,6 +16,7 @@
 			<button class="btn btn-outline-secondary"><i class="bi bi-printer"></i> Imprimir A4</button>
 			<button class="btn btn-outline-secondary"><i class="bi bi-wallet2"></i> Agregar pago</button>
 			<button class="btn btn-outline-secondary"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
+			<a class="btn btn-outline-secondary" href="https://wa.me/send?phone=51977692100&text=EnvíoDeEncuesta" target="_blank"><i class="bi bi-send"></i> Enviar encuesta</a>
 		</div>
 	</div>
 

@@ -34,6 +34,7 @@
 								<option value="restaurant" selected>Restaurant</option>
 								<option value="local">Local</option>
 								<option value="agencia">Agencia</option>
+								<option value="guía">Guía</option>
 							</select>
 						</div>
 						<div class="col-md-6">
@@ -65,6 +66,7 @@
 					</div>
 
 				</div>
+				
 			</div>
 		</div>
 	</div>
@@ -89,11 +91,28 @@
 							</div>
 						</div>
 						<div class="col-md-6">
+							<label for="tipoCuenta" class="form-label">Tipo de cuenta</label>
+							<select class="form-select" id="tipoCuenta">
+								<option value="corriente">Cuenta corriente</option>
+								<option value="ahorros">Cuenta de ahorros</option>
+							</select>
+						</div>
+						<div class="col-md-6">
 							<label for="cuentaBanacaria" class="form-label">Cuenta bancaria</label>
 							<input type="text" class="form-control" id="cuentaBanacaria" value="500-50888182158">
 						</div>
+					</div>
+					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="datoExtra" class="form-label">Dato extra</label>
+							<label for="billeteraDigital" class="form-label">Billetera digital:</label>
+							<select class="form-select" id="billeteraDigital">
+								<option value="ninguno" selected>Ninguno</option>
+								<option value="yape">Yape</option>
+								<option value="plin">Plin</option>
+							</select>
+						</div>
+						<div class="col-md-6">
+							<label for="datoExtra" class="form-label">A nombre de:</label>
 							<input type="text" class="form-control" id="datoExtra" value="Verificar nombre de Roberto Alcázar">
 						</div>
 					</div>

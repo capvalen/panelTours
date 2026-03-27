@@ -13,8 +13,8 @@
 
 	<div class="row mb-3">
 		<div class="col d-flex flex-wrap gap-2">
-			<button class="btn btn-outline-secondary"><i class="bi bi-plus"></i> Registrar ingreso</button>
-			<button class="btn btn-outline-secondary"><i class="bi bi-dash"></i> Registrar egreso</button>
+			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalIngreso"><i class="bi bi-plus"></i> Registrar ingreso</button>
+			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalSalida"><i class="bi bi-dash"></i> Registrar egreso</button>
 			<router-link to="/venta/nueva" class="btn btn-outline-secondary"><i class="bi bi-star"></i> Nueva venta</router-link>
 			<button class="btn btn-outline-secondary"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
 		</div>
@@ -210,4 +210,12 @@
 		</div>
 	</div>
 
+	<ModalIngresoCaja></ModalIngresoCaja>
+	<ModalSalidaCaja></ModalSalidaCaja>
 </template>
+
+<script setup>
+import ModalIngresoCaja from '@/components/ModalIngresoCaja.vue';
+import ModalSalidaCaja from '@/components/ModalSalidaCaja.vue';
+
+</script>
