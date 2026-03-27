@@ -1,7 +1,12 @@
 
 import { createApp } from 'vue'
-import Principal from './Principal.vue'
+import App from './App.vue'
 import router from './router'
+import { createPinia } from 'pinia'
+//importando dayjs
+import dayjs from 'dayjs'
+import 'dayjs/locale/es'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
 // Importar estilos de Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -9,8 +14,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
 
-const app = createApp(Principal)
+const pinia = createPinia()
+const app = createApp(App)
+//config dayjs
+dayjs.extend(relativeTime)
+dayjs.locale('es')
 
+app.use(pinia)
 app.use(router)
+app.config.globalProperties.$dayjs = dayjs
 
 app.mount('#app')

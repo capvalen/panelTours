@@ -1,4 +1,5 @@
 <template>
+
 	<h2>Panel de administración</h2>
 	<h2><small class="text-muted">Grupo Euroandio</small></h2>
 	<div>Bienvenido al sistema</div>
@@ -66,7 +67,10 @@
 
 </template>
 
-<script setup></script>
+<script setup>
+
+
+</script>
 <style scoped>
 .card{
 	margin-bottom: 10px;

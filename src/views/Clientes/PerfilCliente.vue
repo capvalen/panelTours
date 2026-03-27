@@ -1,3 +1,34 @@
+<script setup>
+import { onMounted, watch, computed } from 'vue';
+import { useRoute } from 'vue-router'
+import { useClienteStore } from '@/stores/clienteStore';
+import { useFormat } from '@/composables/formatos';
+import { storeToRefs } from 'pinia';
+const route = useRoute() //instancia hacia la ruta
+const { fechaLatamSimple } = useFormat()
+
+const clienteStore = useClienteStore()
+const {clienteActual} = storeToRefs(clienteStore)
+const vacunas = computed( ()=> clienteActual.value?.vacunas)
+const seguros = computed( ()=> clienteActual.value?.seguros)
+const archivos = computed( ()=> clienteActual.value?.archivos)
+
+const cargarDatos = async ()=>{	
+	await clienteStore.obtenerClienteId(route.params.id)
+}
+
+onMounted(()=>{ //al cargar la pagina
+	cargarDatos()
+})
+
+watch(
+	route.params.id, (newId) => {
+		cargarDatos()
+	}
+, { immediate: true })
+
+
+</script>
 <template>
 	<h1>Perfil del cliente</h1>
 
@@ -23,17 +54,22 @@
 			<div class="card">
 				<div class="card-body">
 					<p><strong>Detalle del cliente</strong></p>
-					<p><strong>Nombres:</strong> Gabriel</p>
-					<p><strong>Apellidos:</strong> Temu Sanfer</p>
-					<p><strong>DNI:</strong> 75123456</p>
-					<p><strong>Fecha de Nacimiento:</strong> 15/03/1990</p>
-					<p><strong>Correo:</strong> carlos.pariona@email.com</p>
-					<p><strong>Celular:</strong> +51 987 654 321</p>
-					<p><strong>Teléfono:</strong> +51 1 456 7890</p>
-					<p><strong>Dirección:</strong> Av. Los Pinos 123, San Isidro</p>
-					<p><strong>Nacionalidad:</strong> Peruana</p>
-					<p><strong>Ciudad:</strong> Lima</p>
-
+					<div if="clienteActual.apellidos">
+						<p><strong>Nombres:</strong> {{clienteActual.nombres}}</p>
+						<p><strong>Apellidos:</strong> {{clienteActual.apellidos}}</p>
+						<p><strong>DNI:</strong> {{clienteActual.dni}}</p>
+					</div>
+					<div v-if="clienteActual.razon_social">
+						<p><strong>Razón Social:</strong> {{clienteActual.razon_social}}</p>
+						<p><strong>RUC:</strong> {{clienteActual.ruc}}</p>
+					</div>
+					<p><strong>Fecha de Nacimiento:</strong> {{fechaLatamSimple(clienteActual.fecha_nacimiento)}}</p>
+					<p><strong>Correo:</strong> {{clienteActual.correo}}</p>
+					<p><strong>Celular:</strong> {{clienteActual.celular}}</p>
+					<p><strong>Teléfono:</strong> {{clienteActual.telefono}}</p>
+					<p><strong>Dirección:</strong> {{clienteActual.direccion}}</p>
+					<p><strong>Nacionalidad:</strong> {{clienteActual.nacionalidad}}</p>
+					<p><strong>País/Ciudad:</strong> {{clienteActual.pais_origen}}</p>
 				</div>
 			</div>
 
@@ -42,32 +78,30 @@
 			<div class="card">
 				<div class="card-body">
 					<p><strong>Documentación </strong></p>
-					<p><strong>Carnet de Extranjería:</strong> CE1234567</p>
-					<p><strong>Pasaporte:</strong> P12345678 (vigencia: 10/04/2026)</p>
-					<p><strong>Visado:</strong> Turista (válido hasta 30/11/2025)</p>
-					<p><strong>Vacunación:</strong> Completada (2 dosis + refuerzo)</p>
-					<p><strong>Tiene seguro:</strong> Sí</p>
-					<p><strong>Seguro:</strong> Mapfre Viajes Internacional</p>
-					<p><strong>Autorización de viaje:</strong> No aplica</p>
-					<p><strong>Archivos adjuntos:</strong></p>
+					<p><strong>Pasaporte:</strong> {{clienteActual.pasaporte}} (vigencia: {{fechaLatamSimple(clienteActual.pasaporte_vigencia) || 'sin dato'}})</p>
+					<p><strong>Visado:</strong> <span class="text-capitalize">{{clienteActual.tipo_visado}}</span> (válido hasta: {{fechaLatamSimple(clienteActual.calido_vigencia) || 'sin dato'}})</p>
+					<p><strong>Vacunación: </strong> ({{ vacunas?.length }})</p>
+					<ul>
+						<li class="text-capitalize" v-for="vacuna in vacunas">
+							{{vacuna?.certificado}} - {{fechaLatamSimple(vacuna?.fecha)}}
+						</li>
+					</ul>
+					<p><strong>Seguros: </strong> ({{ seguros?.length }})</p>
+					<ul>
+						<li class="text-capitalize" v-for="seguro in seguros">
+							{{seguro?.seguro}} - {{fechaLatamSimple(seguro?.fecha)}}
+						</li>
+					</ul>
+					
+					<p><strong>Autorización de viaje:</strong> <span class="text-capitalize">{{clienteActual.autorizacion_viaje}}</span></p>
+					<p><strong>Archivos adjuntos:</strong> ({{ archivos?.length }})</p>
 
 
 					<ul class="list-group list-group-flush ">
-						<li class="list-group-item">
+						<li class="list-group-item" v-for="(archivo,index) in archivos">
 							<div class="d-flex w-100 justify-content-between">
-								<a href="#!">Pasaporte</a>
-								<button class="btn btn-outline-danger border-0 rounded-circle"><i class="bi bi-x"></i></button>
-							</div>
-						</li>
-						<li class="list-group-item">
-							<div class="d-flex w-100 justify-content-between">
-								<a href="#!">Visado</a>
-								<button class="btn btn-outline-danger border-0 rounded-circle"><i class="bi bi-x"></i></button>
-							</div>
-						</li>
-						<li class="list-group-item">
-							<div class="d-flex w-100 justify-content-between">
-								<a href="#!">Seguro de salud</a>
+								<span>{{ index+1 }}. <a href="#!"> {{ archivo?.nombre }}</a></span>
+								<small>{{ archivo?.fecha }}</small>
 								<button class="btn btn-outline-danger border-0 rounded-circle"><i class="bi bi-x"></i></button>
 							</div>
 						</li>

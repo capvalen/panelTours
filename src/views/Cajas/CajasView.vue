@@ -8,7 +8,7 @@
 					<label for=""><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
 						<div class="col">
-							<input type="date" class="form-control" value="2025-12-05">
+							<input type="date" class="form-control" v-model="dia" @change="cambiarDias()">
 						</div>
 						<div class="col">
 							<select name="" id="sltUsuarios" class="form-select">
@@ -38,80 +38,49 @@
 						<th scope="col">#</th>
 						<th scope="col">Fecha apertura</th>
 						<th scope="col">Fecha cierre</th>
-						<th scope="col">Apertura S/</th>
-						<th scope="col">Cierre S/</th>
+						<th scope="col">Apertura</th>
+						<th scope="col">Cierre</th>
 						<th scope="col">Estado</th>
+						<th scope="col">Obs</th>
 						<th scope="col">Usuario</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
+					<tr v-for="(caja,index) in cajaStore.cajas" :key="caja.id">
+						<td>{{index+1}}</td>
 						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: 1 } }">
-								10/10/2025 08:00 am
+							<router-link :to="{ name: 'detalleCaja', params: { id: caja.id } }">
+								{{formatDate(caja.fecha_apertura)}}
 							</router-link>
 						</td>
-						<td>10/10/2025 05:30 pm</td>
-						<td>500.00</td>
-						<td>2450.75</td>
-						<td>Activo</td>
-						<td>Carlos Pariona</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: 2 } }">
-								09/10/2025 08:15 am
-							</router-link>
-						</td>
-						<td>09/10/2025 06:00 pm</td>
-						<td>600.00</td>
-						<td>3120.50</td>
-						<td>Cerrado</td>
-						<td>Lucía Mendoza</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: 3 } }">
-								08/10/2025 07:50 am
-							</router-link>
-						</td>
-						<td>08/10/2025 04:45 pm</td>
-						<td>450.00</td>
-						<td>1980.25</td>
-						<td>Cerrado</td>
-						<td>Jorge Rojas</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: 4 } }">
-								07/10/2025 08:05 am
-							</router-link>
-						</td>
-						<td>07/10/2025 05:55 pm</td>
-						<td>550.00</td>
-						<td>2760.00</td>
-						<td>Activo</td>
-						<td>Ana Torres</td>
-					</tr>
-					<tr>
-						<td>5</td>
-						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: 5 } }">
-								06/10/2025 08:00 am
-							</router-link>
-						</td>
-						<td>06/10/2025 05:00 pm</td>
-						<td>500.00</td>
-						<td>2100.80</td>
-						<td>Cerrado</td>
-						<td>Miguel Ruiz</td>
+						<td>{{formatDate(caja.fecha_cierre)}}</td>
+						<td>{{ formatMoneda(caja.monto_inicial) }}</td>
+						<td>{{ formatMoneda(caja.monto_final) }}</td>
+						<td class="text-capitalize">{{caja.estado}}</td>
+						<td>{{ caja.observaciones }}</td>
+						<td class="text-capitalize">{{caja.usuario.nombre}}</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 	</div>
 </template>
+<script setup>
+import { onMounted, ref } from 'vue';
+import { useCajaStore } from '@/stores/cajaStore';
+import { useFormat } from '@/composables/formatos'
+const { formatDate, formatMoneda, formatHoy } = useFormat()
+
+const cajaStore = useCajaStore()
+const dia = ref(formatHoy())
+
+const cambiarDias = ()=>{
+	cajaStore.obtenerCajasPorDia(dia.value)
+}
+
+onMounted(() => {
+	cajaStore.obtenerCajas()
+});
+
+
+</script>

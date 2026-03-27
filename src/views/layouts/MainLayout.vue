@@ -5,7 +5,9 @@
 				<div id="logo" class="w-100 my-4">
 					<img src="@/assets/logo.webp" class="w-75 mx-auto d-block">
 				</div>
-				<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
+				<router-link to="/dashboard">
+					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
+				</router-link>
 				<router-link to="/clientes">
 					<div class="menuFila"><i class="bi bi-wechat"></i> Clientes</div>
 				</router-link>
@@ -25,7 +27,7 @@
 				</router-link>
 				<div class="menuFila"><i class="bi bi-stickies"></i> Reportes</div>
 				<div class="menuFila d-none"><i class="bi bi-gear"></i> Configuración</div>
-				<div class="menuFila"><i class="bi bi-door-open"></i> Salir</div>
+				<div class="menuFila" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
 			</div>
 			<div class="col col-md-9 col-lg-10 pt-3">
 				<router-view class="container"></router-view>
@@ -36,49 +38,56 @@
 	</div>
 </template>
 
-<script>
-export default {
-  name: 'ModalExample',
-  methods: {
-    handleConfirm() {
-      alert('¡Has hecho clic en Aceptar!')
-      // Cierra el modal manualmente (opcional, ya que el botón de "Cerrar" ya lo hace)
-      const modal = document.getElementById('exampleModal')
-      const bootstrapModal = bootstrap.Modal.getInstance(modal)
-      bootstrapModal.hide()
-    }
-  }
+<script setup>
+import { useRouter } from 'vue-router';
+const router = useRouter()
+
+import { useAuthStore } from '@/stores/auth';
+const authStore = useAuthStore()
+
+function logout() {
+	authStore.logout()
+	router.push('/login')
 }
+
 </script>
+
+
 <style>
-#rowMenu{
+#rowMenu {
 	background-color: #E6FBFF;
 	min-height: 100vh;
 	border-radius: 0 20px 20px 0;
-	color:#011734;
+	color: #011734;
 }
-a{
-	text-decoration: none!important;
+
+a {
+	text-decoration: none !important;
 }
-.menuFila{
+
+.menuFila {
 	padding: 10px;
 	padding-left: 40px;
 	transition: all 0.5s ease-out;
 	font-size: 1.2rem;
 }
-.menuFila:hover{
+
+.menuFila:hover {
 	background-color: #011734;
 	color: white;
-	cursor:pointer
+	cursor: pointer
 }
-.menuFila i{
+
+.menuFila i {
 	font-size: 1.35rem;
 }
-.breadcrumb-item + .breadcrumb-item::before {
-	font-family:bootstrap-icons !important ;
-	content:"\F285"!important
+
+.breadcrumb-item+.breadcrumb-item::before {
+	font-family: bootstrap-icons !important;
+	content: "\F285" !important
 }
-.tdLargo{
+
+.tdLargo {
 	white-space: nowrap;
 }
 </style>

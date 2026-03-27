@@ -1,3 +1,46 @@
+<script setup>
+import ModalIngresoCaja from '@/components/ModalIngresoCaja.vue';
+import ModalSalidaCaja from '@/components/ModalSalidaCaja.vue';
+import ModalCerrarCaja from '@/components/ModalCerrarCaja.vue';
+
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router'
+import { useCajaStore } from '@/stores/cajaStore';
+import { useFormat } from '@/composables/formatos';
+import { formatoMoneda } from '@/globales';
+
+const route = useRoute() //instancia hacia la ruta
+
+const cajaStore = useCajaStore()
+const cajaActual = ref(null)
+const cajaDetalles = ref(null)
+const {fechaLatamCorta, horaCorta} = useFormat()
+
+const cargarDatos = async ()=>{
+	
+	await cajaStore.obtenerCajaId(route.params.id)
+	cajaActual.value = cajaStore.cajaActual
+	await cajaStore.obtenerDetalleCajaId(route.params.id)
+	cajaDetalles.value = cajaStore.cajaDetalles
+}
+
+onMounted(()=>{ //al cargar la pagina
+	cargarDatos()
+})
+
+watch(
+	route.params.id, (newId) => {
+		cargarDatos()
+	}
+, { immediate: true })
+
+/* //autogenerado:
+watch(() => route.params.id, (newId, oldId) => {
+	cargarDatos()
+}, { immediate: true }) */
+
+</script>
+
 <template>
 	<h1>Detalle de caja</h1>
 
@@ -15,8 +58,8 @@
 		<div class="col d-flex flex-wrap gap-2">
 			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalIngreso"><i class="bi bi-plus"></i> Registrar ingreso</button>
 			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalSalida"><i class="bi bi-dash"></i> Registrar egreso</button>
-			<router-link to="/venta/nueva" class="btn btn-outline-secondary"><i class="bi bi-star"></i> Nueva venta</router-link>
-			<button class="btn btn-outline-secondary"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
+			
+			
 		</div>
 	</div>
 
@@ -25,11 +68,10 @@
 			<div class="card">
 				<div class="card-body">
 					<p><strong><i class="bi bi-diamond"></i> Apertura de la caja</strong></p>
-					<p><strong>Fecha :</strong> 15/06/2021</p>
-					<p><strong>Hora:</strong> 09:50 am</p>
-					<p><strong>Monto:</strong> S/ 560.00</p>
+					<p><strong>Fecha :</strong> <span class="text-capitalize">{{fechaLatamCorta(cajaActual?.fecha_apertura)}}</span></p>
+					<p><strong>Hora:</strong> {{horaCorta(cajaActual?.fecha_apertura)}}</p>
+					<p><strong>Monto:</strong> {{formatoMoneda(cajaActual?.monto_inicial)}}</p>
 					<p><strong>Usuario:</strong> Úrsula</p>
-					<p><strong>Observaciones:</strong> -</p>
 				</div>
 			</div>
 
@@ -38,16 +80,15 @@
 			<div class="card">
 				<div class="card-body">
 					<p><strong><i class="bi bi-diamond"></i> Cierre de caja </strong></p>
-					<p><strong>Fecha :</strong> 15/06/2021</p>
-					<p><strong>Hora:</strong> 06:18 pm</p>
-					<p><strong>Monto:</strong> S/ 600.00</p>
-					<p><strong>Usuario:</strong> Úrsula</p>
-					<p><strong>Observaciones:</strong> -</p>
+					<p><strong>Fecha:</strong> <span class="text-capitalize">{{fechaLatamCorta(cajaActual?.fecha_cierre) || '-'}}</span></p>
+					<p><strong>Hora:</strong> {{horaCorta(cajaActual?.fecha_cierre) || '-'}}</p>
+					<p><strong>Monto:</strong> {{formatoMoneda(cajaActual?.monto_final) || '-'}}</p>
+					<p><strong>Observaciones:</strong> {{cajaActual?.observaciones || '-'}}</p>
 
 				</div>
 			</div>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<div class="card">
 				<div class="card-body">
 					<p><strong><i class="bi bi-diamond"></i> Cierre de sistema</strong></p>
@@ -73,36 +114,13 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
-						<td>09:00 am</td>
-						<td>Inyección de dinero</td>
-						<td class="text-primary">30.00</td>
-						<td>Ingreso</td>
-						<td>Efectivo</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td>10:30 am</td>
-						<td>Compra de bolantes</td>
-						<td class="text-danger">800.00</td>
-						<td>Salida</td>
-						<td>Depósito</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>12:15 pm</td>
-						<td>Pago de transporte</td>
-						<td class="text-danger">240.50</td>
-						<td>Ingreso</td>
-						<td>Tarjeta</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>02:00 pm</td>
-						<td>Pago de luz</td>
-						<td class="text-danger">30.40</td>
-						<td>Salida</td>
+					<tr v-for="(detalle, index) in cajaDetalles" :key="detalle.id">
+						<td>{{ index + 1 }}</td>
+						<td>{{ horaCorta(detalle.fecha) }}</td>
+						<td>{{ detalle.concepto }}</td>
+						<td v-if="detalle.tipo === 'ingreso'" class="text-primary">{{ formatoMoneda(detalle.monto) }}</td>
+						<td v-else class="text-danger">-{{ formatoMoneda(detalle.monto) }}</td>
+						<td class="text-capitalize">{{ detalle.categoria }}</td>
 						<td>Efectivo</td>
 					</tr>
 				</tbody>
@@ -112,7 +130,7 @@
 	</div>
 	<div class="row">
 		<div class="col">
-			<p><strong>Registro de ventas y adelantos de servicios</strong></p>
+			<p class="text-danger"><strong>Registro de ventas y adelantos de servicios</strong></p>
 			<table class="table table-hover">
 				<thead>
 					<tr>
@@ -206,16 +224,13 @@
 			<p><strong>Cierre de sistema:</strong> S/ 1469.1</p>
 			<hr>
 			<p><strong>Efectivo final:</strong> S/ 800.40</p>
-			<button class="btn btn-outline-success"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
+			<button v-if="cajaActual.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
+			
 		</div>
 	</div>
 
-	<ModalIngresoCaja></ModalIngresoCaja>
-	<ModalSalidaCaja></ModalSalidaCaja>
+	<ModalIngresoCaja :id="cajaActual?.id"></ModalIngresoCaja>
+	<ModalSalidaCaja :id="cajaActual?.id"></ModalSalidaCaja>
+	<ModalCerrarCaja :id="cajaActual?.id"></ModalCerrarCaja>
 </template>
 
-<script setup>
-import ModalIngresoCaja from '@/components/ModalIngresoCaja.vue';
-import ModalSalidaCaja from '@/components/ModalSalidaCaja.vue';
-
-</script>
