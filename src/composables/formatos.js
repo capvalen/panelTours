@@ -45,6 +45,12 @@ export function useFormat() {
 	const ahora = ()=>{
 		return dayjs().format('YYYY-MM-DD HH:mm:ss');
 	}
+	const rutaArchivo = (link)=>{
+		if(!link) return ''
+		
+		if( import.meta.env.MODE == 'development') return 'http://127.0.0.1:8000/adjuntos/'+link
+		if( import.meta.env.MODE == 'production') return 'http://grupoeuroandino.com/app/.../adjuntos/'+link //<-- cambiar URL de producción
+	}
 
   return {
     formatDate,
@@ -52,6 +58,7 @@ export function useFormat() {
 		formatMoneda,
 		formatDecimal,
 		fechaLatamCorta, fechaLatamSimple, horaCorta,
-		formatHoy, ahora
+		formatHoy, ahora,
+		rutaArchivo
   }
 }

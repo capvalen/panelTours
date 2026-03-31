@@ -99,7 +99,7 @@ watch(() => route.params.id, (newId, oldId) => {
 		</div>
 	</div>
 
-	<div class="row mt-4">
+	<div class="row my-4">
 		<div class="col">
 			<p><strong>Registro de entradas y salidas</strong></p>
 			<table class="table table-hover">
@@ -122,6 +122,9 @@ watch(() => route.params.id, (newId, oldId) => {
 						<td v-else class="text-danger">-{{ formatoMoneda(detalle.monto) }}</td>
 						<td class="text-capitalize">{{ detalle.categoria }}</td>
 						<td>Efectivo</td>
+					</tr>
+					<tr>
+						<td colspan="8" v-if="cajaDetalles?.length==0">No hay datos registrados aún</td>
 					</tr>
 				</tbody>
 			</table>
@@ -224,7 +227,7 @@ watch(() => route.params.id, (newId, oldId) => {
 			<p><strong>Cierre de sistema:</strong> S/ 1469.1</p>
 			<hr>
 			<p><strong>Efectivo final:</strong> S/ 800.40</p>
-			<button v-if="cajaActual.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
+			<button v-if="cajaActual?.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
 			
 		</div>
 	</div>

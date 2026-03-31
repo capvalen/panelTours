@@ -1,34 +1,31 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useClienteStore } from '@/stores/clienteStore'
 import Swal from 'sweetalert2'
 
+const route = useRoute() //instancia hacia la ruta
 const clienteStore = useClienteStore()
 
-const nuevo = reactive({
-	id: null,
-	ruc: '',
-	razon_social: '',
-	nombres: '',
-	apellidos: '',
-	dni: '',
-	fecha_nacimiento: null,
-	correo: '',
-	celular: '',
-	telefono: '',
-	direccion: '',
-	nacionalidad: 'peruano',
-	pais_origen: '',
-	pasaporte: '',
-	vigencia_pasaporte: null,
-	tipo_visado: 'ninguno',
-	valido_visa: null,
-	vacunas: [],
-	seguros: [],
-	tipo_visado: 'ninguno',
-	autorizacion_viaje: 'no presentó',
-	visado: 'No',
+const nuevo = reactive({})
+
+const cargarDatos = async ()=>{
+	await clienteStore.obtenerClienteId(route.params.id)	
+	Object.assign(nuevo, clienteStore.clienteActual) //copiar los datos del cliente actual al objeto reactivo nuevo
+}
+
+onMounted(()=>{ //al cargar la pagina
+	cargarDatos()
 })
+
+watch(
+	route.params.id, (newId) => {
+		cargarDatos()
+	}
+, { immediate: true })
+
+
+
 function agregarVacuna() {
 	//verificar si el último certificado tiene fecha antes de agregar
 	const ultimaVacuna = nuevo.vacunas[nuevo.vacunas.length - 1]
@@ -54,9 +51,11 @@ async function  guardarCliente() {
 		Swal.fire('Faltan datos', 'Complete el campo de razón social', 'error')
 		return
 	}
-	const resp = await clienteStore.guardarCliente(nuevo)
+	const resp = await clienteStore.actualizarCliente(nuevo)
 	if(await resp)
-		window.location.href = `/cliente/perfil/${resp}`
+		Swal.fire('Cliente actualizado', 'Los datos del cliente han sido actualizados', 'success')
+	else
+		Swal.fire('Error', 'Error al actualizar cliente', 'error')
 }
 const cambioVisado = () => {
   if (nuevo.visado === 'no') {
@@ -67,13 +66,13 @@ const cambioVisado = () => {
 
 </script>
 <template>
-	<h1>Nuevo Cliente</h1>
+	<h1>Actualizar Cliente</h1>
 
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
 			<li class="breadcrumb-item"><a href="/clientes">Clientes</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Nuevo</li>
+			<li class="breadcrumb-item active" aria-current="page">Actualizar</li>
 		</ol>
 	</nav>
 
@@ -94,13 +93,13 @@ const cambioVisado = () => {
 
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="dni" class="form-label">DNI <span class="text-danger">*</span></label>
+							<label for="dni" class="form-label">DNI</label>
 							<input type="text" class="form-control" id="dni" v-model="nuevo.dni" required>
 						</div>
 					</div>
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
+							<label for="apellidos" class="form-label">Apellidos</label>
 							<input type="text" class="form-control" id="apellidos" v-model="nuevo.apellidos" required>
 						</div>
 						<div class="col-md-6">
@@ -110,13 +109,13 @@ const cambioVisado = () => {
 					</div>
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="ruc" class="form-label">R.U.C. <span class="text-danger">*</span></label>
+							<label for="ruc" class="form-label">RUC</label>
 							<input type="text" class="form-control" id="ruc" v-model="nuevo.ruc" required>
 						</div>
 					</div>
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="razon_social" class="form-label">Razón social <span class="text-danger">*</span></label>
+							<label for="razon_social" class="form-label">Razón social</label>
 							<input type="text" class="form-control" id="razon_social" v-model="nuevo.razon_social" required>
 						</div>
 					</div>
@@ -280,7 +279,7 @@ const cambioVisado = () => {
 	<div class="row mb-5">
 		<div class="col-8 mx-auto">
 			<div class="d-grid">
-				<button type="submit" class="btn btn-primary" @click="guardarCliente()">Generar nuevo cliente</button>
+				<button type="submit" class="btn btn-primary" @click="guardarCliente()">Actualizar cliente</button>
 			</div>
 		</div>
 	</div>

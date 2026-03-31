@@ -1,3 +1,20 @@
+<script setup>
+import { onMounted, ref } from 'vue';
+import { useCajaStore } from '@/stores/cajaStore';
+import { useFormat } from '@/composables/formatos'
+const { formatDate, formatMoneda, formatHoy } = useFormat()
+
+const cajaStore = useCajaStore()
+const dia = ref(formatHoy())
+
+const cambiarDias = () => {
+	cajaStore.obtenerCajasPorDia(dia.value)
+}
+
+onMounted(() => {
+	cajaStore.obtenerCajas()
+});
+</script>
 <template>
 	<h1>Panel de caja chica</h1>
 
@@ -56,7 +73,12 @@
 						<td>{{formatDate(caja.fecha_cierre)}}</td>
 						<td>{{ formatMoneda(caja.monto_inicial) }}</td>
 						<td>{{ formatMoneda(caja.monto_final) }}</td>
-						<td class="text-capitalize">{{caja.estado}}</td>
+						<td class="text-capitalize">
+							<span class="badge rounded-pill text-capitalize" :class="{
+								'text-bg-danger': caja.estado == 'abierta',
+								'text-bg-success': caja.estado == 'cerrada'
+							}">{{ caja.estado }}</span>
+						</td>
 						<td>{{ caja.observaciones }}</td>
 						<td class="text-capitalize">{{caja.usuario.nombre}}</td>
 					</tr>
@@ -65,22 +87,3 @@
 		</div>
 	</div>
 </template>
-<script setup>
-import { onMounted, ref } from 'vue';
-import { useCajaStore } from '@/stores/cajaStore';
-import { useFormat } from '@/composables/formatos'
-const { formatDate, formatMoneda, formatHoy } = useFormat()
-
-const cajaStore = useCajaStore()
-const dia = ref(formatHoy())
-
-const cambiarDias = ()=>{
-	cajaStore.obtenerCajasPorDia(dia.value)
-}
-
-onMounted(() => {
-	cajaStore.obtenerCajas()
-});
-
-
-</script>

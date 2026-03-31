@@ -1,16 +1,39 @@
 <script setup>
 import { useClienteStore } from '@/stores/clienteStore';
-import { onMounted } from 'vue';
+import { onMounted, reactive } from 'vue';
+import Swal from 'sweetalert2'
 /* import { storeToRefs } from 'pinia'; */
 
 const clienteStore = useClienteStore();
 /* const { clientes } = storeToRefs(clienteStore); */
+const texto =reactive('')
+
+function eliminarCliente(id, razonSocial, apellidos) {
+	if( confirm(`¿Confirma que desea eliminar al cliente ${razonSocial ? razonSocial : apellidos}?`) ){
+		clienteStore.eliminarCliente(id)
+			.then( resp => {
+				if(resp.message == 'Cliente eliminado')
+					Swal.fire('Cliente eliminado', `El cliente ${razonSocial ? razonSocial : apellidos} ha sido eliminado`, 'success')
+				else
+					Swal.fire('Error', 'Error al eliminar cliente', 'error')
+			})
+			.catch( error => {
+				console.error(error)
+				Swal.fire('Error', 'Error al eliminar cliente', 'error')
+			})
+	}
+}
+function buscar() {
+	if(texto.trim() == ''){
+		clienteStore.listarClientes()
+	}else{
+		clienteStore.buscarClientes(texto)
+	}
+}
 
 onMounted(() => {
 	clienteStore.listarClientes()
 })
-	
-
 </script>
 
 <template>
@@ -24,8 +47,8 @@ onMounted(() => {
 					<div class="row">
 						<div class="col">
 							<div class="input-group">
-								<input type="text" class="form-control" placeholder="Apellidos, nombres, dni o celular">
-								<button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
+								<input type="text" class="form-control" placeholder="Apellidos, nombres, dni o celular" v-model="texto">
+								<button class="btn btn-outline-secondary" @click="buscar()"><i class="bi bi-search"></i> Buscar</button>
 							</div>
 						</div>
 						<div class="col-3 d-flex justify-content-center">
@@ -49,6 +72,7 @@ onMounted(() => {
 						<th>Celular</th>
 						<th>Teléfono</th>
 						<th>Nacionalidad</th>
+						<th>@</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -67,6 +91,10 @@ onMounted(() => {
 						<td>{{cliente.celular}}</td>
 						<td>{{cliente.telefono}}</td>
 						<td class="text-capitalize">{{cliente.nacionalidad}} <span v-if="cliente.pais_origen">({{ cliente.pais_origen }})</span></td>
+						<td class="d-flex gap-2">
+							<router-link :to="{ name: 'editarCliente', params: { id: cliente.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarCliente(cliente.id, cliente.razon_social, cliente.apellidos)"><i class="bi bi-trash"></i></button>
+						</td>
 					</tr>
 				</tbody>
 			</table>

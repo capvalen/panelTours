@@ -13,6 +13,11 @@ export const useClienteStore = defineStore('cliente', {
 			this.clientes = resp.data
 			return this.clientes
 		},
+		async buscarClientes(buscar){
+			const resp = await api.get('/clientes?buscar='+buscar)
+			this.clientes = resp.data
+			return this.clientes
+		},
 		async obtenerClienteId(id){
 			const resp = await api.get('/clientes/'+id)
 			this.clienteActual = resp.data
@@ -20,7 +25,7 @@ export const useClienteStore = defineStore('cliente', {
 		},
 		async guardarCliente(cliente){
 			const resp = await api.post('/clientes', cliente)
-			this.clienteActual = resp.data.data
+			this.clienteActual = resp.data
 			this.clientes.unshift(this.clienteActual)
 			return this.clienteActual.id
 		},
@@ -30,8 +35,9 @@ export const useClienteStore = defineStore('cliente', {
 			return this.clienteActual
 		},
 		async eliminarCliente(id){
-			await api.delete('/clientes/'+id)
+			const resp = await api.delete('/clientes/'+id)
 			this.clientes = this.clientes.filter(c => c.id !== id)
+			return resp.data
 		}
 	}
 })

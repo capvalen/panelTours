@@ -1,11 +1,12 @@
 <script setup>
+import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue'
 import { onMounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router'
 import { useClienteStore } from '@/stores/clienteStore';
 import { useFormat } from '@/composables/formatos';
 import { storeToRefs } from 'pinia';
 const route = useRoute() //instancia hacia la ruta
-const { fechaLatamSimple } = useFormat()
+const { fechaLatamSimple, rutaArchivo } = useFormat()
 
 const clienteStore = useClienteStore()
 const {clienteActual} = storeToRefs(clienteStore)
@@ -15,6 +16,14 @@ const archivos = computed( ()=> clienteActual.value?.archivos)
 
 const cargarDatos = async ()=>{	
 	await clienteStore.obtenerClienteId(route.params.id)
+}
+
+const eliminarAdjunto = async (index)=>{
+	if (clienteActual.value?.archivos){
+		clienteActual.value.archivos.splice(index, 1)
+		//crear eliminar archivo
+		clienteActual.actualizarCliente(clienteActual.value)
+	}
 }
 
 onMounted(()=>{ //al cargar la pagina
@@ -44,8 +53,8 @@ watch(
 
 	<div class="row mb-3">
 		<div class="col d-flex flex-wrap gap-2">
-			<button class="btn btn-outline-secondary"><i class="bi bi-pencil-square"></i> Editar datos</button>
-			<button class="btn btn-outline-secondary"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
+			<router-link :to="`/cliente/editar/${route.params.id}`" class="btn btn-outline-secondary"><i class="bi bi-pencil-square"></i> Editar datos</router-link>
+			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
 		</div>
 	</div>
 
@@ -100,11 +109,12 @@ watch(
 					<ul class="list-group list-group-flush ">
 						<li class="list-group-item" v-for="(archivo,index) in archivos">
 							<div class="d-flex w-100 justify-content-between">
-								<span>{{ index+1 }}. <a href="#!"> {{ archivo?.nombre }}</a></span>
+								<span class="text-capitalize">{{ index+1 }}. <a :href="rutaArchivo(archivo?.link)" target='_blank'> {{ archivo?.nombre || 'Archivo sin nombre' }}</a></span>
 								<small>{{ archivo?.fecha }}</small>
-								<button class="btn btn-outline-danger border-0 rounded-circle"><i class="bi bi-x"></i></button>
+								<button class="btn btn-outline-danger border-0 rounded-circle" @click="eliminarAdjunto(index)"><i class="bi bi-x"></i></button>
 							</div>
 						</li>
+						<li class="list-group-item" v-if="!clienteActual?.archivos || clienteActual?.archivos.length === 0">No hay archivos adjuntos</li>
 					</ul>
 
 				</div>
@@ -181,6 +191,7 @@ watch(
 					</tr>
 				</tbody>
 			</table>
-		</div>
+		</div>		
 	</div>
+	<ModalSubirArchivo :modelo="'cliente'" ></ModalSubirArchivo>
 </template>

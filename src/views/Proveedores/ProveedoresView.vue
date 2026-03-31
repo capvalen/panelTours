@@ -1,3 +1,40 @@
+<script setup>
+import { useProveedoresStore } from '@/stores/proveedorStore';
+import { onMounted, reactive } from 'vue';
+import Swal from 'sweetalert2'
+/* import { storeToRefs } from 'pinia'; */
+
+const proveedorStore = useProveedoresStore();
+/* const { clientes } = storeToRefs(clienteStore); */
+const texto =reactive('')
+
+function eliminarProveedor(id, razonSocial, apellidos) {
+	if( confirm(`¿Confirma que desea eliminar al proveedor ${razonSocial ? razonSocial : apellidos}?`) ){
+		proveedorStore.eliminar(id)
+			.then( resp => {
+				if(resp)
+					Swal.fire('Proveedor eliminado', `El proveedor ${razonSocial ? razonSocial : apellidos} ha sido eliminado`, 'success')
+				else
+					Swal.fire('Error', 'Error al eliminar proveedor', 'error')
+			})
+			.catch( error => {
+				console.error(error)
+				Swal.fire('Error', 'Error al eliminar proveedor', 'error')
+			})
+	}
+}
+function buscar() {
+	if(texto.trim() == ''){
+		proveedorStore.listar()
+	}else{
+		proveedorStore.buscar(texto)
+	}
+}
+
+onMounted(() => {
+	proveedorStore.listar()
+})
+</script>
 <template>
 	<h1>Panel de proveedores</h1>
 
@@ -9,7 +46,7 @@
 					<div class="row">
 						<div class="col">
 							<div class="input-group">
-								<input type="text" class="form-control" placeholder="Ruc, Razón social o celular">
+								<input type="text" class="form-control" placeholder="Ruc, Razón social o celular" v-model="texto">
 							</div>
 						</div>
 						<div class="col">
@@ -22,7 +59,7 @@
 							</select>
 						</div>
 						<div class="col-2">
-							<button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
+							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col d-flex justify-content-center">
 							<router-link to="/proveedor/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</router-link>
@@ -44,105 +81,26 @@
 						<th scope="col">Contacto</th>
 						<th scope="col">Celular</th>
 						<th scope="col">Categoría</th>
+						<th>@</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
+					<tr v-for="(proveedor, index ) in proveedorStore.proveedores">
+						<td>{{ index + 1 }}</td>
 						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 1 } }">
-								20543210987
+							<router-link :to="{ name: 'perfilProveedor', params: { id: proveedor.id } }">
+								{{ proveedor.ruc }}
 							</router-link>
 						</td>
-						<td>Distribuidora Andina S.A.C.</td>
-						<td>Carlos Méndez</td>
-						<td>987 654 321</td>
-						<td>Alimentos</td>
-					</tr>
-					<tr>
-						<td>2</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 2 } }">
-								20123456789
-							</router-link>
+						<td>{{ proveedor.razon_social }}</td>
+						<td>{{ proveedor.contacto }}</td>
+						<td>{{ proveedor.celular }}</td>
+						<td class="text-capitalize">{{ proveedor.categoria }}</td>
+						<td class="d-flex gap-2" v-if="proveedor.id != 1">
+							<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-trash"></i></button>
 						</td>
-						<td>Tecnología del Sur EIRL</td>
-						<td>María Quispe</td>
-						<td>912 345 678</td>
-						<td>Alojamiento</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 3 } }">
-								20654321098
-							</router-link>
-						</td>
-						<td>Importadora Global S.A.</td>
-						<td>Jorge Rojas</td>
-						<td>945 678 901</td>
-						<td>Restaurant</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 4 } }">
-								20765432109
-							</router-link>
-						</td>
-						<td>Papelera del Centro S.R.L.</td>
-						<td>Ana Torres</td>
-						<td>923 456 789</td>
-						<td>Papelería</td>
-					</tr>
-					<tr>
-						<td>5</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 5 } }">
-								20876543210
-							</router-link>
-						</td>
-						<td>Logística Express S.A.C.</td>
-						<td>Luis Fernández</td>
-						<td>934 567 890</td>
-						<td>Logística</td>
-					</tr>
-					<tr>
-						<td>6</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 6 } }">
-								20987654321
-							</router-link>
-						</td>
-						<td>Construcciones Modernas EIRL</td>
-						<td>Rosa Díaz</td>
-						<td>956 789 012</td>
-						<td>Alojamiento</td>
-					</tr>
-					<tr>
-						<td>7</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 7 } }">
-								20112233445
-							</router-link>
-						</td>
-						<td>Ferretería Industrial S.A.</td>
-						<td>Miguel Ángel Ruiz</td>
-						<td>967 890 123</td>
-						<td>Hospedaje</td>
-					</tr>
-					<tr>
-						<td>8</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: 8 } }">
-								20223344556
-							</router-link>
-						</td>
-						<td>Servicios de Limpieza Total S.R.L.</td>
-						<td>Carmen Flores</td>
-						<td>978 901 234</td>
-						<td>Servicios</td>
-					</tr>
+					</tr>					
 				</tbody>
 			</table>
 		</div>

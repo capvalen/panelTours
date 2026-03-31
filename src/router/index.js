@@ -39,6 +39,11 @@ const router = createRouter({
 					component: () => import('../views/Clientes/NuevoCliente.vue'),
 				},
 				{
+					path: '/cliente/editar/:id',
+					name: 'editarCliente',
+					component: () => import('../views/Clientes/editar.vue'),
+				},
+				{
 					path: '/cliente/perfil/:id',
 					name: 'perfilCliente',
 					component: () => import('../views/Clientes/PerfilCliente.vue'),
@@ -59,6 +64,11 @@ const router = createRouter({
 					path: '/proveedor/nuevo',
 					name: 'nuevoProveedor',
 					component: () => import('../views/Proveedores/NuevoProveedor.vue'),
+				},
+				{
+					path: '/proveedor/editar/:id',
+					name: 'editarProveedor',
+					component: () => import('../views/Proveedores/editar.vue'),
 				},
 				{
 					path: '/cajas',
@@ -96,6 +106,11 @@ const router = createRouter({
 					path: '/venta/nueva',
 					name: 'nuevaVenta',
 					component: () => import('../views/Ventas/NuevaVenta.vue'),
+				},
+				{
+					path: '/recordatorios/',
+					name: 'recordatorios',
+					component: () => import('../views/Recordatorios/RecordatoriosView.vue'),
 				},
 			]
 		},

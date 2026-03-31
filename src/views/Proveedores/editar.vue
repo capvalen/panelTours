@@ -1,21 +1,28 @@
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useProveedoresStore } from '@/stores/proveedorStore'
 import Swal from 'sweetalert2'
 
+const route = useRoute() //instancia hacia la ruta
 const proveedorStore = useProveedoresStore()
-const nuevo = reactive({
-	id: null,
-	ruc: '',
-	razon_social: '',
-	direccion: '',
-	ciudad:'',
-	contacto: '',
-	celular: '',
-	cuenta_bancaria: '',
-	numero_cuenta: '',
-	categoria: 'local'
+const nuevo = reactive({})
+
+const cargarDatos = async ()=>{
+	await proveedorStore.obtenerPorId(route.params.id)	
+	Object.assign(nuevo, proveedorStore.proveedorActual) //copiar los datos del proveedor actual al objeto reactivo nuevo
+}
+
+onMounted(()=>{ //al cargar la pagina
+	cargarDatos()
 })
+
+watch(
+	route.params.id, (newId) => {
+		cargarDatos()
+	}
+, { immediate: true })
+
 
 function  guardar(){
 	if(nuevo.ruc == '' || nuevo.razon_social == ''){
@@ -23,30 +30,30 @@ function  guardar(){
 		return
 	}
 	
-	proveedorStore.guardar(nuevo)
+	proveedorStore.actualizar(nuevo.id, nuevo)
 		.then( resp => {
 			if(parseInt(resp.id) > 0)
-				Swal.fire('Proveedor creado', `El proveedor ${nuevo.razon_social} ha sido creado`, 'success')
+				Swal.fire('Proveedor actualizado', `El proveedor ${nuevo.razon_social} ha sido actualizado`, 'success')
 			.then(() => {
 				window.location.href = '/proveedor/perfil/'+resp.id
 			})
 			else
-				Swal.fire('Error', 'Error al crear proveedor', 'error')
+				Swal.fire('Error', 'Error al actualizar proveedor', 'error')
 		})
 		.catch( error => {
 			console.error(error)
-			Swal.fire('Error', 'Error al crear proveedor', 'error')
+			Swal.fire('Error', 'Error al actualizar proveedor', 'error')
 		})
 }
 </script>
 <template>
-	<h1>Nuevo Proveedor</h1>
+	<h1>Editar Proveedor</h1>
 
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
 			<li class="breadcrumb-item"><a href="/proveedores">Proveedores</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Nuevo</li>
+			<li class="breadcrumb-item active" aria-current="page">Editar</li>
 		</ol>
 	</nav>
 
@@ -144,7 +151,7 @@ function  guardar(){
 	<div class="row mb-5">
 		<div class="col-8 mx-auto">
 			<div class="d-grid">
-				<button type="submit" class="btn btn-primary" @click="guardar()">Generar nuevo proveedor</button>
+				<button type="submit" class="btn btn-primary" @click="guardar()">Actualizar proveedor</button>
 			</div>
 		</div>
 	</div>

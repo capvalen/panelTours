@@ -21,7 +21,9 @@
 					<div class="menuFila"><i class="bi bi-cart"></i> Ventas y reservas</div>
 				</router-link>
 				<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
-				<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
+				<router-link to="/recordatorios">
+					<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
+				</router-link>
 				<router-link to="/tarifario">
 					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
 				</router-link>
