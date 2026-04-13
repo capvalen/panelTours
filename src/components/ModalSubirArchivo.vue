@@ -3,11 +3,15 @@ import { ref, watch } from 'vue';
 import {useArchivoStore} from '@/stores/archivoStore'
 import { useClienteStore } from '@/stores/clienteStore';
 import { useProveedoresStore } from '@/stores/proveedorStore';
+import { useVehiculosStore } from '@/stores/vehiculoStore';
+import { useHospedajesStore } from '@/stores/hospedajeStore';
 
 const props = defineProps(['modelo']) //'titulo', 'color'
 const archivoStore = useArchivoStore()
 const clienteStore = useClienteStore()
 const proveedorStore = useProveedoresStore()
+const vehiculoStore = useVehiculosStore()
+const hospedajeStore = useHospedajesStore()
 
 const archivo = ref(null)
 const nombre = ref('')
@@ -34,6 +38,20 @@ const cargar = async ()=>{
 				'link': resp.link
 			})
 			proveedorStore.actualizar(proveedorStore.proveedorActual.id, proveedorStore.proveedorActual)
+		}
+		if(props.modelo == 'vehiculo'){
+			vehiculoStore.vehiculoActual.archivos.unshift({
+				'nombre': nombre.value,
+				'link': resp.link
+			})
+			vehiculoStore.actualizar(vehiculoStore.vehiculoActual.id, vehiculoStore.vehiculoActual)
+		}
+		if(props.modelo == 'hospedaje'){
+			hospedajeStore.hospedajeActual.archivos.unshift({
+				'nombre': nombre.value,
+				'link': resp.link
+			})
+			hospedajeStore.actualizar(hospedajeStore.hospedajeActual.id, hospedajeStore.hospedajeActual)
 		}
 
 	}

@@ -1,3 +1,79 @@
+<script setup>
+import { useVentasStore } from '@/stores/ventaStore';
+import { onMounted, ref, computed } from 'vue';
+import { useFormat } from '@/composables/formatos';
+import Swal from 'sweetalert2'
+
+const ventaStore = useVentasStore();
+const { fechaLatamSimple, formatMoneda, capitalize } = useFormat();
+
+const search = ref('');
+const tipoFilter = ref('todos');
+
+onMounted(() => {
+	ventaStore.listar();
+});
+
+const filteredVentas = computed(() => {
+	let resultados = [...ventaStore.ventas];
+
+	if (search.value.trim()) {
+		const t = search.value.toLowerCase();
+		resultados = resultados.filter(v =>
+			(v.cliente?.dni || '').toLowerCase().includes(t) ||
+			(v.cliente?.ruc || '').toLowerCase().includes(t) ||
+			(v.cliente?.razon_social || '').toLowerCase().includes(t) ||
+			(v.cliente?.nombres || '').toLowerCase().includes(t) ||
+			(v.cliente?.celular || '').toLowerCase().includes(t) ||
+			(v.concepto || '').toLowerCase().includes(t)
+		);
+	}
+
+	if (tipoFilter.value !== 'todos') {
+		resultados = resultados.filter(v => v.tipo === tipoFilter.value);
+	}
+
+	return resultados;
+});
+
+const buscar = () => {
+	if (search.value.trim() === '') {
+		ventaStore.listar();
+	} else {
+		ventaStore.buscar(search.value);
+	}
+};
+
+const estadoBadgeClass = (estado) => {
+	const map = {
+		'pagado': 'bg-success',
+		'pendiente': 'bg-warning text-dark',
+		'con adelanto': 'bg-warning text-dark',
+		'cancelado': 'bg-danger',
+	};
+	return map[estado?.toLowerCase()] || 'bg-secondary';
+};
+
+const tipoBadgeClass = (tipo) => {
+	return tipo?.toLowerCase() === 'reserva' ? 'bg-warning text-dark' : 'bg-info';
+};
+
+const eliminarVenta = async (id, concepto) => {
+	const result = await Swal.fire({
+		title: '¿Eliminar venta?',
+		text: `Se eliminará "${concepto}"`,
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, eliminar',
+		cancelButtonText: 'Cancelar'
+	});
+	if (result.isConfirmed) {
+		await ventaStore.eliminar(id);
+		Swal.fire('Eliminado', 'Venta eliminada correctamente', 'success');
+	}
+};
+</script>
+
 <template>
 	<h1>Panel de ventas y reservas</h1>
 
@@ -5,32 +81,21 @@
 		<div class="col-md-12">
 			<div class="card">
 				<div class="card-body">
-					<label for=""><i class="bi bi-funnel"></i> Búsqueda</label>
+					<label><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
 						<div class="col">
 							<div class="input-group">
-								<input type="text" class="form-control" placeholder="DNI, RUC, Razón social, Nombres o celular">
+								<input type="text" class="form-control" placeholder="DNI, RUC, Razón social, Nombres o celular" v-model="search">
+								<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 							</div>
 						</div>
-						<div class="col">
-							<select name="" id="sltCategoria" class="form-select">
-								<option value="-1">Todas las categorías</option>
-								<option value="-1">Tours</option>
-								<option value="-1">Paquetes</option>
-								<option value="-1">Reservas</option>
+						<div class="col-md-3">
+							<select class="form-select" v-model="tipoFilter">
+								<option value="todos">Todas las categorías</option>
+								<option value="tour">Tours</option>
+								<option value="paquete">Paquetes</option>
+								<option value="reserva">Reservas</option>
 							</select>
-						</div>
-						<div class="col">
-							<select name="" id="sltCategoria" class="form-select">
-								<option value="-1">Cualquier fecha</option>
-								<option value="-1">Fecha específica</option>
-							</select>
-						</div>
-						<div class="col">
-							<input type="date" class="form-control" value="2025-06-11">
-						</div>
-						<div class="col-2">
-							<button class="btn btn-outline-secondary"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col d-flex justify-content-center">
 							<router-link to="/venta/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nueva venta</router-link>
@@ -56,56 +121,46 @@
 						<th>Monto</th>
 						<th>Estado de pago</th>
 						<th>Método de pago</th>
+						<th>Acciones</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
-						<td><span class="badge bg-info text-white">Venta</span></td>
-						<td class="tdLargo">14/10/2025 09:30 a.m.</td>
-						<td>Tour</td>
-						<td>3</td>
-						<td><router-link :to="{ name: 'detalleVenta', params: { id: 100 } }">Tour selva 3n/2d</router-link></td>
-						<td><router-link :to="{ name: 'perfilCliente', params: { id: 1 } }">Juan Pérez</router-link></td>
-						<td class="text-primary">1200.00</td>
-						<td><span class="badge bg-success">Pagado</span></td>
-						<td>Yape</td>
+					<tr v-for="(venta, index) in filteredVentas" :key="venta.id">
+						<td>{{ index + 1 }}</td>
+						<td>
+							<span class="badge" :class="tipoBadgeClass(venta.tipo)">
+								{{ capitalize(venta.tipo) }}
+							</span>
+						</td>
+						<td class="tdLargo">{{ fechaLatamSimple(venta.created_at) }}</td>
+						<td>{{ venta.servicio || '-' }}</td>
+						<td>{{ venta.cantidad_pasajes || venta.pasajes || 0 }}</td>
+						<td>
+							<router-link :to="{ name: 'detalleVenta', params: { id: venta.id } }">
+								{{ venta.concepto || venta.servicio || 'Sin concepto' }}
+							</router-link>
+						</td>
+						<td>
+							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
+								{{ venta.cliente?.nombres || venta.cliente?.razon_social || '-' }}
+							</router-link>
+							<span v-else>-</span>
+						</td>
+						<td class="text-primary">{{ formatMoneda(venta.monto) }}</td>
+						<td>
+							<span class="badge" :class="estadoBadgeClass(venta.estado_pago)">
+								{{ venta.estado_pago || '-' }}
+							</span>
+						</td>
+						<td class="text-capitalize">{{ venta.medio_pago || '-' }}</td>
+						<td>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, venta.concepto)">
+								<i class="bi bi-trash"></i>
+							</button>
+						</td>
 					</tr>
-					<tr>
-						<td>2</td>
-						<td><span class="badge bg-warning text-dark">Reserva</span></td>
-						<td class="tdLargo">14/10/2025 11:15 a.m.</td>
-						<td>Paquete</td>
-						<td>5</td>
-						<td class="tdLargo"><router-link :to="{ name: 'detalleVenta', params: { id: 100 } }">Jauja inolvidable</router-link></td>
-						<td class="tdLargo"><router-link :to="{ name: 'perfilCliente', params: { id: 2 } }">María López</router-link></td>
-						<td class="text-primary">800.00</td>
-						<td><span class="badge bg-warning text-dark">Con adelanto</span></td>
-						<td>Tarjeta</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td><span class="badge bg-info text-white">Venta</span></td>
-						<td class="tdLargo">14/10/2025 02:00 p.m.</td>
-						<td>Tour y transporte</td>
-						<td>3</td>
-						<td class="tdLargo"><router-link :to="{ name: 'detalleVenta', params: { id: 100 } }">Lima la primera ciudad del virreinato</router-link></td>
-						<td class="tdLargo"><router-link :to="{ name: 'perfilCliente', params: { id: 3 } }">Carlos Ruiz</router-link></td>
-						<td class="text-primary">450.00</td>
-						<td><span class="badge bg-success">Pagado</span></td>
-						<td>Efectivo</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td><span class="badge bg-info text-white">Venta</span></td>
-						<td class="tdLargo">14/10/2025 04:45 p.m.</td>
-						<td>Transporte</td>
-						<td>2</td>
-						<td class="tdLargo"><router-link :to="{ name: 'detalleVenta', params: { id: 100 } }">Laguna de paca</router-link></td>
-						<td class="tdLargo"><router-link :to="{ name: 'perfilCliente', params: { id: 4 } }">Ana Gómez</router-link></td>
-						<td class="text-primary">60.00</td>
-						<td><span class="badge bg-success">Pagado</span></td>
-						<td>Depósito</td>
+					<tr v-if="ventaStore.ventas.length === 0">
+						<td colspan="11" class="text-muted">No hay ventas registradas</td>
 					</tr>
 				</tbody>
 			</table>

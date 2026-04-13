@@ -71,6 +71,74 @@ const router = createRouter({
 					component: () => import('../views/Proveedores/editar.vue'),
 				},
 				{
+					path: '/vehiculos',
+					name: 'Vehiculos',
+					component: () => import('../views/Vehiculos/VehiculosView.vue'),
+				},
+				{
+					path: '/vehiculo/perfil/:id',
+					name: 'perfilVehiculo',
+					component: () => import('../views/Vehiculos/PerfilVehiculo.vue'),
+					props: true
+				},
+				{
+					path: '/vehiculo/nuevo',
+					name: 'nuevoVehiculo',
+					component: () => import('../views/Vehiculos/NuevoVehiculo.vue'),
+				},
+				{
+					path: '/vehiculo/editar/:id',
+					name: 'editarVehiculo',
+					component: () => import('../views/Vehiculos/EditarVehiculo.vue'),
+				},
+				{
+					path: '/hospedajes',
+					name: 'Hospedajes',
+					component: () => import('../views/Hospedajes/HospedajesView.vue'),
+				},
+				{
+					path: '/hospedaje/perfil/:id',
+					name: 'perfilHospedaje',
+					component: () => import('../views/Hospedajes/PerfilHospedaje.vue'),
+					props: true
+				},
+				{
+					path: '/hospedaje/nuevo',
+					name: 'nuevoHospedaje',
+					component: () => import('../views/Hospedajes/NuevoHospedaje.vue'),
+				},
+				{
+					path: '/hospedaje/editar/:id',
+					name: 'editarHospedaje',
+					component: () => import('../views/Hospedajes/EditarHospedaje.vue'),
+				},
+				{
+					path: '/guias',
+					name: 'Guias',
+					component: () => import('../views/Guias/GuiasView.vue'),
+				},
+				{
+					path: '/guia/perfil/:id',
+					name: 'perfilGuia',
+					component: () => import('../views/Guias/PerfilGuia.vue'),
+					props: true
+				},
+				{
+					path: '/guia/nuevo',
+					name: 'nuevoGuia',
+					component: () => import('../views/Guias/NuevoGuia.vue'),
+				},
+				{
+					path: '/guia/editar/:id',
+					name: 'editarGuia',
+					component: () => import('../views/Guias/EditarGuia.vue'),
+				},
+				{
+					path: '/vuelos',
+					name: 'Vuelos',
+					component: () => import('../views/Vuelos/VuelosView.vue'),
+				},
+				{
 					path: '/cajas',
 					name: 'Cajas',
 					component: () => import('../views/Cajas/CajasView.vue'),
@@ -111,6 +179,11 @@ const router = createRouter({
 					path: '/recordatorios/',
 					name: 'recordatorios',
 					component: () => import('../views/Recordatorios/RecordatoriosView.vue'),
+				},
+				{
+					path: '/configuraciones',
+					name: 'configuraciones',
+					component: () => import('../views/Configuracion/ConfiguracionView.vue'),
 				},
 			]
 		},
