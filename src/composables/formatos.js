@@ -12,19 +12,19 @@ dayjs.extend(utc);
 export function useFormat() {
   const formatDate = (date, format = 'D MMMM YYYY h:mm a') => {
     if (!date) return ''
-    return dayjs(date).format(format)
+    return dayjs.utc(date).format(format)
   }
   const fechaLatamCorta = (date, format = 'ddd DD/MM/YYYY') => {
     if (!date) return ''
-    return dayjs(date).format(format)
+    return dayjs.utc(date).format(format)
   }
   const fechaLatamSimple = (date, format = 'DD/MM/YYYY') => {
     if (!date) return ''
-    return dayjs(date).format(format)
+    return dayjs.utc(date).format(format)
   }
   const horaCorta = (date, format = 'h:mm a') => {
     if (!date) return ''
-    return dayjs(date).format(format)
+    return dayjs.utc(date).format(format)
   }
 
   const formatRelative = (date) => {
@@ -43,10 +43,10 @@ export function useFormat() {
 	}
 
 	const formatHoy = ()=>{
-		return dayjs().format('YYYY-MM-DD');
+		return dayjs.utc().format('YYYY-MM-DD');
 	}
 	const ahora = ()=>{
-		return dayjs().format('YYYY-MM-DD HH:mm:ss');
+		return dayjs.utc().format('YYYY-MM-DD HH:mm:ss');
 	}
 	const rutaArchivo = (link)=>{
 		if(!link) return ''

@@ -9,6 +9,7 @@ const { fechaLatamSimple, formatMoneda, capitalize } = useFormat();
 
 const search = ref('');
 const tipoFilter = ref('todos');
+const fechaFilter = ref('');
 
 onMounted(() => {
 	ventaStore.listar();
@@ -33,6 +34,14 @@ const filteredVentas = computed(() => {
 		resultados = resultados.filter(v => v.tipo === tipoFilter.value);
 	}
 
+	if (fechaFilter.value) {
+		resultados = resultados.filter(v => {
+			if (!v.created_at) return false;
+			const fechaVenta = new Date(v.fecha).toISOString().split('T')[0];
+			return fechaVenta === fechaFilter.value;
+		});
+	}
+
 	return resultados;
 });
 
@@ -55,7 +64,34 @@ const estadoBadgeClass = (estado) => {
 };
 
 const tipoBadgeClass = (tipo) => {
-	return tipo?.toLowerCase() === 'reserva' ? 'bg-warning text-dark' : 'bg-info';
+	return tipo?.toLowerCase() === 'cotización' ? 'bg-warning text-dark' : 'bg-success';
+};
+
+// Extrae los tipos únicos de items y los formatea como "ida" o "ida y vuelta"
+const formatoServicio = (items) => {
+	if (!items || !items.length) return '-';
+
+	const tipos = items.map(i => i.tipo?.toLowerCase()).filter(Boolean);
+	const unicos = [...new Set(tipos)];
+
+	if (unicos.length === 0) return '-';
+
+	// Contar ocurrencias de cada tipo
+	const conteo = {};
+	tipos.forEach(t => { conteo[t] = (conteo[t] || 0) + 1; });
+
+	// Construir resultado
+	const partes = unicos.map(tipo => {
+		return conteo[tipo] >= 2 ? `${capitalize(tipo)} ida y vuelta` : capitalize(tipo);
+	});
+
+	return partes.join(', ');
+};
+
+const formatoConcepto = (items) => {
+	if (!items || items.length === 0) return 'ningún concepto';
+	if (items.length === 1) return items[0].descripcion || 'sin descripción';
+	return 'varios items';
 };
 
 const eliminarVenta = async (id, concepto) => {
@@ -92,10 +128,13 @@ const eliminarVenta = async (id, concepto) => {
 						<div class="col-md-3">
 							<select class="form-select" v-model="tipoFilter">
 								<option value="todos">Todas las categorías</option>
-								<option value="tour">Tours</option>
-								<option value="paquete">Paquetes</option>
-								<option value="reserva">Reservas</option>
+								<option value="venta">Ventas</option>
+								<option value="cotización">Cotizaciones</option>
+
 							</select>
+						</div>
+						<div class="col-md-2">
+							<input type="date" class="form-control" v-model="fechaFilter">
 						</div>
 						<div class="col d-flex justify-content-center">
 							<router-link to="/venta/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nueva venta</router-link>
@@ -115,12 +154,11 @@ const eliminarVenta = async (id, concepto) => {
 						<th>Tipo</th>
 						<th>Fecha de registro</th>
 						<th>Servicio</th>
-						<th>Pasajes</th>
+						<th>N° Personas</th>
 						<th>Concepto</th>
 						<th>Cliente</th>
 						<th>Monto</th>
 						<th>Estado de pago</th>
-						<th>Método de pago</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
@@ -132,29 +170,28 @@ const eliminarVenta = async (id, concepto) => {
 								{{ capitalize(venta.tipo) }}
 							</span>
 						</td>
-						<td class="tdLargo">{{ fechaLatamSimple(venta.created_at) }}</td>
-						<td>{{ venta.servicio || '-' }}</td>
-						<td>{{ venta.cantidad_pasajes || venta.pasajes || 0 }}</td>
-						<td>
+						<td class="tdLargo">
 							<router-link :to="{ name: 'detalleVenta', params: { id: venta.id } }">
-								{{ venta.concepto || venta.servicio || 'Sin concepto' }}
+							{{ fechaLatamSimple(venta.fecha) }}
 							</router-link>
 						</td>
+						<td>{{ formatoServicio(venta.items) }}</td>
+						<td>{{ venta.nro_clientes || 0 }}</td>
+						<td>{{ capitalize(formatoConcepto(venta.items)) }}</td>
 						<td>
 							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
-								{{ venta.cliente?.nombres || venta.cliente?.razon_social || '-' }}
+								{{ venta.cliente?.razon_social || venta.cliente?.apellidos + ' ' + venta.cliente?.nombres || 'Sin cliente' }}
 							</router-link>
 							<span v-else>-</span>
 						</td>
-						<td class="text-primary">{{ formatMoneda(venta.monto) }}</td>
+						<td>{{ formatMoneda(venta.precio) }}</td>
 						<td>
-							<span class="badge" :class="estadoBadgeClass(venta.estado_pago)">
+							<span class="badge text-capitalize" :class="estadoBadgeClass(venta.estado_pago)">
 								{{ venta.estado_pago || '-' }}
 							</span>
 						</td>
-						<td class="text-capitalize">{{ venta.medio_pago || '-' }}</td>
 						<td>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, venta.concepto)">
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)">
 								<i class="bi bi-trash"></i>
 							</button>
 						</td>
