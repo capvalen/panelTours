@@ -1,15 +1,21 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
 import { useClienteStore } from '@/stores/clienteStore';
+import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useGuiasStore } from '@/stores/guiaStore';
 import { useFormat } from '@/composables/formatos';
+import Swal from 'sweetalert2';
 import RestauranteItem from './components/RestauranteItem.vue';
 import GuiaItem from './components/GuiaItem.vue';
 import HospedajeItem from './components/HospedajeItem.vue';
+import TransporteItem from './components/VehiculoItem.vue';
+import TourItem from './components/TourItem.vue';
+import VueloItem from './components/VueloItem.vue';
 
 const clienteStore = useClienteStore();
+const vehiculoStore = useVehiculosStore();
 const guiasStore = useGuiasStore();
-const ciudades = ["Abancay", "Andahuaylas", "Arequipa", "Chincha", "Cusco", "Huancavelica", "Ayacucho", "Cajamarca", "Callao", "Cerro de Pasco", "Chachapoyas", "Chiclayo", "Huancayo", "Huánuco", "Huaraz", "Ica", "Iquitos", "Jauja", "Juliaca", "Puerto Maldonado", "La Merced", "Lima", "Moquegua", "Nazca", "Охаратра", "Pichanaqui", "Piura", "Pucallpa", "Puno", "Satipo", "Tacna", "Tarapoto", "Tarma", "Tingo María", "Trujillo", "Tumbes"];
+
 const { formatHoy } = useFormat();
 
 const venta = reactive({
@@ -50,7 +56,8 @@ const nuevoItem = {
 		turno: null,
 		espacio: null,
 		numero_personas: 0,
-		fecha_hora_reserva: null,
+		fecha_reserva: null,
+		hora_reserva: null,
 		pedido_especial: null,
 		precio:0
 	},
@@ -68,7 +75,7 @@ const nuevoItem = {
 		cantidad_personas: 0,		
 		pedido_especial: null
 	},
-	'hospedajes':{
+	'hospedaje':{
 		tipo: 'hospedaje',
 		tipo_habitacion: 'simple',		
 		fecha_ingreso: null,
@@ -83,7 +90,65 @@ const nuevoItem = {
 		requiere_cuna:false,
 		habitacion_fumador:false,
 		preferencias_especiales:''
+	},
+	'transporte':{
+		tipo:'transporte',
+		origen:'', destino:'',
+		vehiculo_id:null,
+		vehiculo_nombre:'',
+		fecha_inicio: null,
+		fecha_fin: null,
+		hora_recogida: null,
+		hora_devolucion: null,
+		precio: 0,
+		observaciones: '',
+	},
+	'tour':{
+		tipo:'tour',
+		tour_id: null,
+		nombre_tour: null,
+		tipo_tour:null,
+		descripcion:null,
+		fecha_salida:null,
+		fecha_retorno:null,
+		cantidad_personas:0,
+		cantidad_adultos: 0,
+		cantidad_ninos: 0,
+		peruanos_adultos: 0,
+		peruanos_kids: 0,
+		extranjeros_adultos: 0,
+		extranjeros_kids: 0,
+		precio:0,
+		incluye:null,
+		no_incluye:null,
+		punto_partida:'',
+		punto_llegada: '',
+		hora_salida:null,
+		hora_retorno:null,
+		requisitos:'',
+		observaciones:'',
+	},
+	'vuelo': {
+		tipo:'vuelo',
+		origen: '',
+		destino: '',
+		pasajeros: 0,
+		lleva_equipaje: 0,
+		kilos: null,
+		que_equipaje: '',
+		precio_soles: 0,
+		precio_dolares: 0,
+		precio:0,
+		aerolinea: null,
+		fecha_salida: null,
+		fecha_llegada: null,
+		hora_salida: null,
+		horario_llegada: null,
+		clase_vuelo: 'económica',
+		escala: false,
+		observaciones: '',
 	}
+
 };
 
 const addCanasta = (tipo) => {
@@ -133,14 +198,116 @@ watch([() => canasta.value, () => venta.descuento], () => {
 onMounted(async () => {
 	await clienteStore.listarClientes();
 	await guiasStore.listar();
+	await vehiculoStore.listar();
 
 	try {
-		/* const response = await fetch('https://grupoeuroandino.com/app/api/mostrarTours_todos.php');
-		tours.value = await response.json(); */
+		const response = await fetch('https://grupoeuroandino.com/app/api/mostrarTours_todos.php');
+		tours.value = await response.json();
 	} catch (error) {
 		console.error('Error al cargar los tours:', error);
 	}
 });
+
+const guardarVenta = async () => {
+	// Validar canasta vacía
+	if (canasta.value.length === 0) {
+		Swal.fire('Error', 'Debe rellenar items a la canasta', 'error');
+		return;
+	}
+
+	// Validar cada item de la canasta
+	for (const item of canasta.value) {
+		// Validación común: precio <= 0
+		if (!item.precio || item.precio <= 0) {
+			Swal.fire('Error', 'Debe rellenar el precio de cada item mayor a cero', 'error');
+			return;
+		}
+
+		// Validaciones según tipo de item
+		switch (item.tipo) {
+			case 'guía':
+				if (!item.guia_id) {
+					Swal.fire('Error', 'Falta seleccionar un guía', 'error');
+					return;
+				}
+				if (!item.fecha) {
+					Swal.fire('Error', 'Falta ingresar la fecha del guía', 'error');
+					return;
+				}
+				break;
+
+			case 'hospedaje':
+				if (!item.fecha_ingreso) {
+					Swal.fire('Error', 'Falta fecha de ingreso', 'error');
+					return;
+				}
+				if (!item.cantidad_noches || item.cantidad_noches <= 0) {
+					Swal.fire('Error', 'La cantidad de noches no puede ser 0', 'error');
+					return;
+				}
+				break;
+
+			case 'transporte':
+				if (!item.fecha_inicio) {
+					Swal.fire('Error', 'Indique la fecha de inicio', 'error');
+					return;
+				}
+				if (!item.vehiculo_id) {
+					Swal.fire('Error', 'Falta seleccionar un transporte', 'error');
+					return;
+				}
+				break;
+
+			case 'tour':
+				if (!item.tour_id) {
+					Swal.fire('Error', 'Falta seleccionar un tour o paquete', 'error');
+					return;
+				}
+				if (!item.fecha_salida) {
+					Swal.fire('Error', 'Indique la fecha de salida', 'error');
+					return;
+				}
+				if (!item.cantidad_personas || item.cantidad_personas < 1) {
+					Swal.fire('Error', 'La cantidad de personas no puede ser 0', 'error');
+					return;
+				}
+				break;
+
+			case 'vuelo':
+				if (!item.origen || item.origen === '') {
+					Swal.fire('Error', 'Indique el punto de origen', 'error');
+					return;
+				}
+				if (!item.fecha_salida) {
+					Swal.fire('Error', 'Indique la fecha de salida', 'error');
+					return;
+				}
+				break;
+
+			case 'restaurante':
+				if (!item.fecha_reserva) {
+					Swal.fire('Error', 'Falta ingresar la fecha de reserva', 'error');
+					return;
+				}
+				break;
+		}
+	}
+
+	// Si todas las validaciones pasan, guardar la venta
+	try {
+		// TODO: Implementar la lógica para guardar la venta en el backend
+		// const response = await fetch('API_URL', {
+		// 	method: 'POST',
+		// 	headers: { 'Content-Type': 'application/json' },
+		// 	body: JSON.stringify({ venta, items: canasta.value })
+		// });
+		console.info('canasta:', canasta.value )
+
+		Swal.fire('Éxito', 'Venta guardada', 'success');
+	} catch (error) {
+		Swal.fire('Error', 'No se pudo guardar la venta', 'error');
+	}
+};
 </script>
 <template>
 	<h1>Nueva venta</h1>
@@ -261,147 +428,32 @@ onMounted(async () => {
 
 							<!-- Hospedaje -->
 							<HospedajeItem v-else-if="item.tipo === 'hospedaje'" :item="item" />
+
+							<!-- Transporte -->
+							<TransporteItem v-else-if="item.tipo === 'transporte'" :item="item" :vehiculos="vehiculoStore.vehiculos" />
+
+							<!-- Tour -->
+							<TourItem v-else-if="item.tipo === 'tour'" :item="item" :tours="tours" :nacionalidad="venta.nacionalidad" />
+
+							<!-- Vuelo -->
+							<VueloItem v-else-if="item.tipo === 'vuelo'" :item="item"  />
 						</div>
 					</div>
 				</template>
 
 				<div class="d-flex flex-wrap gap-2 my-3">
 					<p class="w-100 mb-0"><small class="text-muted">Seleccione un item:</small></p>
-					<button class="btn btn-outline-secondary" @click="addCanasta('tours')"><i class="bi bi-suitcase-lg"></i> Tour o Paquete</button>
+					<button class="btn btn-outline-secondary" @click="addCanasta('tour')"><i class="bi bi-suitcase-lg"></i> Tour o Paquete</button>
 					<button class="btn btn-outline-secondary" @click="addCanasta('transporte')"><i class="bi bi-bus-front"></i> Transporte</button>
 					<button class="btn btn-outline-secondary" @click="addCanasta('vuelo')"><i class="bi bi-airplane"></i> Vuelo</button>
-					<button class="btn btn-outline-secondary" @click="addCanasta('hospedajes')"><i class="bi bi-buildings"></i>
+					<button class="btn btn-outline-secondary" @click="addCanasta('hospedaje')"><i class="bi bi-buildings"></i>
 					 Hospedaje</button>
 					<button class="btn btn-outline-secondary" @click="addCanasta('guía')"><i class="bi bi-people"></i> Guía</button>
 					<button class="btn btn-outline-secondary" @click="addCanasta('restaurante')"><i class="bi bi-fork-knife"></i> Restaurant</button>
 				</div>
 			</div>
 
-			<div class="card">
-				<div class="card-body">
-					<div class="row">
-						<div class="col">
-
-							<div class="div">
-
-							</div>
-
-							<label for="tservicio" class="form-label">Servicio</label>
-							<select name="tservicio" id="" class="form-select" v-model="venta.idServicio">
-								<option value="1">Tour</option>
-								<option value="2">Paquete</option>
-								<option value="3">Transporte</option>
-								<option value="4">Vuelo</option>
-								<option value="5">Alojamiento</option>
-							</select>
-						</div>
-
-						<div class="col">
-							<label for="servicio" class="form-label">Servicio</label>
-							<select name="tservicio" id="" class="form-select" v-if="venta.idServicio == 1">
-								<option value="1">Tour selva central</option>
-								<option value="2">Tour valle del perené</option>
-								<option value="3">Tour laguna</option>
-							</select>
-							<select name="tservicio" id="" class="form-select" v-if="venta.idServicio == 2">
-								<option value="1">2d/1n Selva central primaveral</option>
-								<option value="2">Año nuevo 2026 Huancayo</option>
-								<option value="3">3d/2n Selva central huancayo</option>
-							</select>
-
-							<select name="tservicio" id="" class="form-select" v-if="venta.idServicio == 3">
-								<option value="1">WF1-256 - Bus interprovincial</option>
-								<option value="2">HMR-178 - Taxi privado</option>
-							</select>
-							<select name="tservicio" id="" class="form-select" v-if="venta.idServicio == 4">
-								<option value="1">JetSmart Airlines</option>
-								<option value="2">Kayak</option>
-								<option value="3">Latam Airlines</option>
-							</select>
-							<select name="tservicio" id="" class="form-select" v-if="venta.idServicio == 5">
-								<option value="1">Hotel Mil Maravillas</option>
-								<option value="2">Hospedaje El Virrey</option>
-								<option value="3">Hostal La casa de Juana</option>
-							</select>
-						</div>
-					</div>
-					<div class="row" v-if="['3', '4', '5'].includes(venta.idServicio)">
-						<div class="col">
-							<label for="ciudad" class="form-label">Ciudad</label>
-							<select name="" class="form-select" id="sltCiudad">
-								<option v-for="ciudad in ciudades" value="ciudad">{{ ciudad }}</option>
-							</select>
-						</div>
-						<div class="col">
-							<label for="ciudad" class="form-label">Requisito especial</label>
-							<input type="text" class="form-control">
-						</div>
-					</div>
-					<div class="row row-cols-2" v-if="['3', '4'].includes(venta.idServicio)">
-
-						<div class="col">
-							<label for="lugarSalida" class="form-label">Origen</label>
-							<input type="text" class="form-control">
-						</div>
-						<div class="col">
-							<label for="lugarLlegada" class="form-label">Destino</label>
-							<input type="text" class="form-control">
-						</div>
-						<div class="col">
-							<label for="fechaSalida" class="form-label">Fecha de salida</label>
-							<input type="date" class="form-control">
-						</div>
-						<div class="col">
-							<label for="fechaLlegada" class="form-label">Fecha de llegada</label>
-							<input type="date" class="form-control">
-						</div>
-						<div class="col">
-							<label for="horaSalida" class="form-label">Hora de salida</label>
-							<input type="time" class="form-control">
-						</div>
-						<div class="col">
-							<label for="horaLlegada" class="form-label">Hora de llegada</label>
-							<input type="time" class="form-control">
-						</div>
-						<div class="col">
-							<label for="precio" class="form-label">Precio (S/)</label>
-							<input type="number" class="form-control" v-model.number="items[0].precio" min="0" step="0.01">
-						</div>
-						<div class="col">
-							<label for="descripcion" class="form-label">Descripción</label>
-							<input type="text" class="form-control" v-model="items[0].descripcion">
-						</div>
-
-					</div>
-					<div class="row row-cols-2" v-if="['5'].includes(venta.idServicio)">
-						<div class="col">
-							<label for="fechaSalida" class="form-label">Fecha de llegada</label>
-							<input type="date" class="form-control">
-						</div>
-						<div class="col">
-							<label for="fechaLlegada" class="form-label">Fecha de salida</label>
-							<input type="date" class="form-control">
-						</div>
-						<div class="col">
-							<label for="horaSalida" class="form-label">Hora de salida</label>
-							<input type="time" class="form-control">
-						</div>
-						<div class="col">
-							<label for="horaLlegada" class="form-label">Hora de llegada</label>
-							<input type="time" class="form-control">
-						</div>
-						<div class="col">
-							<label for="precio" class="form-label">Precio (S/)</label>
-							<input type="number" class="form-control" v-model.number="items[0].precio" min="0" step="0.01">
-						</div>
-						<div class="col">
-							<label for="descripcion" class="form-label">Descripción</label>
-							<input type="text" class="form-control" v-model="items[0].descripcion">
-						</div>
-					</div>
-				</div>
-			</div>
-
+			
 			<div class="card">
 				<div class="card-body">
 					<h5 class="card-title">Datos del pago</h5>

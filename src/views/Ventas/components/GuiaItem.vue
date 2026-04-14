@@ -1,5 +1,5 @@
 <script setup>
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
 	item: {
@@ -12,35 +12,59 @@ const props = defineProps({
 	}
 });
 
-watch(() => props.item.guia_nombre, (nuevoValor) => {
+const textoBusqueda = ref('');
+
+watch(textoBusqueda, (nuevoValor) => {
+	if (!nuevoValor || nuevoValor.trim() === '') {
+		props.item.guia_id = null;
+		props.item.guia_nombre = '';
+		return;
+	}
+	console.log('¿nuevo val ', nuevoValor)
+
 	const guiaSeleccionado = props.guias.find(g => String(g.id) === String(nuevoValor));
 	if (guiaSeleccionado) {
 		props.item.guia_id = guiaSeleccionado.id;
 		props.item.guia_nombre = guiaSeleccionado.nombre;
+		//textoBusqueda.value = guiaSeleccionado.nombre || '';
 	} else {
 		props.item.guia_id = null;
 	}
 });
+
+/* watch(() => props.item.guia_nombre, (nuevoValor) => {
+	if (nuevoValor && nuevoValor !== textoBusqueda.value) {
+		const guiaSeleccionado = props.guias.find(g => String(g.nombre) === String(nuevoValor));
+		if (guiaSeleccionado) {
+			props.item.guia_id = guiaSeleccionado.id;
+			textoBusqueda.value = guiaSeleccionado.nombre;
+		}
+	}
+}); */
 </script>
 
 <template>
 	<div class="row row-cols-3">
 		<div class="col">
-			<label class="form-label">Guía</label>
-			<input type="text" class="form-control" list="listaGuias" v-model="item.guia_nombre"
+			<label class="form-label">Lista de guías <span class="text-danger">*</span></label>
+			<input type="text" class="form-control" list="listaGuias" v-model="textoBusqueda"
 				placeholder="Buscar guía...">
 			<datalist id="listaGuias">
-				<option v-for="guia in guias" :key="guia.id" :value="guia.id" :data-id="guia.id">
-					{{ guia.nombre }} - {{guia.dni}}
+				<option v-for="guia in guias" :key="guia.id" :value="guia.id">
+					{{ guia.nombre }} - {{ guia.dni }}
 				</option>
 			</datalist>
+		</div>
+		<div class="col">
+			<label class="form-label">Guía seleccionado</label>
+			<input type="text" class="form-control" v-model="item.guia_nombre" disabled>
 		</div>
 		<div class="col">
 			<label class="form-label">Ruta</label>
 			<input type="text" class="form-control" v-model="item.ruta">
 		</div>
 		<div class="col">
-			<label class="form-label">Fecha</label>
+			<label class="form-label">Fecha <span class="text-danger">*</span></label>
 			<input type="date" class="form-control" v-model="item.fecha">
 		</div>
 		<div class="col">
@@ -69,7 +93,7 @@ watch(() => props.item.guia_nombre, (nuevoValor) => {
 			<input type="number" class="form-control" v-model.number="item.cantidad_personas" min="0">
 		</div>
 		<div class="col">
-			<label class="form-label">Costo (S/)</label>
+			<label class="form-label">Precio <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
 		</div>
 		<div class="col">
@@ -78,3 +102,8 @@ watch(() => props.item.guia_nombre, (nuevoValor) => {
 		</div>
 	</div>
 </template>
+<style scoped>
+.col {
+	margin: 10px 0;
+}
+</style>

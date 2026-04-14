@@ -66,7 +66,7 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 			</select>
 		</div>
 		<div class="col">
-			<label class="form-label">Fecha de ingreso</label>
+			<label class="form-label">Fecha de ingreso <span class="text-danger">*</span></label>
 			<input type="date" class="form-control" v-model="item.fecha_ingreso">
 		</div>
 		<div class="col">
@@ -74,7 +74,7 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 			<input type="time" class="form-control" v-model="item.hora_ingreso">
 		</div>
 		<div class="col">
-			<label class="form-label">Cantidad de noches</label>
+			<label class="form-label">Cantidad de noches <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.cantidad_noches" min="0">
 		</div>
 		<div class="col">
@@ -112,7 +112,7 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 			</div>
 		</div>
 		<div class="col">
-			<label class="form-label">Total (S/)</label>
+			<label class="form-label">Total (S/) <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
 		</div>
 		<div class="col">
@@ -121,3 +121,8 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 		</div>
 	</div>
 </template>
+<style scoped>
+.col {
+	margin: 10px 0;
+}
+</style>

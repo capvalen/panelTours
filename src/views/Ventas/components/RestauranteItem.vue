@@ -10,8 +10,12 @@ defineProps({
 <template>
 	<div class="row row-cols-3">
 		<div class="col">
-			<label class="form-label">Fecha y hora de reserva</label>
-			<input type="datetime-local" class="form-control" v-model="item.fecha_hora_reserva">
+			<label class="form-label">Fecha de reserva</label>
+			<input type="date" class="form-control" v-model="item.fecha_reserva">
+		</div>
+		<div class="col">
+			<label class="form-label">Hora de reserva</label>
+			<input type="time" class="form-control" v-model="item.hora_reserva">
 		</div>
 		<div class="col">
 			<label class="form-label">Tipo de servicio</label>
@@ -48,7 +52,7 @@ defineProps({
 			<input type="number" class="form-control" v-model.number="item.numero_personas" min="0">
 		</div>
 		<div class="col">
-			<label class="form-label">Precio</label>
+			<label class="form-label">Precio <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
 		</div>
 		
@@ -58,3 +62,8 @@ defineProps({
 		</div>
 	</div>
 </template>
+<style scoped>
+.col {
+	margin: 10px 0;
+}
+</style>
