@@ -58,5 +58,15 @@ export const useVentasStore = defineStore('ventas', {
 
 			return true;
 		},
+
+		async anular(id) {
+			await api.delete(`/ventas/${id}?anular=true`);
+
+			const index = this.ventas.findIndex(v => v.id === id);
+			this.ventas[index].estado = 'anulado';
+			if ( this.ventaActual ) this.ventaActual.estado = 'anulado'
+
+			return true;
+		},
 	},
 });

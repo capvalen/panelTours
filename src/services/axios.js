@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const urlBase = process.env.NODE_ENV === 'production'
+  ? 'https://grupoeuroandino.com/app/panel/api/'
+  : 'http://127.0.0.1:8000/api/'
+
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',
+  baseURL: urlBase,
   headers: {
     'Accept': 'application/json',
   }

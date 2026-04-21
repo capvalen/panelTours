@@ -5,7 +5,7 @@
       
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="email">Correo Electrónico</label>
+          <label for="email">Usuario</label>
           <input
             id="email"
             v-model="form.email"

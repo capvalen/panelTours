@@ -24,9 +24,10 @@ const filteredVentas = computed(() => {
 			(v.cliente?.dni || '').toLowerCase().includes(t) ||
 			(v.cliente?.ruc || '').toLowerCase().includes(t) ||
 			(v.cliente?.razon_social || '').toLowerCase().includes(t) ||
+			(v.cliente?.apellidos || '').toLowerCase().includes(t) ||
 			(v.cliente?.nombres || '').toLowerCase().includes(t) ||
-			(v.cliente?.celular || '').toLowerCase().includes(t) ||
-			(v.concepto || '').toLowerCase().includes(t)
+			(v.departamento?.departamento || '').toLowerCase().includes(t) ||
+			(v.ciudad || '').toLowerCase().includes(t)
 		);
 	}
 
@@ -52,20 +53,21 @@ const buscar = () => {
 		ventaStore.buscar(search.value);
 	}
 };
-
-const estadoBadgeClass = (estado) => {
-	const map = {
-		'pagado': 'bg-success',
-		'pendiente': 'bg-warning text-dark',
-		'con adelanto': 'bg-warning text-dark',
-		'cancelado': 'bg-danger',
-	};
-	return map[estado?.toLowerCase()] || 'bg-secondary';
-};
-
 const tipoBadgeClass = (tipo) => {
-	return tipo?.toLowerCase() === 'cotización' ? 'bg-warning text-dark' : 'bg-success';
+	return tipo?.toLowerCase() === 'cotización' ? 'border-warning text-warning' : 'border-success text-success';
 };
+const estadoBadgePago = (estado) => {
+	const map = {
+		'completo': 'border-success text-success',
+		'pagado': 'border-success text-success',
+		'pendiente': 'border-warning text-warning',
+		'con adelantar': 'border-warning text-warning',
+		'cancelado': 'border-danger text-danger',
+		'anulado': 'border-danger text-danger',
+	};
+	return map[estado?.toLowerCase()] || 'border-secondary text-secondary';
+};
+
 
 // Extrae los tipos únicos de items y los formatea como "ida" o "ida y vuelta"
 const formatoServicio = (items) => {
@@ -94,6 +96,21 @@ const formatoConcepto = (items) => {
 	return 'varios items';
 };
 
+const anularVenta = async (id, concepto) => {
+	const result = await Swal.fire({
+		title: '¿Anular venta?',
+		text: `Se anulará el servicio "${concepto}"`,
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, anular',
+		cancelButtonText: 'Cancelar',
+		confirmButtonColor: '#d33',
+	});
+	if (result.isConfirmed) {
+		await ventaStore.anular(id);
+		Swal.fire('Eliminado', 'Venta anulada', 'success');
+	}
+};
 const eliminarVenta = async (id, concepto) => {
 	const result = await Swal.fire({
 		title: '¿Eliminar venta?',
@@ -101,17 +118,39 @@ const eliminarVenta = async (id, concepto) => {
 		icon: 'warning',
 		showCancelButton: true,
 		confirmButtonText: 'Sí, eliminar',
-		cancelButtonText: 'Cancelar'
+		cancelButtonText: 'Cancelar',
+		confirmButtonColor: '#d33'
 	});
 	if (result.isConfirmed) {
 		await ventaStore.eliminar(id);
 		Swal.fire('Eliminado', 'Venta eliminada correctamente', 'success');
 	}
 };
+const promoverVenta = async (index)=>{
+	const result = await Swal.fire({
+		title: `¿Desea promover la ${filteredVentas.value[index].tipo}?`,
+		text: `Deseas promover: ${formatoServicio(filteredVentas.value[index].items)} - ${formatoConcepto(filteredVentas.value[index].items)}`,
+		icon: 'success',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, promover',
+		cancelButtonText: 'Cancelar'
+	});
+	if (result.isConfirmed) {
+		await ventaStore.eliminar(id);
+		Swal.fire('Eliminado', 'Venta eliminada correctamente', 'success');
+	}
+}
 </script>
 
 <template>
 	<h1>Panel de ventas y reservas</h1>
+	<nav aria-label="breadcrumb" style="content: '\F285';">
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
+			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Rutas de Servicio</a></li>
+			<li class="breadcrumb-item active" aria-current="page">Ventas y Cotizaciones</li>
+		</ol>
+	</nav>
 
 	<div class="row">
 		<div class="col-md-12">
@@ -121,7 +160,7 @@ const eliminarVenta = async (id, concepto) => {
 					<div class="row">
 						<div class="col">
 							<div class="input-group">
-								<input type="text" class="form-control" placeholder="DNI, RUC, Razón social, Nombres o celular" v-model="search">
+								<input type="text" class="form-control" placeholder="RUC, Razón social, Ciudad" v-model="search">
 								<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 							</div>
 						</div>
@@ -130,7 +169,6 @@ const eliminarVenta = async (id, concepto) => {
 								<option value="todos">Todas las categorías</option>
 								<option value="venta">Ventas</option>
 								<option value="cotización">Cotizaciones</option>
-
 							</select>
 						</div>
 						<div class="col-md-2">
@@ -153,8 +191,9 @@ const eliminarVenta = async (id, concepto) => {
 						<th>#</th>
 						<th>Tipo</th>
 						<th>Fecha de registro</th>
-						<th>Servicio</th>
+						<th>Categorías</th>
 						<th>N° Personas</th>
+						<th>Departamento - Ciudad</th>
 						<th>Concepto</th>
 						<th>Cliente</th>
 						<th>Monto</th>
@@ -166,7 +205,7 @@ const eliminarVenta = async (id, concepto) => {
 					<tr v-for="(venta, index) in filteredVentas" :key="venta.id">
 						<td>{{ index + 1 }}</td>
 						<td>
-							<span class="badge" :class="tipoBadgeClass(venta.tipo)">
+							<span class="badge border" :class="tipoBadgeClass(venta.tipo)">
 								{{ capitalize(venta.tipo) }}
 							</span>
 						</td>
@@ -176,7 +215,8 @@ const eliminarVenta = async (id, concepto) => {
 							</router-link>
 						</td>
 						<td>{{ formatoServicio(venta.items) }}</td>
-						<td>{{ venta.nro_clientes || 0 }}</td>
+						<td>{{ venta.personas || 0 }}</td>
+						<td>{{ venta.departamento?.departamento }} {{ venta.ciudad ? ' - '+venta.ciudad : '' }}</td>
 						<td>{{ capitalize(formatoConcepto(venta.items)) }}</td>
 						<td>
 							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
@@ -186,14 +226,23 @@ const eliminarVenta = async (id, concepto) => {
 						</td>
 						<td>{{ formatMoneda(venta.precio) }}</td>
 						<td>
-							<span class="badge text-capitalize" :class="estadoBadgeClass(venta.estado_pago)">
+							<span class="badge border text-capitalize" :class="estadoBadgePago(venta.estado_pago)">
 								{{ venta.estado_pago || '-' }}
 							</span>
 						</td>
 						<td>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)">
-								<i class="bi bi-trash"></i>
-							</button>
+							<div class="d-flex gap-2" v-if="venta.estado != 'anulado'">
+								<button class="btn btn-sm btn-outline-success" @click="promoverVenta(index)" title="Promover">
+									<i class="bi bi-arrow-up"></i>
+								</button>
+								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
+									<i class="bi bi-ban"></i>
+								</button>
+								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)">
+									<i class="bi bi-trash"></i>
+								</button>
+							</div>
+							<p v-else class="text-danger"><small>Anulado</small></p>
 						</td>
 					</tr>
 					<tr v-if="ventaStore.ventas.length === 0">

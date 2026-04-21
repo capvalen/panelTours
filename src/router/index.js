@@ -160,6 +160,11 @@ const router = createRouter({
 					component: () => import('../views/Tarifario/Tarifario.vue'),
 				},
 				{
+					path: '/rutas-de-servicio',
+					name: 'RutasDeServicio',
+					component: () => import('../views/Ventas/RutaVentas.vue'),
+				},
+				{
 					path: '/ventas',
 					name: 'Ventas',
 					component: () => import('../views/Ventas/VentasView.vue'),

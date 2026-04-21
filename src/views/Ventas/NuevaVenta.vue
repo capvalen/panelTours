@@ -315,7 +315,8 @@ const guardarVenta = async () => {
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-			<li class="breadcrumb-item"><a href="/proveedores">Ventas</a></li>
+			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Rutas de Servicio</a></li>
+			<li class="breadcrumb-item"><a href="/ventas">Ventas y cotizaciones</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Nueva venta</li>
 		</ol>
 	</nav>
