@@ -89,7 +89,7 @@ onMounted(() => {
 						<td>{{ hospedaje.correo }}</td>
 						<td class="d-flex gap-2">
 							<router-link :to="{ name: 'editarHospedaje', params: { id: hospedaje.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarHospedaje(hospedaje.id, hospedaje.hospedaje)"><i class="bi bi-trash"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarHospedaje(hospedaje.id, hospedaje.hospedaje)"><i class="bi bi-folder-x"></i></button>
 						</td>
 					</tr>
 				</tbody>

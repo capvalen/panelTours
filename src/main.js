@@ -3,6 +3,8 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+
 //importando dayjs
 import dayjs from 'dayjs'
 import 'dayjs/locale/es'
@@ -16,6 +18,10 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const pinia = createPinia()
 const app = createApp(App)
+
+//config pinia persistente
+pinia.use(piniaPluginPersistedstate)
+
 //config dayjs
 dayjs.extend(relativeTime)
 dayjs.locale('es')

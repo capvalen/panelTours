@@ -53,25 +53,33 @@ watch(
 		</div>
 	</div>
 
-	<div class="row rows-2">
-		<div class="col">
-			<div class="card">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Detalle del hospedaje</strong></p>
+					<p><strong>🏨 Detalle del hospedaje</strong></p>
 					<p><strong>RUC:</strong> {{ hospedajeActual?.ruc ?? 'Sin documento' }}</p>
 					<p><strong>Nombre:</strong> {{ hospedajeActual?.hospedaje }}</p>
 					<p><strong>Dirección:</strong> {{ hospedajeActual?.direccion }}</p>
 					<p><strong>Departamento:</strong> {{ nombreDepartamento }}</p>
+				</div>
+			</div>
+			<div class="card mb-3">
+				<div class="card-body">
+					<p><strong>📞 Contacto</strong></p>
 					<p><strong>Contacto:</strong> {{ hospedajeActual?.contacto }}</p>
 					<p><strong>Celular:</strong> {{ hospedajeActual?.celular }}</p>
 					<p><strong>Correo:</strong> {{ hospedajeActual?.correo }}</p>
 				</div>
 			</div>
+			
 		</div>
-		<div class="col">
-			<div class="card">
+		<div class="col-md-6">
+			
+
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Servicios incluidos</strong></p>
+					<p><strong>🛎️ Servicios incluidos</strong></p>
 					<p><strong>Desayuno:</strong> {{ hospedajeActual?.incluye_desayuno ? 'Sí' : 'No' }}</p>
 					<p><strong>Estacionamiento:</strong> {{ hospedajeActual?.incluye_estacionamiento ? 'Sí' : 'No' }}</p>
 					<p><strong>WiFi:</strong> {{ hospedajeActual?.incluye_wifi ? 'Sí' : 'No' }}</p>
@@ -80,17 +88,26 @@ watch(
 				</div>
 			</div>
 
-			<div class="card mt-3">
-				<div class="card-body">
-					<p><strong>Documentación</strong></p>
-
+			<div class="card mb-3">
+				<div class="card-header bg-dark text-white">
+					<strong>📎 Archivos adjuntos ({{ hospedajeActual?.archivos?.length }})</strong>
+				</div>
+				<div class="card-body p-0">
 					<ul class="list-group list-group-flush">
-						<li class="list-group-item" v-for="(archivo, index) in hospedajeActual?.archivos" :key="archivo.link">
-							<div class="d-flex w-100 justify-content-between">
-								<span>{{ index + 1 }}. <a :href="rutaArchivo(archivo?.link)" target='_blank'> {{ archivo?.nombre || 'Archivo sin nombre' }}</a></span>
+						<li class="list-group-item" v-for="(archivo, index) in hospedajeActual?.archivos" :key="index">
+							<div class="d-flex justify-content-between align-items-center">
+								<span>
+									📁 {{ index + 1 }}.
+									<a :href="rutaArchivo(archivo?.link)" target="_blank">
+										{{ archivo?.nombre || 'Archivo sin nombre' }}
+									</a>
+								</span>
+								<small class="text-muted">{{ archivo?.fecha }}</small>
 							</div>
 						</li>
-						<li class="list-group-item" v-if="!hospedajeActual?.archivos || hospedajeActual?.archivos.length === 0">No hay archivos adjuntos</li>
+						<li class="list-group-item text-muted" v-if="!hospedajeActual?.archivos || hospedajeActual?.archivos.length === 0">
+							No hay archivos adjuntos
+						</li>
 					</ul>
 				</div>
 			</div>

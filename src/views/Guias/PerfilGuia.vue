@@ -52,10 +52,10 @@ watch(
 	</div>
 
 	<div class="row">
-		<div class="col">
-			<div class="card">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Datos personales</strong></p>
+					<p><strong>🧑 Datos personales</strong></p>
 					<p><strong>DNI:</strong> {{ guiaActual?.dni ?? 'Sin documento' }}</p>
 					<p><strong>Nombre:</strong> {{ guiaActual?.nombre }}</p>
 					<p><strong>Celular:</strong> {{ guiaActual?.celular }}</p>
@@ -64,10 +64,10 @@ watch(
 				</div>
 			</div>
 		</div>
-		<div class="col">
-			<div class="card">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Información profesional</strong></p>
+					<p><strong>💼 Información profesional</strong></p>
 					<p><strong>Especialidad:</strong> {{ guiaActual?.especialidad || '-' }}</p>
 					<p><strong>Idiomas:</strong> {{ guiaActual?.idiomas || '-' }}</p>
 				</div>

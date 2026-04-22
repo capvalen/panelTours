@@ -65,7 +65,7 @@ watch(searchText, (value) => {
 		</div>
 		<div class="col">
 			<label class="form-label">Cantidad de pasajeros</label>
-			<input type="number" class="form-control" v-model.number="item.cantidad_pasajeros" min="0">
+			<input type="number" class="form-control" v-model.number="item.pasajeros" min="1">
 		</div>
 		<div class="col">
 			<label class="form-label">Fecha de inicio <span class="text-danger">*</span></label>

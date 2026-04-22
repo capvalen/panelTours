@@ -11,10 +11,12 @@ import HospedajeItem from './components/HospedajeItem.vue';
 import TransporteItem from './components/VehiculoItem.vue';
 import TourItem from './components/TourItem.vue';
 import VueloItem from './components/VueloItem.vue';
+import { useAuthStore } from '@/stores/auth'
 
 const clienteStore = useClienteStore();
 const vehiculoStore = useVehiculosStore();
 const guiasStore = useGuiasStore();
+const authStore = useAuthStore();
 
 const { formatHoy } = useFormat();
 
@@ -27,8 +29,11 @@ const venta = reactive({
 	fecha: formatHoy(),
 	precio: 0,
 	idServicio: 1,
+	personas: 1,
 	motivo_descuento: '',
 	descuento: 0,
+	created_at: formatHoy(),
+	usuario_id: authStore.user?.id,
 });
 
 const items = ref([
@@ -55,8 +60,8 @@ const nuevoItem = {
 		tipo_servicio: 'carta',
 		turno: null,
 		espacio: null,
-		numero_personas: 0,
-		fecha_reserva: null,
+		get numero_personas() { return venta.personas || 1 },
+		get fecha_reserva() { return venta.fecha || 1 },
 		hora_reserva: null,
 		pedido_especial: null,
 		precio:0
@@ -66,24 +71,24 @@ const nuevoItem = {
 		guia_id: null,
 		guia_nombre: '',
 		ruta: '',
-		fecha: null,
+		get fecha() { return venta.fecha || 1 },
 		hora: null,
 		lugar_encuentro: null,
 		precio: 0,
 		duracion_horas:0,
 		tipo_servicio: 'privado',
-		cantidad_personas: 0,		
+		get cantidad_personas() { return venta.personas || 1 },
 		pedido_especial: null
 	},
 	'hospedaje':{
 		tipo: 'hospedaje',
 		tipo_habitacion: 'simple',		
-		fecha_ingreso: null,
+		get fecha_ingreso() { return venta.fecha || 1 },
 		fecha_salida: null,
 		hora_ingreso: null,
 		hora_salida: null,
 		cantidad_noches: 0,
-		cantidad_adultos: 0,
+		get cantidad_adultos() { return venta.personas || 1 },
 		cantidad_ninos: 0,
 		precio_por_noche:0,
 		precio:0,
@@ -96,10 +101,11 @@ const nuevoItem = {
 		origen:'', destino:'',
 		vehiculo_id:null,
 		vehiculo_nombre:'',
-		fecha_inicio: null,
+		get fecha_inicio() { return venta.fecha || 1 },
 		fecha_fin: null,
 		hora_recogida: null,
 		hora_devolucion: null,
+		get pasajeros() { return venta.personas || 1 },
 		precio: 0,
 		observaciones: '',
 	},
@@ -109,10 +115,10 @@ const nuevoItem = {
 		nombre_tour: null,
 		tipo_tour:null,
 		descripcion:null,
-		fecha_salida:null,
+		get fecha_salida() { return venta.fecha || 1 },
 		fecha_retorno:null,
-		cantidad_personas:0,
-		cantidad_adultos: 0,
+		get cantidad_personas() { return venta.personas || 1 },
+		get cantidad_adultos() { return venta.personas || 1 },
 		cantidad_ninos: 0,
 		peruanos_adultos: 0,
 		peruanos_kids: 0,
@@ -132,7 +138,7 @@ const nuevoItem = {
 		tipo:'vuelo',
 		origen: '',
 		destino: '',
-		pasajeros: 0,
+		get pasajeros() { return venta.personas || 1 },
 		lleva_equipaje: 0,
 		kilos: null,
 		que_equipaje: '',
@@ -140,7 +146,7 @@ const nuevoItem = {
 		precio_dolares: 0,
 		precio:0,
 		aerolinea: null,
-		fecha_salida: null,
+		get fecha_salida() { return venta.fecha || 1 },
 		fecha_llegada: null,
 		hora_salida: null,
 		horario_llegada: null,
@@ -329,7 +335,7 @@ const guardarVenta = async () => {
 					<div class="row row-cols-4">
 						<div class="col">
 							<label for="usuario" class="form-label">Usuario</label>
-							<input type="text" class="form-control" id="usuario" value="Úrsula" disabled>
+							<input type="text" class="form-control" id="usuario" :value="authStore.user?.nombre" disabled>
 						</div>
 						<div class="col">
 							<label for="usuario" class="form-label">Tipo</label>
@@ -340,7 +346,7 @@ const guardarVenta = async () => {
 						</div>
 						<div class="col">
 							<label for="txtFecha" class="form-label">Fecha</label>
-							<input type="date" class="form-control" id="txtFecha" v-model="venta.fecha">
+							<input type="date" class="form-control" id="txtFecha" v-model="venta.created_at">
 						</div>
 
 						<div class="w-100"></div>
@@ -375,7 +381,7 @@ const guardarVenta = async () => {
 			</div>
 			<div class="card">
 				<div class="card-body">
-					<h6 class="card-title">Datos de extras</h6>
+					<h6 class="card-title">Datos generales</h6>
 					<div class="row row-cols-4">
 						<div class="col">
 							<label for="nacionalidad" class="form-label">Nacionalidad</label>
@@ -386,25 +392,13 @@ const guardarVenta = async () => {
 						</div>
 						<div class="col">
 							<label for="usuario" class="form-label">N° de pasajeros</label>
-							<input type="number" class="form-control" id="usuario" v-model.number="items[0].nro_clientes" min="0">
+							<input type="number" class="form-control" id="usuario" v-model.number="venta.personas" min="0">
 						</div>
 						<div class="col">
 							<label for="txtFechaInicial" class="form-label">Fecha inicial</label>
-							<input type="date" class="form-control" id="txtFechaInicial" value="2025-01-05">
+							<input type="date" class="form-control" id="txtFechaInicial" v-model="venta.fecha">
 						</div>
-						<div class="col">
-							<label for="txtFechaFinal" class="form-label">Fecha final</label>
-							<div class="d-flex align-items-center gap-2">
-								<input type="date" class="form-control" id="txtFechaFinal" value="2025-01-05" v-show="conFechaFinal">
-								<div class="form-check" style="min-width: fit-content;">
-									<input type="checkbox" class="form-check-input" id="chkConFechaFinal" v-model="conFechaFinal">
-									<label class="form-check-label" for="chkConFechaFinal">{{ conFechaFinal ? 'Sí hay fecha final' : 'No hay fecha final' }}</label>
-								</div>
-							</div>
-						</div>
-
 					</div>
-
 				</div>
 			</div>
 
@@ -417,7 +411,7 @@ const guardarVenta = async () => {
 							<div class="d-flex justify-content-between align-items-center mb-3">
 								<h6 class="mb-0 text-capitalize"> {{ getItemIcon(item.tipo) }} #{{ index + 1 }}: {{ item.tipo }}</h6>
 								<button class="btn btn-sm btn-danger" @click="canasta.splice(index, 1)">
-									<i class="bi bi-trash"></i> Eliminar
+									<i class="bi bi-folder-x"></i> Eliminar
 								</button>
 							</div>
 

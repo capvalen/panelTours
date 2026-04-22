@@ -239,7 +239,7 @@ const promoverVenta = async (index)=>{
 									<i class="bi bi-ban"></i>
 								</button>
 								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)">
-									<i class="bi bi-trash"></i>
+									<i class="bi bi-folder-x"></i>
 								</button>
 							</div>
 							<p v-else class="text-danger"><small>Anulado</small></p>

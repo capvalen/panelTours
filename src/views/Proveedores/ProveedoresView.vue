@@ -98,7 +98,7 @@ onMounted(() => {
 						<td class="text-capitalize">{{ proveedor.categoria }}</td>
 						<td class="d-flex gap-2" v-if="proveedor.id != 1">
 							<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-trash"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-folder-x"></i></button>
 						</td>
 					</tr>					
 				</tbody>

@@ -45,7 +45,9 @@
 				<router-link to="/rutas-de-servicio" :class="{ active: $route.path.startsWith('/venta') }">
 					<div class="menuFila"><i class="bi bi-cart"></i> Rutas del servicio</div>
 				</router-link>
-				<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
+				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
+					<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
+				</router-link>
 				<router-link to="/recordatorios">
 					<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
 				</router-link>
@@ -93,7 +95,9 @@
 					<router-link to="/ventas" class="menuFila-mobile" data-bs-dismiss="offcanvas">
 						<i class="bi bi-cart"></i> Ventas y reservas
 					</router-link>
-					<div class="menuFila-mobile"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
+					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+						<i class="bi bi-journal-bookmark"></i> Control de pagos
+					</router-link>
 					<router-link to="/recordatorios" class="menuFila-mobile" data-bs-dismiss="offcanvas">
 						<i class="bi bi-stars"></i> Recordatorios
 					</router-link>
@@ -110,7 +114,7 @@
 
 			<!-- Contenido principal -->
 			<div class="col-md-9 col-lg-10 pt-3">
-				<router-view class="container"></router-view>
+				<router-view class="container-fluid"></router-view>
 			</div>
 		</div>
 	</div>

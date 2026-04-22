@@ -83,42 +83,59 @@ watch(
 		</div>
 	</div>
 
-	<div class="row rows-2">
-		<div class="col">
-			<div class="card">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Detalle del proveedor</strong></p>
-					<p><strong>RUC:</strong> {{proveedorActual?.ruc}}</p>
-					<p><strong>Razón Social:</strong> {{proveedorActual?.razon_social}}</p>
-					<p><strong>Categoría:</strong> <span class="text-capitalize">{{proveedorActual?.categoria}}</span></p>
-					<p><strong>Contacto:</strong> {{proveedorActual?.contacto}}</p>
-					<p><strong>Correo:</strong> {{proveedorActual?.correo}}</p>
-					<p><strong>Celular:</strong> {{proveedorActual?.celular}}</p>
-					<p><strong>Dirección:</strong> {{proveedorActual?.direccion}}</p>
-					<p><strong>Ciudad:</strong> {{proveedorActual?.ciudad}}</p>
+					<p><strong>📋 Datos del proveedor</strong></p>
+					<p><strong>RUC:</strong> {{ proveedorActual?.ruc }}</p>
+					<p><strong>Razón Social:</strong> {{ proveedorActual?.razon_social }}</p>
+					<p><strong>Categoría:</strong> <span class="text-capitalize">{{ proveedorActual?.categoria }}</span></p>
 				</div>
 			</div>
 
-		</div>
-		<div class="col">
-			<div class="card">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Documentación </strong></p>
-					<p><strong>Cuenta bancaria:</strong> {{proveedorActual?.banco || 'Ninguno'}}</p>
-					<p><strong># de Cuenta:</strong> {{proveedorActual?.numero_cuenta}}</p>
-					<p><strong>Dato extra:</strong> {{proveedorActual?.observaciones || '-'}}</p>
+					<p><strong>📞 Contacto</strong></p>
+					<p><strong>Contacto:</strong> {{ proveedorActual?.contacto }}</p>
+					<p><strong>Correo:</strong> {{ proveedorActual?.correo }}</p>
+					<p><strong>Celular:</strong> {{ proveedorActual?.celular }}</p>
+					<p><strong>Dirección:</strong> {{ proveedorActual?.direccion }}</p>
+					<p><strong>Ciudad:</strong> {{ proveedorActual?.ciudad }}</p>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="card mb-3">
+				<div class="card-body">
+					<p><strong>🏦 Datos bancarios</strong></p>
+					<p><strong>Cuenta bancaria:</strong> {{ proveedorActual?.banco || 'Ninguno' }}</p>
+					<p><strong># de Cuenta:</strong> {{ proveedorActual?.numero_cuenta }}</p>
+					<p><strong>Observaciones:</strong> {{ proveedorActual?.observaciones || '-' }}</p>
+				</div>
+			</div>
 
-
-					<ul class="list-group list-group-flush ">
-						<li class="list-group-item" v-for="(archivo, index) in proveedorActual?.archivos" :key="archivo.link">
-							<div class="d-flex w-100 justify-content-between">
-								<span class="text-capitalize">{{ index+1 }}. <a :href="rutaArchivo(archivo?.link)" target='_blank'> {{ archivo?.nombre || 'Archivo sin nombre' }}</a></span>
-								<button class="btn btn-outline-danger border-0 rounded-circle" @click="eliminarAdjunto(index)"><i class="bi bi-x"></i></button>
+			<div class="card mb-3">
+				<div class="card-header bg-dark text-white">
+					<strong>📎 Archivos adjuntos ({{ proveedorActual?.archivos?.length }})</strong>
+				</div>
+				<div class="card-body p-0">
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item" v-for="(archivo, index) in proveedorActual?.archivos" :key="index">
+							<div class="d-flex justify-content-between align-items-center">
+								<span>
+									📁 {{ index + 1 }}.
+									<a :href="rutaArchivo(archivo?.link)" target="_blank">
+										{{ archivo?.nombre || 'Archivo sin nombre' }}
+									</a>
+								</span>
+								<small class="text-muted">{{ archivo?.fecha }}</small>
 							</div>
 						</li>
-						<li class="list-group-item" v-if="!proveedorActual?.archivos || proveedorActual?.archivos.length === 0">No hay archivos adjuntos</li>
+						<li class="list-group-item text-muted" v-if="!proveedorActual?.archivos || proveedorActual?.archivos.length === 0">
+							No hay archivos adjuntos
+						</li>
 					</ul>
-
 				</div>
 			</div>
 		</div>

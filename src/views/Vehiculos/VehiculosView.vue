@@ -87,7 +87,7 @@ onMounted(() => {
 						<td class="text-capitalize">{{ vehiculo.tipo_combustible }}</td>
 						<td class="d-flex gap-2">
 							<router-link :to="{ name: 'editarVehiculo', params: { id: vehiculo.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarVehiculo(vehiculo.id, vehiculo.placa, vehiculo.nombre_conductor)"><i class="bi bi-trash"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarVehiculo(vehiculo.id, vehiculo.placa, vehiculo.nombre_conductor)"><i class="bi bi-folder-x"></i></button>
 						</td>
 					</tr>
 				</tbody>

@@ -52,8 +52,27 @@ async function  guardarCliente() {
 		return
 	}
 	const resp = await clienteStore.actualizarCliente(nuevo)
-	if(await resp)
-		Swal.fire('Cliente actualizado', 'Los datos del cliente han sido actualizados', 'success')
+	if(await resp){
+		Swal.fire({
+			title: 'Cliente actualizado',
+			text: 'Los datos del cliente han sido actualizados',
+			icon: 'success',
+			timer: 5000, // 5 segundos
+			timerProgressBar: true,
+			showConfirmButton: true,
+			confirmButtonText: 'Aceptar'
+		}).then((result) => {
+			// Redirige al hacer clic en Aceptar
+			if (result.isConfirmed) {
+				window.location.href = '/cliente/perfil/'+nuevo.id;
+			}
+		});
+
+		// Redirige automáticamente después de 5 segundos
+		setTimeout(() => {
+			window.location.href = '/cliente/perfil/'+nuevo.id;
+		}, 5000);
+	}
 	else
 		Swal.fire('Error', 'Error al actualizar cliente', 'error')
 }
@@ -190,7 +209,7 @@ const cambioVisado = () => {
 								<option value="visitante">Visitante</option>
 							</select>
 						</div>
-						<div class="col-md-8">
+						<div class="col-md-8 mb-3">
 							<label for="pasaporte" class="form-label">Fecha de visado</label>
 							<input type="text" class="form-control" id="fecha_visa" v-model="nuevo.valido_visa" placeholder="Válido hasta">
 						</div>

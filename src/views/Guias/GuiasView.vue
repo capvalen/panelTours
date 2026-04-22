@@ -91,7 +91,7 @@ onMounted(() => {
 						<td class="text-capitalize">{{ guia.idiomas }}</td>
 						<td class="d-flex gap-2">
 							<router-link :to="{ name: 'editarGuia', params: { id: guia.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarGuia(guia.id, guia.nombre)"><i class="bi bi-trash"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarGuia(guia.id, guia.nombre)"><i class="bi bi-folder-x"></i></button>
 						</td>
 					</tr>
 				</tbody>

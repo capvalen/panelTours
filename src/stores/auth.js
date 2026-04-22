@@ -47,5 +47,13 @@ export const useAuthStore = defineStore('auth', () => {
     setToken,
     logout,
     login
-  }
+	}
+},
+{
+	// 🔥 El plugin se encarga de todo automáticamente
+	persist: {
+		key: 'auth-storage',
+		storage: localStorage,
+		paths: ['user', 'token']
+	}
 })

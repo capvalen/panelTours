@@ -58,70 +58,124 @@ watch(
 		</div>
 	</div>
 
-	<div class="row rows-2">
-		<div class="col">
-			<div class="card">
+	<div class="row">
+		<!-- Columna izquierda: Datos personales / empresa -->
+		<div class="col-md-6">
+			<div class="card mb-3">
+				
 				<div class="card-body">
-					<p><strong>Detalle del cliente</strong></p>
-					<div if="clienteActual.apellidos">
-						<p><strong>Nombres:</strong> {{clienteActual.nombres}}</p>
-						<p><strong>Apellidos:</strong> {{clienteActual.apellidos}}</p>
-						<p><strong>DNI:</strong> {{clienteActual.dni}}</p>
+					<p><strong>🧑 Datos personales</strong></p>
+
+					<!-- Persona natural -->
+					<div v-if="clienteActual.apellidos">
+						<p><strong>Nombres:</strong> {{ clienteActual.nombres }}</p>
+						<p><strong>Apellidos:</strong> {{ clienteActual.apellidos }}</p>
+						<p><strong>DNI:</strong> {{ clienteActual.dni }}</p>
 					</div>
+
+					<!-- Persona jurídica -->
 					<div v-if="clienteActual.razon_social">
-						<p><strong>Razón Social:</strong> {{clienteActual.razon_social}}</p>
-						<p><strong>RUC:</strong> {{clienteActual.ruc}}</p>
+						<p><strong>Razón Social:</strong> {{ clienteActual.razon_social }}</p>
+						<p><strong>RUC:</strong> {{ clienteActual.ruc }}</p>
 					</div>
-					<p><strong>Fecha de Nacimiento:</strong> {{fechaLatamSimple(clienteActual.fecha_nacimiento)}}</p>
-					<p><strong>Correo:</strong> {{clienteActual.correo}}</p>
-					<p><strong>Celular:</strong> {{clienteActual.celular}}</p>
-					<p><strong>Teléfono:</strong> {{clienteActual.telefono}}</p>
-					<p><strong>Dirección:</strong> {{clienteActual.direccion}}</p>
-					<p><strong>Nacionalidad:</strong> {{clienteActual.nacionalidad}}</p>
-					<p><strong>País/Ciudad:</strong> {{clienteActual.pais_origen}}</p>
+
+					<hr />
+
+					<p><strong> Fecha de Nacimiento:</strong> {{ fechaLatamSimple(clienteActual.fecha_nacimiento) }}</p>
+					<p><strong> Nacionalidad:</strong> {{ clienteActual.nacionalidad }}</p>
+					<p><strong> País/Ciudad:</strong> {{ clienteActual.pais_origen }}</p>
 				</div>
 			</div>
 
-		</div>
-		<div class="col">
-			<div class="card">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Documentación </strong></p>
-					<p><strong>Pasaporte:</strong> {{clienteActual.pasaporte}} (vigencia: {{fechaLatamSimple(clienteActual.pasaporte_vigencia) || 'sin dato'}})</p>
-					<p><strong>Visado:</strong> <span class="text-capitalize">{{clienteActual.tipo_visado}}</span> (válido hasta: {{fechaLatamSimple(clienteActual.calido_vigencia) || 'sin dato'}})</p>
-					<p><strong>Vacunación: </strong> ({{ vacunas?.length }})</p>
-					<ul>
-						<li class="text-capitalize" v-for="vacuna in vacunas">
-							{{vacuna?.certificado}} - {{fechaLatamSimple(vacuna?.fecha)}}
+					<p><strong>📞 Contacto</strong></p>
+					<p><strong>Correo:</strong> {{ clienteActual.correo }}</p>
+					<p><strong>Celular:</strong> {{ clienteActual.celular }}</p>
+					<p><strong>Teléfono:</strong> {{ clienteActual.telefono }}</p>
+					<p><strong>Dirección:</strong> {{ clienteActual.direccion }}</p>
+				</div>
+			</div>
+		</div>
+
+		<!-- Columna derecha: Documentación y archivos -->
+		<div class="col-md-6">
+			<div class="card mb-3">
+				
+				<div class="card-body">
+					<p><strong>🛂 Documentación de viaje</strong></p>
+					<p><strong>Pasaporte:</strong> {{ clienteActual.pasaporte || 'No registrado' }}
+						<span v-if="clienteActual.pasaporte_vigencia">(vigencia:
+							{{ fechaLatamSimple(clienteActual.pasaporte_vigencia) }})</span>
+					</p>
+					<p><strong>Visado:</strong>
+						<span class="text-capitalize">{{ clienteActual.tipo_visado || 'No registrado' }}</span>
+						<span v-if="clienteActual.calido_vigencia">(válido hasta:
+							{{ fechaLatamSimple(clienteActual.calido_vigencia) }})</span>
+					</p>
+					<p><strong>Autorización de viaje:</strong>
+						<span class="text-capitalize">{{ clienteActual.autorizacion_viaje || 'No registrada' }}</span>
+					</p>
+				</div>
+			</div>
+
+			<div class="card mb-3">
+				<div class="card-header bg-success text-white">
+					<strong>💉 Vacunas ({{ vacunas?.length }})</strong>
+				</div>
+				<div class="card-body">
+					<ul v-if="vacunas?.length">
+						<li v-for="vacuna in vacunas" class="text-capitalize">
+							🩺 {{ vacuna?.certificado }} - {{ fechaLatamSimple(vacuna?.fecha) }}
 						</li>
 					</ul>
-					<p><strong>Seguros: </strong> ({{ seguros?.length }})</p>
-					<ul>
-						<li class="text-capitalize" v-for="seguro in seguros">
-							{{seguro?.seguro}} - {{fechaLatamSimple(seguro?.fecha)}}
+					<p v-else class="text-muted">Sin vacunas registradas</p>
+				</div>
+			</div>
+
+			<div class="card mb-3">
+				<div class="card-header bg-warning text-dark">
+					<strong>🛡️ Seguros ({{ seguros?.length }})</strong>
+				</div>
+				<div class="card-body">
+					<ul v-if="seguros?.length">
+						<li v-for="seguro in seguros" class="text-capitalize">
+							📄 {{ seguro?.seguro }} - {{ fechaLatamSimple(seguro?.fecha) }}
 						</li>
 					</ul>
-					
-					<p><strong>Autorización de viaje:</strong> <span class="text-capitalize">{{clienteActual.autorizacion_viaje}}</span></p>
-					<p><strong>Archivos adjuntos:</strong> ({{ archivos?.length }})</p>
+					<p v-else class="text-muted">Sin seguros registrados</p>
+				</div>
+			</div>
 
-
-					<ul class="list-group list-group-flush ">
-						<li class="list-group-item" v-for="(archivo,index) in archivos">
-							<div class="d-flex w-100 justify-content-between">
-								<span class="text-capitalize">{{ index+1 }}. <a :href="rutaArchivo(archivo?.link)" target='_blank'> {{ archivo?.nombre || 'Archivo sin nombre' }}</a></span>
-								<small>{{ archivo?.fecha }}</small>
-								<button class="btn btn-outline-danger border-0 rounded-circle" @click="eliminarAdjunto(index)"><i class="bi bi-x"></i></button>
+			<div class="card">
+				<div class="card-header bg-dark text-white">
+					<strong>📎 Archivos adjuntos ({{ archivos?.length }})</strong>
+				</div>
+				<div class="card-body p-0">
+					<ul class="list-group list-group-flush">
+						<li class="list-group-item" v-for="(archivo, index) in archivos" :key="index">
+							<div class="d-flex justify-content-between align-items-center">
+								<span>
+									📁 {{ index + 1 }}.
+									<a :href="rutaArchivo(archivo?.link)" target="_blank">
+										{{ archivo?.nombre || 'Archivo sin nombre' }}
+									</a>
+								</span>
+								<small class="text-muted">{{ archivo?.fecha }}</small>
+								<button class="btn btn-sm btn-outline-danger rounded-circle" @click="eliminarAdjunto(index)">
+									❌
+								</button>
 							</div>
 						</li>
-						<li class="list-group-item" v-if="!clienteActual?.archivos || clienteActual?.archivos.length === 0">No hay archivos adjuntos</li>
+						<li class="list-group-item text-muted" v-if="!archivos?.length">
+							No hay archivos adjuntos
+						</li>
 					</ul>
-
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="row mt-3">
+	<div class="row mt-3 mb-5">
 		<div class="col table-responsive">
 			<p><strong>Compras realizadas</strong></p>
 			<table class="table table-hover align-middle">

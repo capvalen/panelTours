@@ -46,11 +46,11 @@ watch(
 		</div>
 	</div>
 
-	<div class="row rows-2">
-		<div class="col">
-			<div class="card">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Detalle del vehículo</strong></p>
+					<p><strong>🚗 Detalle del vehículo</strong></p>
 					<p><strong>Tipo:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_vehiculo }}</span></p>
 					<p><strong>Placa:</strong> {{ vehiculoActual?.placa }}</p>
 					<p><strong>Combustible:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_combustible }}</span></p>
@@ -62,10 +62,10 @@ watch(
 				</div>
 			</div>
 		</div>
-		<div class="col">
-			<div class="card">
+		<div class="col-md-6">
+			<div class="card mb-3">
 				<div class="card-body">
-					<p><strong>Datos del conductor</strong></p>
+					<p><strong>👤 Datos del conductor</strong></p>
 					<p><strong>DNI:</strong> {{ vehiculoActual?.dni_conductor }}</p>
 					<p><strong>Nombre:</strong> {{ vehiculoActual?.nombre_conductor }}</p>
 					<p><strong>Licencia:</strong> {{ vehiculoActual?.licencia_conductor }}</p>
@@ -73,17 +73,26 @@ watch(
 				</div>
 			</div>
 
-			<div class="card mt-3">
-				<div class="card-body">
-					<p><strong>Documentación</strong></p>
-
+			<div class="card mb-3">
+				<div class="card-header bg-dark text-white">
+					<strong>📎 Archivos adjuntos ({{ vehiculoActual?.archivos?.length }})</strong>
+				</div>
+				<div class="card-body p-0">
 					<ul class="list-group list-group-flush">
-						<li class="list-group-item" v-for="(archivo, index) in vehiculoActual?.archivos" :key="archivo.link">
-							<div class="d-flex w-100 justify-content-between">
-								<span class="text-capitalize">{{ index + 1 }}. <a :href="rutaArchivo(archivo?.link)" target='_blank'> {{ archivo?.nombre || 'Archivo sin nombre' }}</a></span>
+						<li class="list-group-item" v-for="(archivo, index) in vehiculoActual?.archivos" :key="index">
+							<div class="d-flex justify-content-between align-items-center">
+								<span>
+									📁 {{ index + 1 }}.
+									<a :href="rutaArchivo(archivo?.link)" target="_blank">
+										{{ archivo?.nombre || 'Archivo sin nombre' }}
+									</a>
+								</span>
+								<small class="text-muted">{{ archivo?.fecha }}</small>
 							</div>
 						</li>
-						<li class="list-group-item" v-if="!vehiculoActual?.archivos || vehiculoActual?.archivos.length === 0">No hay archivos adjuntos</li>
+						<li class="list-group-item text-muted" v-if="!vehiculoActual?.archivos || vehiculoActual?.archivos.length === 0">
+							No hay archivos adjuntos
+						</li>
 					</ul>
 				</div>
 			</div>
