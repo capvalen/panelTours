@@ -75,8 +75,6 @@ watch(
 			
 		</div>
 		<div class="col-md-6">
-			
-
 			<div class="card mb-3">
 				<div class="card-body">
 					<p><strong>🛎️ Servicios incluidos</strong></p>

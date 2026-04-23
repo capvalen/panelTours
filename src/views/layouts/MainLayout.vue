@@ -43,7 +43,7 @@
 					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
 				</router-link>
 				<router-link to="/rutas-de-servicio" :class="{ active: $route.path.startsWith('/venta') }">
-					<div class="menuFila"><i class="bi bi-cart"></i> Rutas del servicio</div>
+					<div class="menuFila"><i class="bi bi-cart"></i> Ruta del servicio</div>
 				</router-link>
 				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
 					<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>

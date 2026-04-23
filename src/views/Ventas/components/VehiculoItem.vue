@@ -56,7 +56,7 @@ watch(searchText, (value) => {
 			<input type="text" class="form-control" v-model="item.conductor" disabled>
 		</div>
 		<div class="col">
-			<label class="form-label">Origen</label>
+			<label class="form-label">Origen <span class="text-danger">*</span></label>
 			<input type="text" class="form-control" v-model="item.origen">
 		</div>
 		<div class="col">

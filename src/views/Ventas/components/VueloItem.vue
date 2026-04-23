@@ -117,11 +117,11 @@ watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSa
 		</div>
 		<div class="col">
 			<label class="form-label">Precio <span class="text-danger">*</span></label>
-			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="0.01">
+			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
 		</div>
 		<div class="col">
 			<label class="form-label">Precio (USD)</label>
-			<input type="number" class="form-control" v-model.number="item.precio_dolares" min="0" step="0.01">
+			<input type="number" class="form-control" v-model.number="item.precio_dolares" min="0" step="1">
 		</div>
 
 		<div class="col-12">

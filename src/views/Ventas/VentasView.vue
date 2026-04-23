@@ -147,7 +147,7 @@ const promoverVenta = async (index)=>{
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Rutas de Servicio</a></li>
+			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Ruta de Servicio</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Ventas y Cotizaciones</li>
 		</ol>
 	</nav>

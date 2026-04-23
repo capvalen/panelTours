@@ -12,47 +12,42 @@ import TransporteItem from './components/VehiculoItem.vue';
 import TourItem from './components/TourItem.vue';
 import VueloItem from './components/VueloItem.vue';
 import { useAuthStore } from '@/stores/auth'
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { useVentasStore } from '@/stores/ventaStore';
 
 const clienteStore = useClienteStore();
 const vehiculoStore = useVehiculosStore();
 const guiasStore = useGuiasStore();
 const authStore = useAuthStore();
+const departametosStore = useDepartamentosStore()
+const ventaStore = useVentasStore()
 
-const { formatHoy } = useFormat();
+const { formatHoy, formatMoneda, capitalize } = useFormat();
 
 const venta = reactive({
 	cliente_id: '',
 	cliente_busqueda: '',
 	tipo: 'venta',
 	nacionalidad: 'peruano',
-	estado_pago: '',
+	estado_pago: 'pendiente',
 	fecha: formatHoy(),
 	precio: 0,
 	idServicio: 1,
 	personas: 1,
 	motivo_descuento: '',
 	descuento: 0,
+	departamento_id:null,
+	ciudad: '',
+	nivel:1,
 	created_at: formatHoy(),
 	usuario_id: authStore.user?.id,
 });
 
-const items = ref([
-	{
-		tipo: '',
-		nro_clientes: 0,
-		precio: 0,
-		descripcion: '',
-	}
-]);
 const canasta = ref([]);
+const venta_items = ref([])
 
 const clienteSeleccionado = ref(null);
 const tours = ref([]);
-const conFechaFinal = ref(false);
-
-const buscarCliente = () => {
-	// Función de búsqueda manual si se requiere
-};
 
 const nuevoItem = {
 	'restaurante': {
@@ -157,8 +152,14 @@ const nuevoItem = {
 
 };
 
+const eliminarItem=(index)=>{
+	canasta.splice(index, 1)
+	venta_items.splice(index, 1)
+}
+
+
 const addCanasta = (tipo) => {
-	canasta.value.push({ ...nuevoItem[tipo] });
+	canasta.value.push({...nuevoItem[tipo]});
 };
 
 const getItemIcon = (tipo) => {
@@ -205,6 +206,7 @@ onMounted(async () => {
 	await clienteStore.listarClientes();
 	await guiasStore.listar();
 	await vehiculoStore.listar();
+	await departametosStore.listar();
 
 	try {
 		const response = await fetch('https://grupoeuroandino.com/app/api/mostrarTours_todos.php');
@@ -214,17 +216,51 @@ onMounted(async () => {
 	}
 });
 
+const departamentoSeleccionado = computed(() => {
+	return departametosStore.departamentos.find(d => d.id === venta.departamento_id);
+});
+
+const filtrarDepartamentos = (event) => {
+	const valor = event.target.value.toLowerCase();
+	if (valor == '') {
+		venta.departamento_id = null;
+		return
+	}
+	const encontrado = departametosStore.departamentos.find(d =>
+		d.departamento.toLowerCase().includes(valor) || String(d.id) === valor
+	);
+	if (encontrado) {
+		venta.departamento_id = encontrado.id;
+	}
+};
+
+const calcularDescuento = ()=>{
+	if(venta.descuento >0 )
+		venta.precio -= venta.descuento
+	else{
+		venta.descuento = 0
+		venta.motivo_descuento = ''
+	}
+}
 const guardarVenta = async () => {
 	// Validar canasta vacía
 	if (canasta.value.length === 0) {
 		Swal.fire('Error', 'Debe rellenar items a la canasta', 'error');
 		return;
 	}
+	if (venta.precio <= 0) {
+		Swal.fire('Error', 'Revise los precios, la venta no puede ser ni 0 ni negativa', 'error');
+		return;
+	}
+	if (venta.descuento > 0 && venta.motivo_descuento == '') {
+		Swal.fire('Error', 'Debe ingresar un motivo de descuento', 'error');
+		return;
+	}
 
 	// Validar cada item de la canasta
 	for (const item of canasta.value) {
 		// Validación común: precio <= 0
-		if (!item.precio || item.precio <= 0) {
+		/* if (!item.precio || item.precio <= 0) {
 			Swal.fire('Error', 'Debe rellenar el precio de cada item mayor a cero', 'error');
 			return;
 		}
@@ -262,6 +298,10 @@ const guardarVenta = async () => {
 					Swal.fire('Error', 'Falta seleccionar un transporte', 'error');
 					return;
 				}
+				if (!item.origen ) {
+					Swal.fire('Error', 'Debe seleccionar una departamento, ciudad de origen', 'error');
+					return;
+				}
 				break;
 
 			case 'tour':
@@ -296,18 +336,36 @@ const guardarVenta = async () => {
 					return;
 				}
 				break;
-		}
+		} */
 	}
 
 	// Si todas las validaciones pasan, guardar la venta
 	try {
-		// TODO: Implementar la lógica para guardar la venta en el backend
-		// const response = await fetch('API_URL', {
-		// 	method: 'POST',
-		// 	headers: { 'Content-Type': 'application/json' },
-		// 	body: JSON.stringify({ venta, items: canasta.value })
-		// });
+		venta.cliente_id ??= 1
+		venta.cliente_id = venta.cliente_id || 1
+		venta_items.value = []
 		console.info('canasta:', canasta.value )
+		canasta.value.forEach(item=>{
+			var descripcion = ''
+			switch (item.tipo) {
+				case 'restaurante': descripcion = `Restaurant ${item.tipo_servicio ?? ''} ${item.turno ?? ''} - ${item.numero_personas} persona${item.numero_personas>1?'s':''}`; break;
+				case 'hospedaje': descripcion = `Hospedaje de habitación ${item.tipo_habitacion ?? ''} - ${item.cantidad_adultos} persona${item.cantidad_adultos>1?'s':''} - ${item.cantidad_noches} noche${item.cantidad_noches > 1 ? 's' : ''}`; break;
+				case 'vuelo': descripcion = `Vuelo ${item.origen} - ${item.destino} - ${item.aerolinea ? item.aerolinea+'- ':''}${item.pasajeros} pasajero${item.pasajeros >1?'s':''}`; break;
+				case 'transporte': descripcion = `Transporte de ${item.origen}${item.destino ? ` - ${item.destino}`: ''} - ${item.pasajeros} pasajero${item.pasajeros >1?'s':''}`; break;
+				case 'tour': descripcion = `${capitalize(item.tipo_tour)} ${item.nombre_tour} - ${item.cantidad_personas} persona${item.cantidad_personas >1?'s':''}`; break;
+				default: descripcion = ''; break;
+			}
+			venta_items.value.push({
+				tipo: item.tipo,
+				nro_clientes: item.numero_personas || item.cantidad_personas || item.cantidad_adultos || item.pasajeros || 0,
+				precio: item.precio,
+				descripcion: descripcion.replaceAll('  ', ' ')
+			})
+		})		
+		
+		const ventaCompleta = {venta, venta_items: venta_items.value, canasta: canasta.value}
+	
+		ventaStore.guardar(ventaCompleta)
 
 		Swal.fire('Éxito', 'Venta guardada', 'success');
 	} catch (error) {
@@ -321,7 +379,7 @@ const guardarVenta = async () => {
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Rutas de Servicio</a></li>
+			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Ruta de Servicio</a></li>
 			<li class="breadcrumb-item"><a href="/ventas">Ventas y cotizaciones</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Nueva venta</li>
 		</ol>
@@ -331,7 +389,7 @@ const guardarVenta = async () => {
 		<div class="col-10 mx-auto">
 			<div class="card">
 				<div class="card-body">
-					<h6 class="card-title">Datos básicos de la venta</h6>
+					<h6 class="card-title"><i class="bi bi-caret-right"></i> Datos básicos de la venta</h6>
 					<div class="row row-cols-4">
 						<div class="col">
 							<label for="usuario" class="form-label">Usuario</label>
@@ -344,14 +402,10 @@ const guardarVenta = async () => {
 								<option value="cotización">Cotización</option>
 							</select>
 						</div>
-						<div class="col">
-							<label for="txtFecha" class="form-label">Fecha</label>
-							<input type="date" class="form-control" id="txtFecha" v-model="venta.created_at">
-						</div>
 
 						<div class="w-100"></div>
 						<div class="col">
-							<label for="txtCliente" class="form-label">Buscar Cliente</label>
+							<label for="txtCliente" class="form-label">Buscar Cliente <span class="text-danger">*</span></label>
 							<input type="text" class="form-control" id="txtCliente" list="listaClientes"
 								v-model="venta.cliente_busqueda" @input="onClienteInput" placeholder="Buscar por nombre o DNI/RUC...">
 							<datalist id="listaClientes">
@@ -381,7 +435,7 @@ const guardarVenta = async () => {
 			</div>
 			<div class="card">
 				<div class="card-body">
-					<h6 class="card-title">Datos generales</h6>
+					<h6 class="card-title"><i class="bi bi-caret-right"></i> Datos generales</h6>
 					<div class="row row-cols-4">
 						<div class="col">
 							<label for="nacionalidad" class="form-label">Nacionalidad</label>
@@ -391,26 +445,41 @@ const guardarVenta = async () => {
 							</select>
 						</div>
 						<div class="col">
-							<label for="usuario" class="form-label">N° de pasajeros</label>
-							<input type="number" class="form-control" id="usuario" v-model.number="venta.personas" min="0">
+							<label for="txtPasajeros" class="form-label">N° de pasajeros <span class="text-danger">*</span></label>
+							<input type="number" class="form-control" id="txtPasajeros" v-model.number="venta.personas" min="0">
 						</div>
 						<div class="col">
-							<label for="txtFechaInicial" class="form-label">Fecha inicial</label>
+							<label for="txtFechaInicial" class="form-label">Fecha inicial <span class="text-danger">*</span></label>
 							<input type="date" class="form-control" id="txtFechaInicial" v-model="venta.fecha">
+						</div>
+						<div class="col">
+							<label for="txtDepartamento" class="form-label">Departamento destino <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" id="txtDepartamento" list="listaDepartamentos"
+								:placeholder="departamentoSeleccionado?.nombre || 'Buscar departamento...'"
+								@input="filtrarDepartamentos">
+							<datalist id="listaDepartamentos">
+								<option v-for="departamento in departametosStore.departamentos" :key="departamento.id" :value="departamento.nombre">
+									{{departamento.departamento}}
+								</option>
+							</datalist>
+						</div>
+						<div class="col">
+							<label for="txtCiudad" class="form-label">Ciudad</label>
+							<input type="text" class="form-control" id="txtCiudad" v-model="venta.ciudad">
 						</div>
 					</div>
 				</div>
 			</div>
 
 			<div>
-				<h6 class="card-title mb-3"> Canasta de items</h6>
+				<h6 class="card-title mb-3"><i class="bi bi-caret-right"></i> Canasta de items</h6>
 				<template v-if="canasta.length > 0">
 
 					<div class="card" id="divCanasta" v-for="(item, index) in canasta" :key="index">
 						<div class="card-body">
 							<div class="d-flex justify-content-between align-items-center mb-3">
 								<h6 class="mb-0 text-capitalize"> {{ getItemIcon(item.tipo) }} #{{ index + 1 }}: {{ item.tipo }}</h6>
-								<button class="btn btn-sm btn-danger" @click="canasta.splice(index, 1)">
+								<button class="btn btn-sm btn-danger" @click="eliminarItem(index)">
 									<i class="bi bi-folder-x"></i> Eliminar
 								</button>
 							</div>
@@ -418,8 +487,8 @@ const guardarVenta = async () => {
 							<!-- Restaurante -->
 							<RestauranteItem v-if="item.tipo === 'restaurante'" :item="item" />
 
-							<!-- Guía -->
-							<GuiaItem v-else-if="item.tipo === 'guía'" :item="item" :guias="guiasStore.guias" />
+							<!-- Guía: Se agrega en otro punto-->
+							<!-- <GuiaItem v-else-if="item.tipo === 'guía'" :item="item" :guias="guiasStore.guias" /> -->
 
 							<!-- Hospedaje -->
 							<HospedajeItem v-else-if="item.tipo === 'hospedaje'" :item="item" />
@@ -443,7 +512,7 @@ const guardarVenta = async () => {
 					<button class="btn btn-outline-secondary" @click="addCanasta('vuelo')"><i class="bi bi-airplane"></i> Vuelo</button>
 					<button class="btn btn-outline-secondary" @click="addCanasta('hospedaje')"><i class="bi bi-buildings"></i>
 					 Hospedaje</button>
-					<button class="btn btn-outline-secondary" @click="addCanasta('guía')"><i class="bi bi-people"></i> Guía</button>
+					<!-- <button class="btn btn-outline-secondary" @click="addCanasta('guía')"><i class="bi bi-people"></i> Guía</button> -->
 					<button class="btn btn-outline-secondary" @click="addCanasta('restaurante')"><i class="bi bi-fork-knife"></i> Restaurant</button>
 				</div>
 			</div>
@@ -451,7 +520,8 @@ const guardarVenta = async () => {
 			
 			<div class="card">
 				<div class="card-body">
-					<h5 class="card-title">Datos del pago</h5>
+					<h6 class="card-title mb-3"><i class="bi bi-caret-right"></i> Datos del pago</h6>
+
 					<div class="row row-cols-4">
 						<div class="col">
 							<label for="usuario" class="form-label">Estado de pago</label>
@@ -474,19 +544,21 @@ const guardarVenta = async () => {
 								<option value="deposito">Depósito bancario</option>
 							</select>
 						</div>
-						<div class="col">
-							<label for="txtPrecio" class="form-label">Motivo de descuento </label>
-							<input type="text" class="form-control" id="txtPrecio" v-model="venta.motivo_descuento">
-						</div>
+						<div class="w-100"></div>
 						<div class="col">
 							<label for="txtPrecio" class="form-label">Descuento (S/)</label>
 							<input type="number" class="form-control" id="txtPrecio" v-model.number="venta.descuento" min="0"
-								step="0.01">
+								step="1" @input="calcularDescuento()">
 						</div>
+						<div class="col" v-if="venta.descuento >0">
+							<label for="txtPrecio" class="form-label">Motivo de descuento <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" id="txtPrecio" v-model="venta.motivo_descuento">
+						</div>
+						
 						<div class="col">
-							<label for="txtPrecio" class="form-label">Precio total (S/)</label>
-							<input type="number" class="form-control" id="txtPrecio" v-model.number="venta.precio" min="0"
-								step="0.01">
+							<label for="txtPrecio" class="form-label">Precio final a pagar (S/)</label>
+							<input type="text" class="form-control" id="txtPrecio" :value="formatMoneda(venta.precio)" min="0"
+								step="1" disabled>
 						</div>
 					</div>
 				</div>

@@ -62,6 +62,7 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 				<option value="king">King</option>
 				<option value="queen">Queen</option>
 				<option value="suite">Suite</option>
+				<option value="simple">Simple</option>
 				<option value="triple">Triple</option>
 			</select>
 		</div>
@@ -96,7 +97,7 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 		</div>
 		<div class="col">
 			<label class="form-label">Precio por noche (S/)</label>
-			<input type="number" class="form-control" v-model.number="item.precio_por_noche" min="0" step="0.01">
+			<input type="number" class="form-control" v-model.number="item.precio_por_noche" min="0" step="1">
 		</div>
 		
 		<div class="col">
