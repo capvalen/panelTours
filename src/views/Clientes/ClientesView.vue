@@ -63,7 +63,8 @@ onMounted(() => {
 		<div class="col">
 			<p>Últimos registrados</p>
 			<pre>{{clientes}}</pre>
-			<table class="table-hover table">
+			<div class="table-responsive">
+				<table class="table-hover table">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -98,6 +99,7 @@ onMounted(() => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 

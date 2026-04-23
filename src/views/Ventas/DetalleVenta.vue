@@ -81,7 +81,8 @@
 	<div class="row mt-3">
 		<div class="col">
 			<p><strong>Pagos realizados</strong></p>
-			<table class="table table-hover">
+			<div class="table-responsive">
+				<table class="table table-hover">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -137,6 +138,7 @@
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 

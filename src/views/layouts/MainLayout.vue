@@ -62,49 +62,49 @@
 			</div>
 
 			<!-- Sidebar offcanvas para móvil -->
-			<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarMenu" style="background-color: #E6FBFF; color: #011734;">
+			<div class="offcanvas offcanvas-start d-md-none" tabindex="-1" id="sidebarMenu" style="background-color: #E6FBFF; color: #011734; width: 100%; max-width: 100%;">
 				<div class="offcanvas-header">
-					<img src="@/assets/logo.webp" alt="Logo" style="height: 40px;">
+					<img src="@/assets/logo.webp" alt="Logo" style="height: 40px;" data-bs-dismiss="offcanvas">
 					<button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
 				</div>
-				<div class="offcanvas-body p-0">
-					<router-link to="/dashboard" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+				<div class="offcanvas-body p-0" style="overflow-y: auto; height: calc(100vh - 60px);">
+					<router-link to="/dashboard" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-house"></i> Inicio
 					</router-link>
-					<router-link to="/clientes" :class="{ active: $route.path.startsWith('/cliente') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/clientes" :class="{ active: $route.path.startsWith('/cliente') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-wechat"></i> Clientes
 					</router-link>
-					<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-truck"></i> Proveedores
 					</router-link>
-					<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-car-front"></i> Vehículos
 					</router-link>
-					<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-building"></i> Hospedajes
 					</router-link>
-					<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-person-badge"></i> Guías
 					</router-link>
-					<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-airplane"></i> Vuelos
 					</router-link>
-					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-piggy-bank"></i> Caja
 					</router-link>
-					<router-link to="/ventas" class="menuFila-mobile" data-bs-dismiss="offcanvas">
-						<i class="bi bi-cart"></i> Ventas y reservas
+					<router-link to="/rutas-de-servicio" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-cart"></i> Ruta del servicio
 					</router-link>
-					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-journal-bookmark"></i> Control de pagos
 					</router-link>
-					<router-link to="/recordatorios" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/recordatorios" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-stars"></i> Recordatorios
 					</router-link>
-					<router-link to="/configuraciones" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/configuraciones" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-gear"></i> Configuración
 					</router-link>
-					<router-link to="/tarifario" class="menuFila-mobile" data-bs-dismiss="offcanvas">
+					<router-link to="/tarifario" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-tag"></i> Tarifario
 					</router-link>
 					<div class="menuFila-mobile d-none"><i class="bi bi-stickies"></i> Reportes</div>
@@ -122,12 +122,21 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
+import { Offcanvas } from 'bootstrap';
 const router = useRouter()
 
 import { useAuthStore } from '@/stores/auth';
 const authStore = useAuthStore()
 
+function closeOffcanvas() {
+	const offcanvas = document.getElementById('sidebarMenu');
+	if (offcanvas) {
+		Offcanvas.getInstance(offcanvas)?.hide();
+	}
+}
+
 function logout() {
+	closeOffcanvas();
 	authStore.logout()
 	router.push('/login')
 }
@@ -136,9 +145,51 @@ function logout() {
 <style>
 #rowMenu {
 	background-color: #E6FBFF;
-	min-height: 100vh;
+	height: 100vh;
+	position: sticky;
+	top: 0;
 	border-radius: 0 20px 20px 0;
 	color: #011734;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-color: #023475 #E6FBFF;
+}
+
+#rowMenu::-webkit-scrollbar {
+	width: 6px;
+}
+
+#rowMenu::-webkit-scrollbar-track {
+	background: transparent;
+	padding: 0 2px;
+}
+
+#rowMenu::-webkit-scrollbar-thumb {
+	background: #023475;
+	border-radius: 10px;
+}
+
+#rowMenu::-webkit-scrollbar-thumb:hover {
+	background: #011734;
+}
+
+/* Offcanvas mobile scrollbar */
+.offcanvas-body::-webkit-scrollbar {
+	width: 6px;
+}
+
+.offcanvas-body::-webkit-scrollbar-track {
+	background: transparent;
+	padding: 0 2px;
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb {
+	background: #023475;
+	border-radius: 10px;
+}
+
+.offcanvas-body::-webkit-scrollbar-thumb:hover {
+	background: #011734;
 }
 
 a {

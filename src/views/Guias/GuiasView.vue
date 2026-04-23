@@ -44,16 +44,18 @@ onMounted(() => {
 				<div class="card-body">
 					<label for=""><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
-						<div class="col">
+						<div class="col-12 col-md my-1">
 							<div class="input-group">
 								<input type="text" class="form-control" placeholder="DNI, nombre o especialidad" v-model="texto" @keypress.enter="buscar">
 							</div>
 						</div>
-						<div class="col-2">
+						<div class="col-6 col-md-2">
 							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 						</div>
-						<div class="col d-flex justify-content-center">
-							<router-link to="/guia/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo guía</router-link>
+						<div class="col-6 col-md d-flex justify-content-center">
+							<div>
+								<router-link to="/guia/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo guía</router-link>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -63,7 +65,8 @@ onMounted(() => {
 	<div class="row mt-3">
 		<div class="col">
 			<p>Últimos registrados</p>
-			<table class="table-hover table">
+			<div class="table-responsive">
+				<table class="table-hover table">
 				<thead>
 					<tr>
 						<th scope="col">#</th>
@@ -96,6 +99,7 @@ onMounted(() => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 </template>

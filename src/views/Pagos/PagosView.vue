@@ -110,20 +110,20 @@ const eliminarPago = async (id, codigoRef) => {
 				<div class="card-body">
 					<label><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
-						<div class="col">
+						<div class="col my-1">
 							<div class="input-group">
 								<input type="text" class="form-control" placeholder="Código de referencia, Usuario" v-model="search">
 								<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 							</div>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-2 my-1">
 							<select class="form-select" v-model="tipoFilter">
 								<option value="todos">Todos los tipos</option>
 								<option value="true">Venta</option>
 								<option value="false">Compromiso</option>
 							</select>
 						</div>
-						<div class="col-md-2">
+						<div class="col-md-2 my-1">
 							<select class="form-select" v-model="estadoFilter">
 								<option value="todos">Todos los estados</option>
 								<option value="pendiente">Pendiente</option>
@@ -142,7 +142,8 @@ const eliminarPago = async (id, codigoRef) => {
 	<div class="row mt-3">
 		<div class="col table-responsive">
 			<p class="mb-0">Últimos registros</p>
-			<table class="table table-hover align-middle">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -195,6 +196,7 @@ const eliminarPago = async (id, codigoRef) => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 </template>

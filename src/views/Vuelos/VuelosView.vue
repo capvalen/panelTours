@@ -111,8 +111,8 @@ const eliminarVuelo = async (id, vuelo) => {
 							</select>
 						</div>
 						<div class="col-md-2 mb-2">
-							<button class="btn btn-primary w-100" @click="modalNuevo = true">
-								<i class="bi bi-plus-lg"></i> Nuevo
+							<button class="btn btn-outline-primary w-100" @click="modalNuevo = true">
+								<i class="bi bi-plus-lg"></i> Nuevo vuelo
 							</button>
 						</div>
 					</div>
@@ -124,7 +124,8 @@ const eliminarVuelo = async (id, vuelo) => {
 	<!-- Tabla -->
 	<div class="row mt-3">
 		<div class="col">
-			<table class="table table-hover">
+			<div class="table-responsive">
+				<table class="table table-hover">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -153,6 +154,7 @@ const eliminarVuelo = async (id, vuelo) => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 

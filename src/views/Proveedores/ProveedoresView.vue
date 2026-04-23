@@ -44,12 +44,12 @@ onMounted(() => {
 				<div class="card-body">
 					<label for=""><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
-						<div class="col">
+						<div class="col-12 col-md my-1">
 							<div class="input-group">
 								<input type="text" class="form-control" placeholder="Ruc, Razón social o celular" v-model="texto">
 							</div>
 						</div>
-						<div class="col">
+						<div class="col-12 col-md my-1">
 							<select name="" id="sltCategoria" class="form-select">
 								<option value="-1">Todas las categorías</option>
 								<option value="-1">Alojamiento</option>
@@ -58,7 +58,7 @@ onMounted(() => {
 								<option value="-1">Transporte</option>
 							</select>
 						</div>
-						<div class="col-2">
+						<div class="col-5 col-md">
 							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col d-flex justify-content-center">
@@ -72,37 +72,39 @@ onMounted(() => {
 	<div class="row mt-3">
 		<div class="col">
 			<p>Últimos registrados</p>
-			<table class="table-hover table">
-				<thead>
-					<tr>
-						<th scope="col">#</th>
-						<th scope="col">RUC</th>
-						<th scope="col">Razón Social</th>
-						<th scope="col">Contacto</th>
-						<th scope="col">Celular</th>
-						<th scope="col">Categoría</th>
-						<th>@</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(proveedor, index ) in proveedorStore.proveedores">
-						<td>{{ index + 1 }}</td>
-						<td>
-							<router-link :to="{ name: 'perfilProveedor', params: { id: proveedor.id } }">
-								{{ proveedor.ruc }}
-							</router-link>
-						</td>
-						<td>{{ proveedor.razon_social }}</td>
-						<td>{{ proveedor.contacto }}</td>
-						<td>{{ proveedor.celular }}</td>
-						<td class="text-capitalize">{{ proveedor.categoria }}</td>
-						<td class="d-flex gap-2" v-if="proveedor.id != 1">
-							<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-folder-x"></i></button>
-						</td>
-					</tr>					
-				</tbody>
-			</table>
+			<div class="table-responsive">
+				<table class="table-hover table">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">RUC</th>
+							<th scope="col">Razón Social</th>
+							<th scope="col">Contacto</th>
+							<th scope="col">Celular</th>
+							<th scope="col">Categoría</th>
+							<th>@</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="(proveedor, index ) in proveedorStore.proveedores">
+							<td>{{ index + 1 }}</td>
+							<td>
+								<router-link :to="{ name: 'perfilProveedor', params: { id: proveedor.id } }">
+									{{ proveedor.ruc }}
+								</router-link>
+							</td>
+							<td>{{ proveedor.razon_social }}</td>
+							<td>{{ proveedor.contacto }}</td>
+							<td>{{ proveedor.celular }}</td>
+							<td class="text-capitalize">{{ proveedor.categoria }}</td>
+							<td class="d-flex gap-2" v-if="proveedor.id != 1">
+								<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
+								<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-folder-x"></i></button>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 		</div>
 	</div>
 </template>

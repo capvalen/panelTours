@@ -10,8 +10,8 @@
 
 	<p class="text-muted">Acciones</p>
 
-	
-	<table class="table table-hover">
+	<div class="table-responsive">
+		<table class="table table-hover">
 		<thead>
 			<tr>
 				<th>Número de Personas</th>
@@ -57,6 +57,7 @@
 			</tr>
 		</tbody>
 	</table>
+	</div>
 </template>
 <script setup>
 	import {ref} from 'vue'

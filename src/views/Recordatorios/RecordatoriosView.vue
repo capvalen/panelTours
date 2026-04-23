@@ -233,9 +233,9 @@ const tipoEventoEmoji = (tipo) => {
 			</div>
 		</div>
 	</div>
-	<div class="d-flex justify-content-between align-items-center mb-2">
+	<div class="d-flex justify-content-between align-items-center flex-column-reverse flex-md-row mb-2 ">
 		<p class="mb-0">{{ totalPendientes }} pendientes · <span class="text-danger">{{ totalVencidos }} vencido</span></p>
-		<button class="btn btn-primary" @click="nuevoRecordatorio">
+		<button class="btn btn-outline-primary my-2" @click="nuevoRecordatorio">
 			<i class="bi bi-plus-lg"></i> Nuevo Recordatorio
 		</button>
 	</div>
@@ -250,13 +250,13 @@ const tipoEventoEmoji = (tipo) => {
 						</div>
 
 						<div class="mb-2">
-							<span class="badge fw-semibold border border-dark text-dark mx-1">
+							<span class="badge fw-normal border border-dark text-dark mx-1">
 								{{ tipoEventoEmoji(recordatorio.tipo_evento) }} {{ capitalize(recordatorio.tipo_evento || 'Sin tipo') }}
 							</span>
-							<span class="badge border fw-semibold me-1 text-capitalize" :class="estadoBadgeClass(recordatorio.estado)">
+							<span class="badge fw-normal border me-1 text-capitalize" :class="estadoBadgeClass(recordatorio.estado)">
 								{{ recordatorio.estado || 'Sin estado' }}
 							</span>
-							<span class="badge border fw-semibold text-capitalize" :class="prioridadBadgeClass(recordatorio.prioridad)">
+							<span class="badge fw-normal border text-capitalize" :class="prioridadBadgeClass(recordatorio.prioridad)">
 								{{ recordatorio.prioridad || 'Sin prioridad' }}
 							</span>
 

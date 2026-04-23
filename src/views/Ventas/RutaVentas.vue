@@ -7,13 +7,15 @@
 		</div>
 
 		<!-- Línea de tiempo horizontal (oculta en móviles, visible en md+) -->
-		<div class="timeline-container mb-5">
-			<div class="timeline-line"></div>
+		<div class="timeline-container mb-5 d-none d-md-flex">
+			<div class="timeline-line "></div>
 			<div class="row d-none d-md-flex justify-content-center">
 				<div class="col-md-3 text-center position-relative">
+					<router-link to="/ventas">
 					<div class="step-circle mx-auto step-gradient-1 text-white d-flex align-items-center justify-content-center shadow">1</div>
 					<h4 class="mt-4 fw-semibold">Ventas y cotizaciones</h4>
 					<p class="text-muted small mb-0">Generación de ventas y cotizaciones</p>
+					</router-link>
 				</div>
 				<div class="col-md-3 text-center position-relative">
 					<div class="step-circle mx-auto step-gradient-2 text-white d-flex align-items-center justify-content-center shadow">2</div>
@@ -37,7 +39,7 @@
 		
 		<div class="row g-4 justify-content-center">
 			<!-- Sección 1 -->
-			<div class="col-6 col-md-2">
+			<div class="col-12 col-md-2">
 				<router-link to="/ventas">
 				<div class="card h-100 shadow-sm border-0 rounded-4">
 					<div class="card-body p-4">
@@ -71,7 +73,7 @@
 			</div>
 
 			<!-- Sección 2 -->
-			<div class="col-6 col-md-2">
+			<div class="col-12 col-md-2">
 				<div class="card h-100 shadow-sm border-0 rounded-4">
 					<div class="card-body p-4">
 						<div class="d-flex align-items-center gap-3 mb-3">
@@ -104,7 +106,7 @@
 			</div>
 
 			<!-- Sección 3: Tesorería -->
-			<div class="col-6 col-md-2">
+			<div class="col-12 col-md-2">
 				<div class="card h-100 shadow-sm border-0 rounded-4">
 					<div class="card-body p-4">
 						<div class="d-flex align-items-center gap-3 mb-3">
@@ -136,7 +138,7 @@
 			</div>
 
 			<!-- Sección 4 -->
-			<div class="col-6 col-md-2">
+			<div class="col-12 col-md-2">
 				<div class="card h-100 shadow-sm border-0 rounded-4">
 					<div class="card-body p-4">
 						<div class="d-flex align-items-center gap-3 mb-3">

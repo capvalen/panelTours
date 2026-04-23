@@ -102,7 +102,8 @@ watch(() => route.params.id, (newId, oldId) => {
 	<div class="row my-4">
 		<div class="col">
 			<p><strong>Registro de entradas y salidas</strong></p>
-			<table class="table table-hover">
+			<div class="table-responsive">
+				<table class="table table-hover">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -128,13 +129,15 @@ watch(() => route.params.id, (newId, oldId) => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 
 	</div>
 	<div class="row">
 		<div class="col">
 			<p class="text-danger"><strong>Registro de ventas y adelantos de servicios</strong></p>
-			<table class="table table-hover">
+			<div class="table-responsive">
+				<table class="table table-hover">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -195,6 +198,7 @@ watch(() => route.params.id, (newId, oldId) => {
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 	<p><strong>Resumen</strong></p>

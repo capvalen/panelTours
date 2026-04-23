@@ -178,7 +178,8 @@ watch(
 	<div class="row mt-3 mb-5">
 		<div class="col table-responsive">
 			<p><strong>Compras realizadas</strong></p>
-			<table class="table table-hover align-middle">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -245,7 +246,8 @@ watch(
 					</tr>
 				</tbody>
 			</table>
-		</div>		
+			</div>
+		</div>
 	</div>
 	<ModalSubirArchivo :modelo="'cliente'" ></ModalSubirArchivo>
 </template>

@@ -147,7 +147,8 @@ watch(
 				<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoPago"><i class="bi bi-wallet2"></i> Agregar pago pendiente</button>
 
 			</div>
-			<table class="table table-hover">
+			<div class="table-responsive">
+				<table class="table table-hover">
 				<thead>
 					<tr>
 						<th>#</th>
@@ -193,6 +194,7 @@ watch(
 					</tr>
 				</tbody>
 			</table>
+			</div>
 		</div>
 	</div>
 	<ModalSubirArchivo :modelo="'proveedor'"></ModalSubirArchivo>
