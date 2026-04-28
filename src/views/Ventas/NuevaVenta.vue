@@ -4,6 +4,12 @@ import { useClienteStore } from '@/stores/clienteStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useGuiasStore } from '@/stores/guiaStore';
 import { useFormat } from '@/composables/formatos';
+import { useAuthStore } from '@/stores/auth'
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { useVentasStore } from '@/stores/ventaStore';
+import { userestaurantestore } from '@/stores/restaurantStore';
+import { useHospedajesStore } from '@/stores/hospedajeStore';
+import { useAerolineasStore } from '@/stores/aerolineaStore';
 import Swal from 'sweetalert2';
 import RestauranteItem from './components/RestauranteItem.vue';
 import GuiaItem from './components/GuiaItem.vue';
@@ -11,16 +17,17 @@ import HospedajeItem from './components/HospedajeItem.vue';
 import TransporteItem from './components/VehiculoItem.vue';
 import TourItem from './components/TourItem.vue';
 import VueloItem from './components/VueloItem.vue';
-import { useAuthStore } from '@/stores/auth'
-import { useDepartamentosStore } from '@/stores/departamentoStore';
-import { useVentasStore } from '@/stores/ventaStore';
 
+const API_URL = import.meta.env.VITE_API_URL
 const clienteStore = useClienteStore();
 const vehiculoStore = useVehiculosStore();
 const guiasStore = useGuiasStore();
 const authStore = useAuthStore();
 const departametosStore = useDepartamentosStore()
 const ventaStore = useVentasStore()
+const restaurantStore = userestaurantestore()
+const hospedajesStore = useHospedajesStore()
+const aerolineaStore = useAerolineasStore()
 
 const { formatHoy, formatMoneda, capitalize } = useFormat();
 
@@ -44,7 +51,8 @@ const venta = reactive({
 });
 
 const canasta = ref([]);
-const venta_items = ref([])
+const precioDolar= ref(null) ;
+
 
 const clienteSeleccionado = ref(null);
 const tours = ref([]);
@@ -53,8 +61,8 @@ const nuevoItem = {
 	'restaurante': {
 		tipo: 'restaurante',
 		tipo_servicio: 'carta',
-		turno: null,
-		espacio: null,
+		turno: 'comida',
+		espacio: 'interior',
 		get numero_personas() { return venta.personas || 1 },
 		get fecha_reserva() { return venta.fecha || 1 },
 		hora_reserva: null,
@@ -77,11 +85,12 @@ const nuevoItem = {
 	},
 	'hospedaje':{
 		tipo: 'hospedaje',
-		tipo_habitacion: 'simple',		
+		tipo_habitacion: 'simple',
 		get fecha_ingreso() { return venta.fecha || 1 },
 		fecha_salida: null,
 		hora_ingreso: null,
 		hora_salida: null,
+		num_habitaciones:1,
 		cantidad_noches: 0,
 		get cantidad_adultos() { return venta.personas || 1 },
 		cantidad_ninos: 0,
@@ -134,13 +143,14 @@ const nuevoItem = {
 		origen: '',
 		destino: '',
 		get pasajeros() { return venta.personas || 1 },
-		lleva_equipaje: 0,
-		kilos: null,
+		lleva_equipaje: 'no',
+		kilos: 0,
 		que_equipaje: '',
+		precio_ticket:0,
 		precio_soles: 0,
 		precio_dolares: 0,
 		precio:0,
-		aerolinea: null,
+		aerolinea: 'ninguno',
 		get fecha_salida() { return venta.fecha || 1 },
 		fecha_llegada: null,
 		hora_salida: null,
@@ -153,14 +163,16 @@ const nuevoItem = {
 };
 
 const eliminarItem=(index)=>{
-	canasta.splice(index, 1)
-	venta_items.splice(index, 1)
+	canasta.value.splice(index, 1)
 }
 
 
 const addCanasta = (tipo) => {
 	canasta.value.push({...nuevoItem[tipo]});
 };
+
+
+
 
 const getItemIcon = (tipo) => {
 	const icons = {
@@ -202,14 +214,20 @@ watch([() => canasta.value, () => venta.descuento], () => {
 	venta.precio = precioTotal.value;
 }, { deep: true });
 
-onMounted(async () => {
+onMounted(async () => {	
 	await clienteStore.listarClientes();
 	await guiasStore.listar();
 	await vehiculoStore.listar();
 	await departametosStore.listar();
+	await hospedajesStore.listar();
+	await restaurantStore.listar();
+	await aerolineaStore.listar();
+
+	if (import.meta.env.DEV)
+		venta.departamento_id = 12
 
 	try {
-		const response = await fetch('https://grupoeuroandino.com/app/api/mostrarTours_todos.php');
+		const response = await fetch( API_URL+'mostrarTours_todos.php');
 		tours.value = await response.json();
 	} catch (error) {
 		console.error('Error al cargar los tours:', error);
@@ -228,7 +246,7 @@ const filtrarDepartamentos = (event) => {
 	}
 	const encontrado = departametosStore.departamentos.find(d =>
 		d.departamento.toLowerCase().includes(valor) || String(d.id) === valor
-	);
+		);
 	if (encontrado) {
 		venta.departamento_id = encontrado.id;
 	}
@@ -260,7 +278,7 @@ const guardarVenta = async () => {
 	// Validar cada item de la canasta
 	for (const item of canasta.value) {
 		// Validación común: precio <= 0
-		/* if (!item.precio || item.precio <= 0) {
+		if (!item.precio || item.precio <= 0) {
 			Swal.fire('Error', 'Debe rellenar el precio de cada item mayor a cero', 'error');
 			return;
 		}
@@ -336,15 +354,15 @@ const guardarVenta = async () => {
 					return;
 				}
 				break;
-		} */
+		}
 	}
 
 	// Si todas las validaciones pasan, guardar la venta
 	try {
 		venta.cliente_id ??= 1
 		venta.cliente_id = venta.cliente_id || 1
-		venta_items.value = []
-		console.info('canasta:', canasta.value )
+		
+		
 		canasta.value.forEach(item=>{
 			var descripcion = ''
 			switch (item.tipo) {
@@ -355,15 +373,15 @@ const guardarVenta = async () => {
 				case 'tour': descripcion = `${capitalize(item.tipo_tour)} ${item.nombre_tour} - ${item.cantidad_personas} persona${item.cantidad_personas >1?'s':''}`; break;
 				default: descripcion = ''; break;
 			}
-			venta_items.value.push({
+			item.resumen ={
 				tipo: item.tipo,
 				nro_clientes: item.numero_personas || item.cantidad_personas || item.cantidad_adultos || item.pasajeros || 0,
 				precio: item.precio,
 				descripcion: descripcion.replaceAll('  ', ' ')
-			})
-		})		
+			}
+		})
 		
-		const ventaCompleta = {venta, venta_items: venta_items.value, canasta: canasta.value}
+		const ventaCompleta = {venta, canasta: canasta.value}
 	
 		ventaStore.guardar(ventaCompleta)
 
@@ -452,9 +470,10 @@ const guardarVenta = async () => {
 							<label for="txtFechaInicial" class="form-label">Fecha inicial <span class="text-danger">*</span></label>
 							<input type="date" class="form-control" id="txtFechaInicial" v-model="venta.fecha">
 						</div>
+						<div class="w-100"></div>
 						<div class="col">
 							<label for="txtDepartamento" class="form-label">Departamento destino <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="txtDepartamento" list="listaDepartamentos"
+							<input type="text" class="form-select" id="txtDepartamento" list="listaDepartamentos"
 								:placeholder="departamentoSeleccionado?.nombre || 'Buscar departamento...'"
 								@input="filtrarDepartamentos">
 							<datalist id="listaDepartamentos">
@@ -485,13 +504,13 @@ const guardarVenta = async () => {
 							</div>
 
 							<!-- Restaurante -->
-							<RestauranteItem v-if="item.tipo === 'restaurante'" :item="item" />
+							<RestauranteItem v-if="item.tipo === 'restaurante'" :item="item" :restaurantes="restaurantStore.restaurantes" />
 
 							<!-- Guía: Se agrega en otro punto-->
 							<!-- <GuiaItem v-else-if="item.tipo === 'guía'" :item="item" :guias="guiasStore.guias" /> -->
 
 							<!-- Hospedaje -->
-							<HospedajeItem v-else-if="item.tipo === 'hospedaje'" :item="item" />
+							<HospedajeItem v-else-if="item.tipo === 'hospedaje'" :item="item" :hospedajes="hospedajesStore.hospedajes" />
 
 							<!-- Transporte -->
 							<TransporteItem v-else-if="item.tipo === 'transporte'" :item="item" :vehiculos="vehiculoStore.vehiculos" />
@@ -500,7 +519,7 @@ const guardarVenta = async () => {
 							<TourItem v-else-if="item.tipo === 'tour'" :item="item" :tours="tours" :nacionalidad="venta.nacionalidad" />
 
 							<!-- Vuelo -->
-							<VueloItem v-else-if="item.tipo === 'vuelo'" :item="item"  />
+							<VueloItem v-else-if="item.tipo === 'vuelo'" :item="item" :aerolineas="aerolineaStore.aerolineas" :departamentos="departametosStore.departamentos" />
 						</div>
 					</div>
 				</template>

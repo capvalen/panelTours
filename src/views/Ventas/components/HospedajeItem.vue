@@ -1,14 +1,36 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useFormat } from '@/composables/formatos'
 
+const { formatMoneda } = useFormat()
 const props = defineProps({
 	item: {
 		type: Object,
 		required: true
+	},
+	hospedajes: {
+		type: Array,
+		required: true
 	}
 });
 
+const searchText = ref('');
 const updating = ref(false);
+
+watch(searchText, (value) => {
+	const selected = props.hospedajes.find(h => String(h.id) === String(value));
+	if (selected) {
+		props.item.hospedaje_id = selected.id;
+		props.item.ruc = selected.ruc;
+		props.item.hospedaje = selected.hospedaje;
+		props.item.contacto = selected.contacto;
+	} else {
+		props.item.hospedaje_id = null;
+		props.item.ruc = '';
+		props.item.nombre = '';
+		props.item.contacto = '';
+	}
+});
 
 watch([() => props.item.fecha_ingreso, () => props.item.cantidad_noches], ([fechaIngreso, noches]) => {
 	if (updating.value) return;
@@ -45,11 +67,33 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 
 	setTimeout(() => { updating.value = false; }, 0);
 });
+
+watch([() => props.item.num_habitaciones, () => props.item.cantidad_noches, () => props.item.precio_por_noche], ([numHab, noches, precioNoche]) => {
+	props.item.precio = (numHab || 0) * (noches || 0) * (precioNoche || 0);
+});
 </script>
 
 <template>
 	<div class="row row-cols-3">
 		<div class="col">
+			<label class="form-label">Hospedaje <span class="text-danger">*</span></label>
+			<input type="text" class="form-control" list="listaHospedajes" v-model="searchText"
+				placeholder="Buscar hospedaje...">
+			<datalist id="listaHospedajes">
+				<option v-for="hospedaje in hospedajes" :key="hospedaje.id" :value="hospedaje.id">
+					{{ hospedaje.hospedaje + ' - ' + hospedaje.ruc + ' - ' + hospedaje.contacto }}
+				</option>
+			</datalist>
+		</div>
+		<div class="col">
+			<label class="form-label">RUC</label>
+			<input type="text" class="form-control" v-model="item.ruc" disabled>
+		</div>
+		<div class="col">
+			<label class="form-label">Hospedaje</label>
+			<input type="text" class="form-control" v-model="item.hospedaje" disabled>
+		</div>
+		<div>
 			<label class="form-label">Tipo de habitación</label>
 			<select class="form-select" v-model="item.tipo_habitacion">
 				<option value="">Seleccionar...</option>
@@ -70,19 +114,23 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 			<label class="form-label">Fecha de ingreso <span class="text-danger">*</span></label>
 			<input type="date" class="form-control" v-model="item.fecha_ingreso">
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Hora de ingreso</label>
 			<input type="time" class="form-control" v-model="item.hora_ingreso">
+		</div>
+		<div class="col">
+			<label class="form-label">N° habitaciones<span class="text-danger">*</span></label>
+			<input type="number" class="form-control" v-model.number="item.num_habitaciones" min="0">
 		</div>
 		<div class="col">
 			<label class="form-label">Cantidad de noches <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.cantidad_noches" min="0">
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Fecha de salida</label>
 			<input type="date" class="form-control" v-model="item.fecha_salida">
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Hora de salida</label>
 			<input type="time" class="form-control" v-model="item.hora_salida">
 		</div>
@@ -113,13 +161,15 @@ watch([() => props.item.fecha_ingreso, () => props.item.fecha_salida], ([fechaIn
 			</div>
 		</div>
 		<div class="col">
-			<label class="form-label">Total (S/) <span class="text-danger">*</span></label>
-			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
-		</div>
-		<div class="col">
 			<label class="form-label">Preferencias especiales</label>
 			<input type="text" class="form-control" v-model="item.preferencias_especiales">
 		</div>
+		<div class="col"></div>
+		<div class="col">
+			<label class="form-label">Precio a pagar </label>
+			<p class="mb-0">{{ formatMoneda(item.precio) }}</p>
+		</div>
+		
 	</div>
 </template>
 <style scoped>

@@ -123,6 +123,9 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { Offcanvas } from 'bootstrap';
+import { onMounted } from 'vue'
+import { useFormat } from '@/composables/formatos'
+const { consultarApiDolar } = useFormat()
 const router = useRouter()
 
 import { useAuthStore } from '@/stores/auth';
@@ -138,8 +141,15 @@ function closeOffcanvas() {
 function logout() {
 	closeOffcanvas();
 	authStore.logout()
+	localStorage.removeItem('dolar')
 	router.push('/login')
 }
+
+onMounted(async () => {
+	try {
+		localStorage.getItem('dolar') || await consultarApiDolar();
+	} catch {}
+})
 </script>
 
 <style>

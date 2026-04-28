@@ -1,4 +1,5 @@
 <script setup>
+
 import { ref, watch } from 'vue';
 import { useFormat } from '@/composables/formatos';
 
@@ -8,16 +9,28 @@ const props = defineProps({
 	item: {
 		type: Object,
 		required: true
+	},
+	aerolineas: {
+		type: Array,
+		required: true
+	},
+	departamentos: {
+		type: Array,
+		required: true
 	}
 });
 
 const updating = ref(false);
-
-const ciudades = ["Abancay", "Andahuaylas", "Arequipa", "Chincha", "Cusco", "Huancavelica", "Ayacucho", "Cajamarca", "Callao", "Cerro de Pasco", "Chachapoyas", "Chiclayo", "Huancayo", "Huánuco", "Huaraz", "Ica", "Iquitos", "Jauja", "Juliaca", "Puerto Maldonado", "La Merced", "Lima", "Moquegua", "Nazca", "Охаратра", "Pichanaqui", "Piura", "Pucallpa", "Puno", "Satipo", "Tacna", "Tarapoto", "Tarma", "Tingo María", "Trujillo", "Tumbes"];
-
-const aerolineas = ["LATAM", "Sky Airline", "JetSMART", "Avianca", "Star Peru", "Peruvian Airlines"];
-
-const clasesVuelo = ['económica', 'económica plus', 'turista', 'ejecutiva', 'primera'];
+const searchText = ref('');
+const dolarPrecio = ref(0)
+watch(searchText, (value) => {
+	const selected = props.aerolineas.find(a => a.nombre === value);
+	if (selected) {
+		props.item.aerolinea = selected.nombre;
+	} else {
+		props.item.aerolinea = '';
+	}
+});
 
 watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSalida, fechaLlegada]) => {
 	if (updating.value) return;
@@ -37,30 +50,47 @@ watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSa
 
 	setTimeout(() => { updating.value = false; }, 0);
 });
+
+watch([() => props.item.pasajeros, () => props.item.precio_ticket], () => {
+	props.item.precio = (props.item.pasajeros || 0) * (props.item.precio_ticket || 0);
+	props.item.precio_soles = props.item.precio
+});
+
+watch([() => props.item.precio], () => {
+	const dolar = Number(localStorage.getItem('dolar')) || 0;
+	props.item.precio_dolares = props.item.precio / dolar,2;
+	dolarPrecio.value = props.item.precio_dolares;
+});
 </script>
 
 <template>
 	<div class="row row-cols-3">
 		<div class="col">
+			<label class="form-label">Aerolínea <span class="text-danger">*</span></label>
+			<input type="text" class="form-control text-capitalize" list="listaAerolineas" v-model="item.aerolinea"
+				placeholder="Buscar aerolínea...">
+			<datalist id="listaAerolineas">
+				<option class="text-capitalize" v-for="aerolinea in aerolineas" :key="aerolinea.id" :value="aerolinea.nombre">
+				</option>
+			</datalist>
+		</div>
+		<div class="col">
 			<label class="form-label">Origen <span class="text-danger">*</span></label>
-			<select class="form-select" v-model="item.origen">
-				<option value="">Seleccionar ciudad...</option>
-				<option v-for="ciudad in ciudades" :key="ciudad" :value="ciudad">{{ ciudad }}</option>
-			</select>
+			<input type="text" class="form-control" list="listaOrigen" v-model="item.origen"
+				placeholder="Buscar ciudad...">
+			<datalist id="listaOrigen">
+				<option v-for="depa in departamentos" :key="depa.id" :value="depa.departamento + ' (' + depa.abreviatura + ')'">
+				</option>
+			</datalist>
 		</div>
 		<div class="col">
 			<label class="form-label">Destino</label>
-			<select class="form-select" v-model="item.destino">
-				<option value="">Seleccionar ciudad...</option>
-				<option v-for="ciudad in ciudades" :key="ciudad" :value="ciudad">{{ ciudad }}</option>
-			</select>
-		</div>
-		<div class="col">
-			<label class="form-label">Aerolínea</label>
-			<select class="form-select" v-model="item.aerolinea">
-				<option value="">Seleccionar...</option>
-				<option v-for="aerolinea in aerolineas" :key="aerolinea" :value="aerolinea">{{ aerolinea }}</option>
-			</select>
+			<input type="text" class="form-control" list="listaDestino" v-model="item.destino"
+				placeholder="Buscar ciudad...">
+			<datalist id="listaDestino">
+				<option v-for="depa in departamentos" :key="depa.id" :value="depa.departamento + ' (' + depa.abreviatura + ')'">
+				</option>
+			</datalist>
 		</div>
 
 		<div class="col">
@@ -93,7 +123,10 @@ watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSa
 			<label class="form-label">Número de pasajeros</label>
 			<input type="number" class="form-control" v-model.number="item.pasajeros" min="0">
 		</div>
-
+		<div class="col">
+			<label class="form-label">Precio por ticket (S/)</label>
+			<input type="number" class="form-control" v-model.number="item.precio_ticket" min="0" step="1">
+		</div>
 		<div class="col">
 			<div class="form-check mt-4">
 				<input type="checkbox" class="form-check-input" id="chkEscala" v-model="item.escala">
@@ -101,13 +134,15 @@ watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSa
 			</div>
 		</div>
 		<div class="col">
-			<div class="form-check mt-4">
-				<input type="checkbox" class="form-check-input" id="chkEquipaje" v-model.number="item.lleva_equipaje">
-				<label class="form-check-label" for="chkEquipaje">Lleva equipaje</label>
-			</div>
+			<label class="form-label">Lleva equipaje</label>
+			<select name="" id="" class="form-select" v-model="item.lleva_equipaje">
+				<option value="si">Si</option>
+				<option value="no">No</option>
+			</select>
+			
 		</div>
 		<div class="col">
-			<label class="form-label">Kilos de equipaje</label>
+			<label class="form-label">Kilos de equipaje (Kg.)</label>
 			<input type="number" class="form-control" v-model.number="item.kilos" min="0" placeholder="Peso total">
 		</div>
 
@@ -115,18 +150,18 @@ watch([() => props.item.fecha_salida, () => props.item.fecha_llegada], ([fechaSa
 			<label class="form-label">Tipo de equipaje</label>
 			<input type="text" class="form-control" v-model="item.que_equipaje" placeholder="Descripción del equipaje">
 		</div>
-		<div class="col">
-			<label class="form-label">Precio <span class="text-danger">*</span></label>
-			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
-		</div>
-		<div class="col">
-			<label class="form-label">Precio (USD)</label>
-			<input type="number" class="form-control" v-model.number="item.precio_dolares" min="0" step="1">
-		</div>
-
-		<div class="col-12">
+		<div class="col-8">
 			<label class="form-label">Observaciones</label>
-			<textarea class="form-control" v-model="item.observaciones" rows="2" placeholder="Notas adicionales, restricciones, etc."></textarea>
+			<textarea class="form-control" v-model="item.observaciones" rows="2"
+				placeholder="Notas adicionales, restricciones, etc."></textarea>
+		</div>
+		<div class="col">
+			<label class="form-label">Precio a pagar (USD)</label>
+				<input type="number" class="form-control" :value="dolarPrecio.toFixed(2)" disabled>
+			</div>
+		<div class="col">
+			<label class="form-label">Precio a pagar (S/)<span class="text-danger">*</span></label>
+			<input type="number" class="form-control" v-model.number="item.precio" disabled>
 		</div>
 	</div>
 </template>

@@ -93,14 +93,15 @@ watch(searchText, (value) => {
 			<label class="form-label">Punto de devolución</label>
 			<input type="text" class="form-control" v-model="item.punto_devolucion" placeholder="Dirección o lugar">
 		</div>
-		
-		<div class="col">
-			<label class="form-label">Precio (S/) <span class="text-danger">*</span></label>
-			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="0.01">
-		</div>
-		<div class="col-12">
+		<div class="col-8">
 			<label class="form-label">Observaciones</label>
 			<textarea class="form-control" v-model="item.observaciones" rows="2" placeholder="Instrucciones especiales, restricciones, etc."></textarea>
+		</div>
+		<div class="col"></div>
+		<div class="col"></div>
+		<div class="col">
+			<label class="form-label">Precio a pagar <span class="text-danger">*</span></label>
+			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="0.01">
 		</div>
 	</div>
 </template>

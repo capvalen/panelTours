@@ -76,6 +76,13 @@ export function useFormat() {
 		}
 		return deptosStore.departamentos;
 	}
+	const consultarApiDolar = async () => {
+		const response = await fetch('https://dolar.pe/api/public/series?pair=USD-PEN');
+		const data = await response.json();
+		localStorage.setItem('dolar', data.series['USD-PEN'].data[0])
+		//return data.series['USD-PEN'].data[0];
+	}
+
 
   return {
     formatDate,
@@ -86,6 +93,6 @@ export function useFormat() {
 		formatHoy, ahora,
 		rutaArchivo,
 		capitalize, usuarioActual,
-		listaDepartamentos
+		listaDepartamentos, consultarApiDolar
   }
 }

@@ -158,13 +158,13 @@ const promoverVenta = async (index)=>{
 				<div class="card-body">
 					<label><i class="bi bi-funnel"></i> Búsqueda</label>
 					<div class="row">
-						<div class="col-12 col-md my-1">
+						<div class="col-12 col-md-auto my-1">
 							<div class="input-group">
 								<input type="text" class="form-control" placeholder="RUC, Razón social, Ciudad" v-model="search">
 								<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 							</div>
 						</div>
-						<div class="col-12 col-md-md-3 my-1">
+						<div class="col-12 col-md-3 my-1">
 							<select class="form-select" v-model="tipoFilter">
 								<option value="todos">Todas las categorías</option>
 								<option value="venta">Ventas</option>
@@ -174,8 +174,10 @@ const promoverVenta = async (index)=>{
 						<div class="col-12 col-md-2 my-1">
 							<input type="date" class="form-control" v-model="fechaFilter">
 						</div>
-						<div class="col-12 col-md d-flex justify-content-end justify-content-md-center">
-							<router-link to="/venta/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nueva venta</router-link>
+						<div class="col-12 col-md-auto d-flex justify-content-end justify-content-md-center">
+							<div>
+								<router-link to="/venta/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nueva venta</router-link>
+							</div>
 						</div>
 					</div>
 				</div>

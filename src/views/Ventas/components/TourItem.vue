@@ -1,6 +1,8 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useFormat } from '@/composables/formatos'
 
+const { formatMoneda } = useFormat()
 const props = defineProps({
 	item: {
 		type: Object,
@@ -48,6 +50,16 @@ watch(texto, (nuevoValor) => {
 	setTimeout(() => { updating.value = false; }, 0);
 });
 
+watch([() => props.item.cantidad_adultos, () => props.item.cantidad_ninos, ()=> props.item.tour_id, () => props.nacionalidad], () => {
+	if (props.nacionalidad === 'peruano') {
+		props.item.precio = (props.item.cantidad_adultos || 0) * (props.item.peruanos_adultos || 0) +
+			(props.item.cantidad_ninos || 0) * (props.item.peruanos_kids || 0);
+	} else {
+		props.item.precio = (props.item.cantidad_adultos || 0) * (props.item.extranjeros_adultos || 0) +
+			(props.item.cantidad_ninos || 0) * (props.item.extranjeros_kids || 0);
+	}
+});
+
 </script>
 
 <template>
@@ -68,36 +80,42 @@ watch(texto, (nuevoValor) => {
 		</div>
 		<div class="col">
 			<label class="form-label">Tipo</label>
-			<select class="form-select" v-model="item.tipo_tour">
-				<option value="tour">Tour</option>
-				<option value="paquete">Paquete</option>
-			</select>
+			<p class="mb-0 text-capitalize">{{ item.tipo_tour ?? '-' }}</p>
 		</div>
-
 		<div class="col" v-if="nacionalidad === 'peruano'">
 			<label class="form-label">Precio adulto (S/)</label>
-			<input type="number" class="form-control" v-model.number="item.peruanos_adultos" min="0" step="0.01">
+			<p class="mb-0">{{ formatMoneda(item.peruanos_adultos) }}</p>
 		</div>
 		<div class="col" v-else>
 			<label class="form-label">Precio adulto (S/)</label>
-			<input type="number" class="form-control" v-model.number="item.extranjeros_adultos" min="0" step="0.01">
+			<p class="mb-0">{{ formatMoneda(item.extranjeros_adultos) }}</p>
 		</div>
 		<div class="col" v-if="nacionalidad === 'peruano'">
 			<label class="form-label">Precio niño (S/)</label>
-			<input type="number" class="form-control" v-model.number="item.peruanos_kids" min="0" step="0.01">
+			<p class="mb-0">{{ formatMoneda(item.peruanos_kids) }}</p>
 		</div>
 		<div class="col" v-else>
 			<label class="form-label">Precio niño (S/)</label>
-			<input type="number" class="form-control" v-model.number="item.extranjeros_kids" min="0" step="0.01">
+			<p class="mb-0">{{ formatMoneda(item.extranjeros_kids) }}</p>
+		</div>
+		<div class="w-100"></div>
+		<div class="col">
+			<label class="form-label">Cantidad de adultos</label>
+			<input type="number" class="form-control" v-model.number="item.cantidad_adultos" min="0">
 		</div>
 		<div class="col">
+			<label class="form-label">Cantidad de niños <span class="text-danger">*</span></label>
+			<input type="number" class="form-control" v-model.number="item.cantidad_ninos" min="0">
+		</div>
+		<div class="col d-none">
 			<label class="form-label">Cantidad de personas <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.cantidad_personas" min="0">
 		</div>
+		<div class="w-100"></div>
 
 		<div class="col">
 			<label class="form-label">Fecha de salida <span class="text-danger">*</span></label>
-			<input type="date" class="form-control sinColor" v-model="item.fecha_salida" >
+			<input type="date" class="form-control" v-model="item.fecha_salida" >
 		</div>
 		<div class="col">
 			<label class="form-label">Hora de salida</label>
@@ -105,7 +123,7 @@ watch(texto, (nuevoValor) => {
 		</div>
 		<div class="col">
 			<label class="form-label">Punto de partida</label>
-			<input type="text" class="form-control" v-model="item.punto_partida" placeholder="Dirección o lugar">
+			<input type="text" class="form-control" v-model="item.punto_partida" placeholder="">
 		</div>
 
 		<div class="col">
@@ -118,41 +136,25 @@ watch(texto, (nuevoValor) => {
 		</div>
 		<div class="col">
 			<label class="form-label">Punto de llegada</label>
-			<input type="text" class="form-control" v-model="item.punto_llegada" placeholder="Dirección o lugar">
+			<input type="text" class="form-control" v-model="item.punto_llegada" placeholder="">
 		</div>
 
-		
-		<div class="col">
-			<label class="form-label">Cantidad adultos</label>
-			<input type="number" class="form-control" v-model.number="item.cantidad_adultos" min="0">
-		</div>
-
-		<div class="col">
-			<label class="form-label">Cantidad niños</label>
-			<input type="number" class="form-control" v-model.number="item.cantidad_ninos" min="0">
-		</div>
 		<div class="w-100"></div>
 
-		<div class="col">
-			<label class="form-label">Incluye</label>
-			<textarea class="form-control" v-model="item.incluye" rows="2" placeholder="Servicios incluidos"></textarea>
-		</div>
-		<div class="col">
-			<label class="form-label">No incluye</label>
-			<textarea class="form-control" v-model="item.no_incluye" rows="2" placeholder="Servicios no incluidos"></textarea>
-		</div>
-		<div class="col">
-			<label class="form-label">Precio <span class="text-danger">*</span></label>
-			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="1">
-		</div>
+		
 		<div class="col-6">
 			<label class="form-label">Requisitos extra</label>
 			<textarea class="form-control" v-model="item.requisitos" rows="2" placeholder="Documentos, edad, etc."></textarea>
 		</div>
-
 		<div class="col-6">
 			<label class="form-label">Observaciones</label>
 			<textarea class="form-control" v-model="item.observaciones" rows="2" placeholder="Notas adicionales"></textarea>
+		</div>
+		<div class="col"></div>
+		<div class="col"></div>
+		<div class="col">
+			<label class="form-label">Precio a pagar </label>
+			<p class="mb-0">{{ formatMoneda(item.precio) }}</p>
 		</div>
 	</div>
 </template>
@@ -160,12 +162,4 @@ watch(texto, (nuevoValor) => {
 .col {
 	margin: 10px 0;
 }
-input.sinColor {
-	color: white;
-}
-
-input.conColor {
-	color: black;
-}
-
 </style>

@@ -9,7 +9,7 @@
 		<!-- Línea de tiempo horizontal (oculta en móviles, visible en md+) -->
 		<div class="timeline-container mb-5 d-none d-md-flex">
 			<div class="timeline-line "></div>
-			<div class="row d-none d-md-flex justify-content-center">
+			<div class="row d-none d-md-flex justify-content-center w-100">
 				<div class="col-md-3 text-center position-relative">
 					<router-link to="/ventas">
 					<div class="step-circle mx-auto step-gradient-1 text-white d-flex align-items-center justify-content-center shadow">1</div>
