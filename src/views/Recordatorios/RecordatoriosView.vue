@@ -173,6 +173,7 @@ const tipoEventoEmoji = (tipo) => {
 	};
 	return map[tipo?.toLowerCase()] || '📌';
 };
+
 </script>
 <template>
 	<h1>Recordatorios</h1>
@@ -226,9 +227,9 @@ const tipoEventoEmoji = (tipo) => {
 								</select>
 							</div>
 						</div>
-
+						
 					</div>
-
+	
 				</div>
 			</div>
 		</div>
@@ -243,12 +244,12 @@ const tipoEventoEmoji = (tipo) => {
 		<div v-if="filteredRecordatorios.length === 0" class="col text-muted">No hay recordatorios que coincidan.</div>
 		<template v-else>
 			<div v-for="recordatorio in filteredRecordatorios" :key="recordatorio.id" class="col mb-4">
-				<div class="card shadow-sm card-hover" style="cursor: pointer;" @click="abrirModal(recordatorio)">
-					<div class="card-body">
+				<div class="card shadow-sm card-hover h-100 d-flex flex-column" style="cursor: pointer;" @click="abrirModal(recordatorio)" >
+					<div class="card-body d-flex flex-column flex-grow-1">
 						<div class="d-flex justify-content-between align-items-start mb-2">
 							<h4 class="card-title fw-bold mb-0">{{ capitalize(recordatorio.titulo) }}</h4>
 						</div>
-
+	
 						<div class="mb-2">
 							<span class="badge fw-normal border border-dark text-dark mx-1">
 								{{ tipoEventoEmoji(recordatorio.tipo_evento) }} {{ capitalize(recordatorio.tipo_evento || 'Sin tipo') }}
@@ -259,12 +260,12 @@ const tipoEventoEmoji = (tipo) => {
 							<span class="badge fw-normal border text-capitalize" :class="prioridadBadgeClass(recordatorio.prioridad)">
 								{{ recordatorio.prioridad || 'Sin prioridad' }}
 							</span>
-
+	
 						</div>
-						<p v-if="recordatorio.comentario" class="text-muted mb-2">
+						<p v-if="recordatorio.comentario" class="text-muted mb-2 flex-grow-1">
 							<small>{{ truncarComentario(recordatorio.comentario) }}</small>
 						</p>
-						<p class="mb-0 text-muted text-capitalize">
+						<p class="mb-0 text-muted text-capitalize tiempoHace mt-auto">
 							<small><i class="bi bi-clock"></i> {{ formatRelative(recordatorio.fecha_hora) }}</small>
 						</p>
 					</div>
