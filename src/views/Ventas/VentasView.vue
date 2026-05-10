@@ -241,8 +241,8 @@ const promoverVenta = async (index)=>{
 								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
 									<i class="bi bi-ban"></i>
 								</button>
-								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)">
-									<i class="bi bi-folder-x"></i>
+								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Eliminar servicio">
+									<i class="bi bi-x-lg"></i>
 								</button>
 							</div>
 							<p v-else class="text-danger"><small>Anulado</small></p>
