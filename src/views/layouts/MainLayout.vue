@@ -101,11 +101,11 @@
 					<router-link to="/recordatorios" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-stars"></i> Recordatorios
 					</router-link>
-					<router-link to="/configuraciones" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-gear"></i> Configuración
-					</router-link>
 					<router-link to="/tarifario" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-tag"></i> Tarifario
+					</router-link>
+					<router-link to="/configuraciones" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-gear"></i> Configuración
 					</router-link>
 					<div class="menuFila-mobile d-none"><i class="bi bi-stickies"></i> Reportes</div>
 					<div class="menuFila-mobile" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
@@ -162,11 +162,11 @@ onMounted(async () => {
 	color: #011734;
 	overflow-y: auto;
 	overflow-x: hidden;
-	scrollbar-color: #023475 #E6FBFF;
+	scrollbar-color: #07469a #E6FBFF;
 }
 
 #rowMenu::-webkit-scrollbar {
-	width: 6px;
+	width: 1px;
 }
 
 #rowMenu::-webkit-scrollbar-track {
@@ -185,7 +185,7 @@ onMounted(async () => {
 
 /* Offcanvas mobile scrollbar */
 .offcanvas-body::-webkit-scrollbar {
-	width: 6px;
+	width: 2px;
 }
 
 .offcanvas-body::-webkit-scrollbar-track {
@@ -194,7 +194,7 @@ onMounted(async () => {
 }
 
 .offcanvas-body::-webkit-scrollbar-thumb {
-	background: #023475;
+	background: #355886;
 	border-radius: 10px;
 }
 
@@ -210,11 +210,11 @@ a {
 	padding: 10px;
 	padding-left: 40px;
 	transition: all 0.5s ease-out;
-	font-size: 1.2rem;
+	font-size: 1.1rem;
 }
 
 .menuFila:hover{
-	background-color: #023475;
+	background-color: #1e4b87;
 	color: white;
 	cursor: pointer;
 	margin: 0 8px;
