@@ -32,7 +32,7 @@ watch(searchText, (value) => {
 
 <template>
 	<div class="row row-cols-3">
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label"><i class="bi bi-funnel"></i> Restaurante <span class="text-danger">*</span></label>
 			<input type="text" class="form-control" list="listaRestaurantes" v-model="searchText"
 				placeholder="Buscar restaurante...">
@@ -42,11 +42,11 @@ watch(searchText, (value) => {
 				</option>
 			</datalist>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">RUC</label>
 			<input type="text" class="form-control" v-model="item.ruc" disabled>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Nombre</label>
 			<input type="text" class="form-control" v-model="item.nombre" disabled>
 		</div>		

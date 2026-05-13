@@ -26,6 +26,19 @@ export function useFormat() {
     if (!date) return ''
     return dayjs.utc(date).format(format)
   }
+	const convertirHora = (hora24) => {
+		if (!hora24 || !/^\d{2}:\d{2}:\d{2}$/.test(hora24)) {
+			return ''; // Validación básica
+		}
+
+		// Crear una fecha base (hoy) y establecer la hora proporcionada
+		const fechaBase = new Date();
+		const [horas, minutos, segundos] = hora24.split(':').map(Number);
+		fechaBase.setHours(horas, minutos, segundos);
+
+		// Formatear a hh:mm a
+		return dayjs(fechaBase).format('hh:mm a');
+	};
 
   const formatRelative = (date) => {
 		//console.log(date)
@@ -89,7 +102,7 @@ export function useFormat() {
     formatRelative,
 		formatMoneda,
 		formatDecimal,
-		fechaLatamCorta, fechaLatamSimple, horaCorta,
+		fechaLatamCorta, fechaLatamSimple, horaCorta, convertirHora,
 		formatHoy, ahora,
 		rutaArchivo,
 		capitalize, usuarioActual,

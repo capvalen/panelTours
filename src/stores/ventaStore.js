@@ -46,6 +46,21 @@ export const useVentasStore = defineStore('ventas', {
 
 			return response.data;
 		},
+		async actualizarProgreso(id, progreso) {
+			const response = await api.patch(`/ventas/${id}`, { progreso });
+			const data = response.data;
+
+			const index = this.ventas.findIndex(v => v.id === id);
+			if (index !== -1) {
+				this.ventas[index].progreso = progreso;
+			}
+
+			if (this.ventaActual) {
+				this.ventaActual.progreso = progreso;
+			}
+
+			return data;
+		},
 
 		async eliminar(id) {
 			await api.delete(`/ventas/${id}`);

@@ -42,8 +42,8 @@
 				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
 					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
 				</router-link>
-				<router-link to="/rutas-de-servicio" :class="{ active: $route.path.startsWith('/venta') }">
-					<div class="menuFila"><i class="bi bi-cart"></i> Ruta del servicio</div>
+				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }">
+					<div class="menuFila"><i class="bi bi-cart"></i> Ventas</div>
 				</router-link>
 				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
 					<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
@@ -92,8 +92,8 @@
 					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-piggy-bank"></i> Caja
 					</router-link>
-					<router-link to="/rutas-de-servicio" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-cart"></i> Ruta del servicio
+					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-cart"></i> Ventas
 					</router-link>
 					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-journal-bookmark"></i> Control de pagos

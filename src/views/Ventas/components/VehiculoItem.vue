@@ -32,7 +32,7 @@ watch(searchText, (value) => {
 
 <template>
 	<div class="row row-cols-3">
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Vehículo <span class="text-danger">*</span></label>
 			<input type="text" class="form-control" list="listaVehiculos" v-model="searchText"
 				placeholder="Buscar vehículo...">
@@ -42,16 +42,16 @@ watch(searchText, (value) => {
 				</option>
 			</datalist>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Tipo de vehículo</label>
 			<input type="text" class="form-control" v-model="item.tipo_vehiculo" disabled>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Placa</label>
 			<input type="text" class="form-control" v-model="item.placa" disabled>
 		</div>
 
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Conductor</label>
 			<input type="text" class="form-control" v-model="item.conductor" disabled>
 		</div>
@@ -97,8 +97,7 @@ watch(searchText, (value) => {
 			<label class="form-label">Observaciones</label>
 			<textarea class="form-control" v-model="item.observaciones" rows="2" placeholder="Instrucciones especiales, restricciones, etc."></textarea>
 		</div>
-		<div class="col"></div>
-		<div class="col"></div>
+		
 		<div class="col">
 			<label class="form-label">Precio a pagar <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio" min="0" step="0.01">

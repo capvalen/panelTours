@@ -53,8 +53,15 @@ const buscar = () => {
 		ventaStore.buscar(search.value);
 	}
 };
-const tipoBadgeClass = (tipo) => {
-	return tipo?.toLowerCase() === 'cotización' ? 'border-warning text-warning' : 'border-success text-success';
+const progresoBadgeClass = (progreso) => {
+	const map = {
+		'cotización': 'border-warning text-warning',
+		'venta': 'border-primary text-primary',
+		'facturada': 'border-info text-info',
+		'en seguimiento': 'border-secondary text-secondary',
+		'finalizado': 'border-success text-success',
+	};
+	return map[progreso?.toLowerCase()] || 'border-secondary text-secondary';
 };
 const estadoBadgePago = (estado) => {
 	const map = {
@@ -126,20 +133,6 @@ const eliminarVenta = async (id, concepto) => {
 		Swal.fire('Eliminado', 'Venta eliminada correctamente', 'success');
 	}
 };
-const promoverVenta = async (index)=>{
-	const result = await Swal.fire({
-		title: `¿Desea promover la ${filteredVentas.value[index].tipo}?`,
-		text: `Deseas promover: ${formatoServicio(filteredVentas.value[index].items)} - ${formatoConcepto(filteredVentas.value[index].items)}`,
-		icon: 'success',
-		showCancelButton: true,
-		confirmButtonText: 'Sí, promover',
-		cancelButtonText: 'Cancelar'
-	});
-	if (result.isConfirmed) {
-		await ventaStore.eliminar(id);
-		Swal.fire('Eliminado', 'Venta eliminada correctamente', 'success');
-	}
-}
 </script>
 
 <template>
@@ -147,7 +140,7 @@ const promoverVenta = async (index)=>{
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Ruta de Servicio</a></li>
+			<li class="breadcrumb-item"><a href="/ventas">Ventas</a></li>
 			<li class="breadcrumb-item active" aria-current="page">Ventas y Cotizaciones</li>
 		</ol>
 	</nav>
@@ -192,7 +185,7 @@ const promoverVenta = async (index)=>{
 				<thead>
 					<tr>
 						<th>#</th>
-						<th>Tipo</th>
+						<th>Progreso</th>
 						<th>Fecha de registro</th>
 						<th>Categorías</th>
 						<th>N° Personas</th>
@@ -208,8 +201,8 @@ const promoverVenta = async (index)=>{
 					<tr v-for="(venta, index) in filteredVentas" :key="venta.id">
 						<td>{{ index + 1 }}</td>
 						<td>
-							<span class="badge border" :class="tipoBadgeClass(venta.tipo)">
-								{{ capitalize(venta.tipo) }}
+							<span class="badge border" :class="progresoBadgeClass(venta.progreso || 'cotización')">
+								{{ capitalize(venta.progreso || 'cotización') }}
 							</span>
 						</td>
 						<td class="tdLargo">
@@ -221,13 +214,13 @@ const promoverVenta = async (index)=>{
 						<td>{{ venta.personas || 0 }}</td>
 						<td>{{ venta.departamento?.departamento }} {{ venta.ciudad ? ' - '+venta.ciudad : '' }}</td>
 						<td>{{ capitalize(formatoConcepto(venta.items)) }}</td>
-						<td>
+						<td class="nowrap-cell">
 							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
 								{{ venta.cliente?.razon_social || venta.cliente?.apellidos + ' ' + venta.cliente?.nombres || 'Sin cliente' }}
 							</router-link>
 							<span v-else>-</span>
 						</td>
-						<td>{{ formatMoneda(venta.precio) }}</td>
+						<td class="nowrap-cell">{{ formatMoneda(venta.precio) }}</td>
 						<td>
 							<span class="badge border text-capitalize" :class="estadoBadgePago(venta.estado_pago)">
 								{{ venta.estado_pago || '-' }}
@@ -235,10 +228,7 @@ const promoverVenta = async (index)=>{
 						</td>
 						<td>
 							<div class="d-flex gap-2" v-if="venta.estado != 'anulado'">
-								<button class="btn btn-sm btn-outline-success" @click="promoverVenta(index)" title="Promover">
-									<i class="bi bi-arrow-up"></i>
-								</button>
-								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
+								<button class="btn btn-sm btn-outline-warning" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
 									<i class="bi bi-ban"></i>
 								</button>
 								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Eliminar servicio">
@@ -257,3 +247,9 @@ const promoverVenta = async (index)=>{
 		</div>
 	</div>
 </template>
+
+<style scoped>
+.nowrap-cell {
+	white-space: nowrap;
+}
+</style>

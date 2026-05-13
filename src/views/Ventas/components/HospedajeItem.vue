@@ -75,7 +75,7 @@ watch([() => props.item.num_habitaciones, () => props.item.cantidad_noches, () =
 
 <template>
 	<div class="row row-cols-3">
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Hospedaje <span class="text-danger">*</span></label>
 			<input type="text" class="form-control" list="listaHospedajes" v-model="searchText"
 				placeholder="Buscar hospedaje...">
@@ -85,11 +85,11 @@ watch([() => props.item.num_habitaciones, () => props.item.cantidad_noches, () =
 				</option>
 			</datalist>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">RUC</label>
 			<input type="text" class="form-control" v-model="item.ruc" disabled>
 		</div>
-		<div class="col">
+		<div class="col d-none">
 			<label class="form-label">Hospedaje</label>
 			<input type="text" class="form-control" v-model="item.hospedaje" disabled>
 		</div>

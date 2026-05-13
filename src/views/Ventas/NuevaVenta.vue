@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useClienteStore } from '@/stores/clienteStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useGuiasStore } from '@/stores/guiaStore';
@@ -28,14 +29,15 @@ const ventaStore = useVentasStore()
 const restaurantStore = userestaurantestore()
 const hospedajesStore = useHospedajesStore()
 const aerolineaStore = useAerolineasStore()
+const router = useRouter();
 
 const { formatHoy, formatMoneda, capitalize } = useFormat();
 
 const venta = reactive({
 	cliente_id: '',
-	cliente_busqueda: '',
-	tipo: 'venta',
-	nacionalidad: 'peruano',
+	cliente_busqueda: '',	
+	nacionalidad: 'peruana',
+	progreso: 'cotización',
 	estado_pago: 'pendiente',
 	fecha: formatHoy(),
 	precio: 0,
@@ -43,6 +45,7 @@ const venta = reactive({
 	personas: 1,
 	motivo_descuento: '',
 	descuento: 0,
+	adelanto: 0,
 	departamento_id:null,
 	ciudad: '',
 	nivel:1,
@@ -67,7 +70,8 @@ const nuevoItem = {
 		get fecha_reserva() { return venta.fecha || 1 },
 		hora_reserva: null,
 		pedido_especial: null,
-		precio:0
+		precio:0,
+		restaurante_id:1
 	},
 	'guía': {
 		tipo: 'guía',
@@ -81,7 +85,8 @@ const nuevoItem = {
 		duracion_horas:0,
 		tipo_servicio: 'privado',
 		get cantidad_personas() { return venta.personas || 1 },
-		pedido_especial: null
+		pedido_especial: null,
+		guia_id:1
 	},
 	'hospedaje':{
 		tipo: 'hospedaje',
@@ -98,7 +103,8 @@ const nuevoItem = {
 		precio:0,
 		requiere_cuna:false,
 		habitacion_fumador:false,
-		preferencias_especiales:''
+		preferencias_especiales:'',
+		hospedaje_id:1
 	},
 	'transporte':{
 		tipo:'transporte',
@@ -112,6 +118,7 @@ const nuevoItem = {
 		get pasajeros() { return venta.personas || 1 },
 		precio: 0,
 		observaciones: '',
+		vehiculo_id:1
 	},
 	'tour':{
 		tipo:'tour',
@@ -136,7 +143,7 @@ const nuevoItem = {
 		hora_salida:null,
 		hora_retorno:null,
 		requisitos:'',
-		observaciones:'',
+		observaciones:''
 	},
 	'vuelo': {
 		tipo:'vuelo',
@@ -158,6 +165,7 @@ const nuevoItem = {
 		clase_vuelo: 'económica',
 		escala: false,
 		observaciones: '',
+		vuelo_id:1
 	}
 
 };
@@ -210,8 +218,12 @@ const precioTotal = computed(() => {
 	return Math.max(0, sumaItems - (venta.descuento || 0));
 });
 
-watch([() => canasta.value, () => venta.descuento], () => {
-	venta.precio = precioTotal.value;
+const actualizarPrecioFinal = () => {
+	venta.precio = Math.max(0, precioTotal.value - (venta.adelanto || 0));
+};
+
+watch([() => canasta.value, () => venta.descuento, () => venta.adelanto], () => {
+	actualizarPrecioFinal();
 }, { deep: true });
 
 onMounted(async () => {	
@@ -253,12 +265,15 @@ const filtrarDepartamentos = (event) => {
 };
 
 const calcularDescuento = ()=>{
-	if(venta.descuento >0 )
-		venta.precio -= venta.descuento
-	else{
+	if (venta.descuento <= 0) {
 		venta.descuento = 0
 		venta.motivo_descuento = ''
 	}
+	actualizarPrecioFinal();
+}
+const calcularAdelanto = ()=>{
+	if (venta.adelanto <= 0) venta.adelanto = 0
+	actualizarPrecioFinal();
 }
 const guardarVenta = async () => {
 	// Validar canasta vacía
@@ -285,17 +300,6 @@ const guardarVenta = async () => {
 
 		// Validaciones según tipo de item
 		switch (item.tipo) {
-			case 'guía':
-				if (!item.guia_id) {
-					Swal.fire('Error', 'Falta seleccionar un guía', 'error');
-					return;
-				}
-				if (!item.fecha) {
-					Swal.fire('Error', 'Falta ingresar la fecha del guía', 'error');
-					return;
-				}
-				break;
-
 			case 'hospedaje':
 				if (!item.fecha_ingreso) {
 					Swal.fire('Error', 'Falta fecha de ingreso', 'error');
@@ -310,10 +314,6 @@ const guardarVenta = async () => {
 			case 'transporte':
 				if (!item.fecha_inicio) {
 					Swal.fire('Error', 'Indique la fecha de inicio', 'error');
-					return;
-				}
-				if (!item.vehiculo_id) {
-					Swal.fire('Error', 'Falta seleccionar un transporte', 'error');
 					return;
 				}
 				if (!item.origen ) {
@@ -366,11 +366,11 @@ const guardarVenta = async () => {
 		canasta.value.forEach(item=>{
 			var descripcion = ''
 			switch (item.tipo) {
-				case 'restaurante': descripcion = `Restaurant ${item.tipo_servicio ?? ''} ${item.turno ?? ''} - ${item.numero_personas} persona${item.numero_personas>1?'s':''}`; break;
-				case 'hospedaje': descripcion = `Hospedaje de habitación ${item.tipo_habitacion ?? ''} - ${item.cantidad_adultos} persona${item.cantidad_adultos>1?'s':''} - ${item.cantidad_noches} noche${item.cantidad_noches > 1 ? 's' : ''}`; break;
-				case 'vuelo': descripcion = `Vuelo ${item.origen} - ${item.destino} - ${item.aerolinea ? item.aerolinea+'- ':''}${item.pasajeros} pasajero${item.pasajeros >1?'s':''}`; break;
+				case 'restaurante': descripcion = `Reserva para ${item.tipo_servicio ?? ''} ${item.turno ?? ''} - ${item.numero_personas} persona${item.numero_personas>1?'s':''}`; break;
+				case 'hospedaje': descripcion = `Alquiler de ${item.tipo_habitacion ?? ''} - ${item.cantidad_adultos} persona${item.cantidad_adultos>1?'s':''} - ${item.cantidad_noches} noche${item.cantidad_noches > 1 ? 's' : ''}`; break;
+				case 'vuelo': descripcion = `Reserva de vuelo ${item.origen} - ${item.destino} - ${item.aerolinea ? item.aerolinea+'- ':''}${item.pasajeros} pasajero${item.pasajeros >1?'s':''}`; break;
 				case 'transporte': descripcion = `Transporte de ${item.origen}${item.destino ? ` - ${item.destino}`: ''} - ${item.pasajeros} pasajero${item.pasajeros >1?'s':''}`; break;
-				case 'tour': descripcion = `${capitalize(item.tipo_tour)} ${item.nombre_tour} - ${item.cantidad_personas} persona${item.cantidad_personas >1?'s':''}`; break;
+				case 'tour': descripcion = `${item.nombre_tour} - ${item.cantidad_personas} persona${item.cantidad_personas >1?'s':''}`; break;
 				default: descripcion = ''; break;
 			}
 			item.resumen ={
@@ -382,10 +382,22 @@ const guardarVenta = async () => {
 		})
 		
 		const ventaCompleta = {venta, canasta: canasta.value}
-	
-		ventaStore.guardar(ventaCompleta)
+		const ventaGuardada = await ventaStore.guardar(ventaCompleta)
+		const ventaId = ventaGuardada?.id
 
-		Swal.fire('Éxito', 'Venta guardada', 'success');
+		await Swal.fire({
+			title: 'Éxito',
+			text: 'Venta guardada',
+			icon: 'success',
+			timer: 5000,
+			timerProgressBar: true
+		});
+
+		if (ventaId) {
+			router.push(`/venta/detalle/${ventaId}`)
+		} else {
+			router.push('/ventas')
+		}
 	} catch (error) {
 		Swal.fire('Error', 'No se pudo guardar la venta', 'error');
 	}
@@ -458,8 +470,8 @@ const guardarVenta = async () => {
 						<div class="col">
 							<label for="nacionalidad" class="form-label">Nacionalidad</label>
 							<select name="nacionalidad" id="" class="form-select" v-model="venta.nacionalidad">
-								<option value="peruano">Peruana</option>
-								<option value="extranjero">Extranjera</option>
+								<option value="peruana">Peruana</option>
+								<option value="extranjera">Extranjera</option>
 							</select>
 						</div>
 						<div class="col">
@@ -573,7 +585,11 @@ const guardarVenta = async () => {
 							<label for="txtPrecio" class="form-label">Motivo de descuento <span class="text-danger">*</span></label>
 							<input type="text" class="form-control" id="txtPrecio" v-model="venta.motivo_descuento">
 						</div>
-						
+						<div class="col">
+							<label for="txtPrecio" class="form-label">Adelanto (S/)</label>
+							<input type="number" class="form-control" id="txtPrecio" v-model.number="venta.adelanto" min="0"
+								step="1" @input="calcularAdelanto()">
+						</div>
 						<div class="col">
 							<label for="txtPrecio" class="form-label">Precio final a pagar (S/)</label>
 							<input type="text" class="form-control" id="txtPrecio" :value="formatMoneda(venta.precio)" min="0"

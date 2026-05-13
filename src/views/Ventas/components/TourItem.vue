@@ -75,7 +75,7 @@ watch([() => props.item.cantidad_adultos, () => props.item.cantidad_ninos, ()=> 
 			</datalist>
 		</div>
 		<div class="col">
-			<label class="form-label">Nombre</label>
+			<label class="form-label">Nombre de Tour</label>
 			<input type="text" class="form-control" v-model="item.nombre_tour" disabled>
 		</div>
 		<div class="col">

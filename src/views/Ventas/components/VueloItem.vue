@@ -67,7 +67,7 @@ watch([() => props.item.precio], () => {
 	<div class="row row-cols-3">
 		<div class="col">
 			<label class="form-label">Aerolínea <span class="text-danger">*</span></label>
-			<input type="text" class="form-control text-capitalize" list="listaAerolineas" v-model="item.aerolinea"
+			<input type="text" class="form-select text-capitalize" list="listaAerolineas" v-model="item.aerolinea"
 				placeholder="Buscar aerolínea...">
 			<datalist id="listaAerolineas">
 				<option class="text-capitalize" v-for="aerolinea in aerolineas" :key="aerolinea.id" :value="aerolinea.nombre">
@@ -76,7 +76,7 @@ watch([() => props.item.precio], () => {
 		</div>
 		<div class="col">
 			<label class="form-label">Origen <span class="text-danger">*</span></label>
-			<input type="text" class="form-control" list="listaOrigen" v-model="item.origen"
+			<input type="text" class="form-select" list="listaOrigen" v-model="item.origen"
 				placeholder="Buscar ciudad...">
 			<datalist id="listaOrigen">
 				<option v-for="depa in departamentos" :key="depa.id" :value="depa.departamento + ' (' + depa.abreviatura + ')'">
@@ -85,7 +85,7 @@ watch([() => props.item.precio], () => {
 		</div>
 		<div class="col">
 			<label class="form-label">Destino</label>
-			<input type="text" class="form-control" list="listaDestino" v-model="item.destino"
+			<input type="text" class="form-select" list="listaDestino" v-model="item.destino"
 				placeholder="Buscar ciudad...">
 			<datalist id="listaDestino">
 				<option v-for="depa in departamentos" :key="depa.id" :value="depa.departamento + ' (' + depa.abreviatura + ')'">
@@ -124,7 +124,7 @@ watch([() => props.item.precio], () => {
 			<input type="number" class="form-control" v-model.number="item.pasajeros" min="0">
 		</div>
 		<div class="col">
-			<label class="form-label">Precio por ticket (S/)</label>
+			<label class="form-label">Precio por ticket (S/) <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio_ticket" min="0" step="1">
 		</div>
 		<div class="col">
@@ -160,7 +160,7 @@ watch([() => props.item.precio], () => {
 				<input type="number" class="form-control" :value="dolarPrecio.toFixed(2)" disabled>
 			</div>
 		<div class="col">
-			<label class="form-label">Precio a pagar (S/)<span class="text-danger">*</span></label>
+			<label class="form-label">Precio a pagar (S/) <span class="text-danger">*</span></label>
 			<input type="number" class="form-control" v-model.number="item.precio" disabled>
 		</div>
 	</div>
