@@ -257,6 +257,11 @@ onMounted(async () => {
 				Seguimiento de Operatividad
 			</button>
 		</li>
+		<li class="nav-item">
+			<button class="nav-link" :class="{ active: activeTab === 'personas' }" @click="activeTab = 'personas'">
+				Personas
+			</button>
+		</li>
 	</ul>
 
 	<!-- Contenido de las pestañas -->
@@ -492,11 +497,12 @@ onMounted(async () => {
 						<div v-for="(item, index) in serviciosVenta" :key="item.id" class="accordion-item">
 							<h2 class="accordion-header" :id="`recursoHeading${item.id || index}`">
 								<button
-									class="accordion-button collapsed"
+									class="accordion-button"
+									:class="{ collapsed: serviciosVenta.length > 1 }"
 									type="button"
 									data-bs-toggle="collapse"
 									:data-bs-target="`#recursoCollapse${item.id || index}`"
-									aria-expanded="false"
+									:aria-expanded="serviciosVenta.length === 1 ? 'true' : 'false'"
 									:aria-controls="`recursoCollapse${item.id || index}`"
 								>
 									<div class="d-flex align-items-center gap-2">
@@ -511,6 +517,7 @@ onMounted(async () => {
 							<div
 								:id="`recursoCollapse${item.id || index}`"
 								class="accordion-collapse collapse"
+								:class="{ show: serviciosVenta.length === 1 }"
 								:aria-labelledby="`recursoHeading${item.id || index}`"
 								data-bs-parent="#accordionRecursos"
 							>
@@ -704,6 +711,108 @@ onMounted(async () => {
 							</div>
 						</div>
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Pestaña Personas -->
+		<div v-if="activeTab === 'personas'">
+			<div class="row my-3 p-2">
+				<div class="col-12">
+					<h5 class="card-title fw-bold mb-3">Personas</h5>
+
+					<!-- Autorizaciones -->
+					<div class="card mb-4">
+						<div class="card-header">
+							<h6 class="mb-0 fw-bold">Autorizaciones</h6>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-6 col-md-3 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" :checked="ventaActual.autorizaciones?.politica_privacidad" disabled>
+										<label class="form-check-label">Política de privacidad</label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" :checked="ventaActual.autorizaciones?.terminos_condiciones" disabled>
+										<label class="form-check-label">Términos y condiciones</label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" :checked="ventaActual.autorizaciones?.politica_cancelacion" disabled>
+										<label class="form-check-label">Política de cancelación</label>
+									</div>
+								</div>
+								<div class="col-6 col-md-3 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" :checked="ventaActual.autorizaciones?.uso_imagen" disabled>
+										<label class="form-check-label">Uso de imagen</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Lista de personas -->
+					<div class="d-flex justify-content-between align-items-center mb-3">
+						<h6 class="mb-0 fw-bold">Lista de personas ({{ ventaActual.personas?.length || 0 }})</h6>
+						<a href="/recopilacion-datos.html" class="btn btn-primary btn-sm">
+							<i class="bi bi-send"></i> Enviar formulario
+						</a>
+					</div>
+					<div v-if="ventaActual.personas?.length" class="accordion" id="accordionPersonas">
+						<div v-for="persona in ventaActual.personas" :key="persona.indice" class="accordion-item">
+							<h2 class="accordion-header" :id="`personaHeading${persona.indice}`">
+								<button
+									class="accordion-button collapsed"
+									type="button"
+									data-bs-toggle="collapse"
+									:data-bs-target="`#personaCollapse${persona.indice}`"
+									aria-expanded="false"
+									:aria-controls="`personaCollapse${persona.indice}`"
+								>
+									<div class="d-flex align-items-center gap-2">
+										<span class="fw-semibold">{{ persona.indice }}.</span>
+										<span>{{ persona.nombre || 'Sin nombre' }}</span>
+										<span v-if="persona.es_titular" class="badge bg-primary ms-1">Titular</span>
+										<span class="badge bg-secondary ms-1">{{ capitalize(persona.parentesco || '-') }}</span>
+									</div>
+								</button>
+							</h2>
+							<div
+								:id="`personaCollapse${persona.indice}`"
+								class="accordion-collapse collapse"
+								:aria-labelledby="`personaHeading${persona.indice}`"
+								data-bs-parent="#accordionPersonas"
+							>
+								<div class="accordion-body">
+									<div class="row g-3">
+										<div class="col-12 col-md-6">
+											<p><strong>DNI:</strong> {{ persona.dni || '-' }}</p>
+											<p><strong>Fecha de nacimiento:</strong> {{ persona.fecha_nacimiento ? fechaLatamSimple(persona.fecha_nacimiento) : '-' }}</p>
+											<p><strong>Parentesco:</strong> {{ capitalize(persona.parentesco || '-') }}</p>
+											<p><strong>Enfermedades:</strong> {{ persona.enfermedades === 'si' ? 'Sí' : 'No' }}</p>
+											<p v-if="persona.enfermedades === 'si'"><strong>Detalle enfermedades:</strong> {{ persona.detalle_enfermedades || '-' }}</p>
+										</div>
+										<div class="col-12 col-md-6">
+											<p><strong>Pasaporte:</strong> {{ persona.pasaporte || '-' }}</p>
+											<p><strong>Fecha caducidad pasaporte:</strong> {{ persona.fecha_caducidad_pasaporte ? fechaLatamSimple(persona.fecha_caducidad_pasaporte) : '-' }}</p>
+											<p><strong>País emisión:</strong> {{ capitalize(persona.pais_emision || '-') }}</p>
+											<p><strong>Vacunas:</strong> {{ persona.vacunas === 'si' ? 'Sí' : 'No' }}</p>
+											<p v-if="persona.vacunas === 'si'"><strong>Detalle vacunas:</strong> {{ persona.detalle_vacunas || '-' }}</p>
+										</div>
+										<div class="col-12">
+											<p><strong>Observaciones:</strong> {{ persona.observaciones || '-' }}</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div v-else class="text-muted">No hay personas registradas.</div>
 				</div>
 			</div>
 		</div>
