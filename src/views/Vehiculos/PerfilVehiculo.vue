@@ -54,6 +54,7 @@ watch(
 					<p><strong>Tipo:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_vehiculo }}</span></p>
 					<p><strong>Placa:</strong> {{ vehiculoActual?.placa }}</p>
 					<p><strong>Combustible:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_combustible }}</span></p>
+					<p><strong>Departamento:</strong> {{ vehiculoActual?.departamento?.departamento || '-' }}</p>
 					<p><strong>Incluye seguro:</strong> {{ vehiculoActual?.incluye_seguro ? 'Sí' : 'No' }}</p>
 					<p v-if="vehiculoActual?.seguro"><strong>Seguro:</strong> {{ vehiculoActual?.seguro }}</p>
 					<p><strong>Incluye GPS:</strong> {{ vehiculoActual?.incluye_gps ? 'Sí' : 'No' }}</p>

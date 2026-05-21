@@ -8,14 +8,19 @@ export const useHospedajesStore = defineStore('hospedajes', {
 	}),
 
 	actions: {
-		async listar() {
-			const response = await api.get('/hospedajes');
+		async listar(params = {}) {
+			const response = await api.get('/hospedajes', { params });
 			this.hospedajes = response.data;
 			return response.data;
 		},
 
-		async buscar(termino) {
-			const response = await api.get('/hospedajes?buscar=' + termino);
+		async buscar(termino, params = {}) {
+			const response = await api.get('/hospedajes', {
+				params: {
+					buscar: termino,
+					...params,
+				},
+			});
 			this.hospedajes = response.data;
 			return response.data;
 		},

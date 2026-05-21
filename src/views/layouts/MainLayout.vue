@@ -58,7 +58,9 @@
 					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
 				</router-link>
 				<div class="menuFila d-none"><i class="bi bi-stickies"></i> Reportes</div>
-				<div class="menuFila" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
+				<a href="#!">
+					<div class="menuFila" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
+				</a>
 			</div>
 
 			<!-- Sidebar offcanvas para móvil -->

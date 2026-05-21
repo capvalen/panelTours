@@ -1,10 +1,18 @@
 <script setup>
 import { useVehiculosStore } from '@/stores/vehiculoStore';
-import { onMounted, reactive } from 'vue';
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { onMounted, ref } from 'vue';
 import Swal from 'sweetalert2'
 
 const vehiculoStore = useVehiculosStore();
-const texto = reactive('')
+const departamentosStore = useDepartamentosStore();
+const texto = ref('');
+const departamentoId = ref('');
+
+const nombreDepartamento = (departamento_id) => {
+	const depto = departamentosStore.departamentos.find(d => Number(d.id) === Number(departamento_id));
+	return depto ? depto.departamento : '-';
+};
 
 function eliminarVehiculo(id, placa, nombreConductor) {
 	if( confirm(`¿Confirma que desea eliminar el vehículo ${placa}${nombreConductor ? ' - ' + nombreConductor : ''}?`) ){
@@ -22,15 +30,19 @@ function eliminarVehiculo(id, placa, nombreConductor) {
 	}
 }
 function buscar() {
-	if(texto.trim() == ''){
-		vehiculoStore.listar()
+	const filtros = {};
+	if (departamentoId.value) filtros.departamento_id = departamentoId.value;
+
+	if(texto.value.trim() == ''){
+		vehiculoStore.listar(filtros)
 	}else{
-		vehiculoStore.buscar(texto)
+		vehiculoStore.buscar(texto.value, filtros)
 	}
 }
 
 onMounted(() => {
-	vehiculoStore.listar()
+	departamentosStore.listar();
+	vehiculoStore.listar();
 })
 </script>
 <template>
@@ -47,11 +59,21 @@ onMounted(() => {
 								<input type="search" class="form-control" placeholder="Placa, conductor o tipo vehículo" v-model="texto" @keyup.enter="buscar">
 							</div>
 						</div>
+						<div class="col-12 col-md my-1">
+							<select id="sltDepartamento" class="form-select" v-model="departamentoId">
+								<option value="">Todos los departamentos</option>
+								<option v-for="dep in departamentosStore.departamentos" :key="dep.id" :value="dep.id">
+									{{ dep.departamento }}
+								</option>
+							</select>
+						</div>
 						<div class="col-6 col-md col-md-2">
 							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
 						</div>
 						<div class="col-6 col-md d-flex justify-content-center">
-							<router-link to="/vehiculo/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo vehículo</router-link>
+							<div>
+								<router-link to="/vehiculo/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo vehículo</router-link>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -71,6 +93,7 @@ onMounted(() => {
 						<th scope="col">Conductor</th>
 						<th scope="col">Licencia</th>
 						<th scope="col">Combustible</th>
+						<th scope="col">Departamento</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
@@ -86,10 +109,12 @@ onMounted(() => {
 						<td>{{ vehiculo.nombre_conductor }}</td>
 						<td>{{ vehiculo.licencia_conductor }}</td>
 						<td class="text-capitalize">{{ vehiculo.tipo_combustible }}</td>
-						<td class="d-flex gap-2">
+						<td>{{ vehiculo.departamento?.departamento }}</td>
+						<td class="d-flex gap-2" v-if="vehiculo.id !== 1">
 							<router-link :to="{ name: 'editarVehiculo', params: { id: vehiculo.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
 							<button class="btn btn-sm btn-outline-danger" @click="eliminarVehiculo(vehiculo.id, vehiculo.placa, vehiculo.nombre_conductor)"><i class="bi bi-x-lg"></i></button>
 						</td>
+						<td v-else></td>
 					</tr>
 				</tbody>
 			</table>

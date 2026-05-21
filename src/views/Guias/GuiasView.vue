@@ -92,10 +92,11 @@ onMounted(() => {
 						<td>{{ guia.celular }}</td>
 						<td>{{ capitalize(guia.especialidad )}}</td>
 						<td class="text-capitalize">{{ guia.idiomas }}</td>
-						<td class="d-flex gap-2">
+						<td class="d-flex gap-2" v-if="guia.id !== 1">
 							<router-link :to="{ name: 'editarGuia', params: { id: guia.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
 							<button class="btn btn-sm btn-outline-danger" @click="eliminarGuia(guia.id, guia.nombre)"><i class="bi bi-x-lg"></i></button>
 						</td>
+						<td v-else></td>
 					</tr>
 				</tbody>
 			</table>

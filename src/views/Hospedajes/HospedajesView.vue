@@ -1,10 +1,13 @@
 <script setup>
 import { useHospedajesStore } from '@/stores/hospedajeStore';
-import { onMounted, reactive } from 'vue';
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { onMounted, ref } from 'vue';
 import Swal from 'sweetalert2'
 
 const hospedajeStore = useHospedajesStore();
-const texto = reactive('')
+const departamentosStore = useDepartamentosStore();
+const texto = ref('');
+const departamentoId = ref('');
 
 function eliminarHospedaje(id, nombre) {
 	if( confirm(`¿Confirma que desea eliminar el hospedaje "${nombre}"?`) ){
@@ -22,15 +25,19 @@ function eliminarHospedaje(id, nombre) {
 	}
 }
 function buscar() {
-	if(texto.trim() == ''){
-		hospedajeStore.listar()
+	const filtros = {};
+	if (departamentoId.value) filtros.departamento_id = departamentoId.value;
+
+	if(texto.value.trim() == ''){
+		hospedajeStore.listar(filtros)
 	}else{
-		hospedajeStore.buscar(texto)
+		hospedajeStore.buscar(texto.value, filtros)
 	}
 }
 
 onMounted(() => {
-	hospedajeStore.listar()
+	departamentosStore.listar();
+	hospedajeStore.listar();
 })
 </script>
 <template>
@@ -46,6 +53,14 @@ onMounted(() => {
 							<div class="input-group">
 								<input type="text" class="form-control" placeholder="RUC, nombre o contacto" v-model="texto">
 							</div>
+						</div>
+						<div class="col-12 col-md my-1">
+							<select id="sltDepartamento" class="form-select" v-model="departamentoId">
+								<option value="">Todos los departamentos</option>
+								<option v-for="dep in departamentosStore.departamentos" :key="dep.id" :value="dep.id">
+									{{ dep.departamento }}
+								</option>
+							</select>
 						</div>
 						<div class="col-6 col-md">
 							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
@@ -90,10 +105,11 @@ onMounted(() => {
 						<td>{{ hospedaje.contacto }}</td>
 						<td>{{ hospedaje.celular }}</td>
 						<td>{{ hospedaje.correo }}</td>
-						<td class="d-flex gap-2">
+						<td class="d-flex gap-2" v-if="hospedaje.id !== 1">
 							<router-link :to="{ name: 'editarHospedaje', params: { id: hospedaje.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
 							<button class="btn btn-sm btn-outline-danger" @click="eliminarHospedaje(hospedaje.id, hospedaje.hospedaje)"><i class="bi bi-x-lg"></i></button>
 						</td>
+						<td v-else></td>
 					</tr>
 				</tbody>
 			</table>

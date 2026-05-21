@@ -1,11 +1,14 @@
 <script setup>
-import { reactive, onMounted, watch } from 'vue'
+import { reactive, onMounted, watch, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useVehiculosStore } from '@/stores/vehiculoStore'
+import { useFormat } from '@/composables/formatos'
 import Swal from 'sweetalert2'
 
 const route = useRoute()
 const vehiculoStore = useVehiculosStore()
+const { listaDepartamentos } = useFormat()
+const departamentos = ref([])
 const nuevo = reactive({})
 
 const cargarDatos = async () => {
@@ -13,8 +16,9 @@ const cargarDatos = async () => {
 	Object.assign(nuevo, vehiculoStore.vehiculoActual)
 }
 
-onMounted(() => {
+onMounted(async () => {
 	cargarDatos()
+	departamentos.value = await listaDepartamentos()
 })
 
 watch(
@@ -84,11 +88,22 @@ function guardar() {
 							</select>
 						</div>
 						<div class="col-md-4">
+							<label for="departamento" class="form-label">Departamento</label>
+							<select class="form-select" id="departamento" v-model="nuevo.departamento_id">
+								<option value="">Seleccionar...</option>
+								<option v-for="depto in departamentos" :key="depto.id" :value="depto.id">
+									{{ depto.departamento }}
+								</option>
+							</select>
+						</div>
+						<div class="col-md-4">
 							<div class="form-check form-switch mt-4">
 								<input class="form-check-input" type="checkbox" id="incluyeSeguro" v-model="nuevo.incluye_seguro">
 								<label class="form-check-label" for="incluyeSeguro">Incluye seguro</label>
 							</div>
 						</div>
+					</div>
+					<div class="row mb-3">
 						<div class="col-md-4">
 							<label for="seguro" class="form-label">Seguro</label>
 							<input type="text" class="form-control" id="seguro" v-model="nuevo.seguro">

@@ -155,10 +155,8 @@ watch(
 			</div>
 
 			<div class="card mb-3">
-				<div class="card-header bg-success text-white">
-					<strong>💉 Vacunas ({{ vacunas?.length }})</strong>
-				</div>
 				<div class="card-body">
+					<p><strong>💉 Vacunas ({{ vacunas?.length }})</strong></p>
 					<ul v-if="vacunas?.length">
 						<li v-for="vacuna in vacunas" class="text-capitalize">
 							🩺 {{ vacuna?.certificado }} - {{ fechaLatamSimple(vacuna?.fecha) }}
@@ -169,10 +167,8 @@ watch(
 			</div>
 
 			<div class="card mb-3">
-				<div class="card-header bg-warning text-dark">
-					<strong>🛡️ Seguros ({{ seguros?.length }})</strong>
-				</div>
 				<div class="card-body">
+					<p><strong>🛡️ Seguros ({{ seguros?.length }})</strong></p>
 					<ul v-if="seguros?.length">
 						<li v-for="seguro in seguros" class="text-capitalize">
 							📄 {{ seguro?.seguro }} - {{ fechaLatamSimple(seguro?.fecha) }}
@@ -183,10 +179,8 @@ watch(
 			</div>
 
 			<div class="card">
-				<div class="card-header bg-dark text-white">
-					<strong>📎 Archivos adjuntos ({{ archivos?.length }})</strong>
-				</div>
-				<div class="card-body p-0">
+				<div class="card-body">
+					<p><strong>📎 Archivos adjuntos ({{ archivos?.length }})</strong></p>
 					<ul class="list-group list-group-flush">
 						<li class="list-group-item" v-for="(archivo, index) in archivos" :key="index">
 							<div class="d-flex justify-content-between align-items-center">

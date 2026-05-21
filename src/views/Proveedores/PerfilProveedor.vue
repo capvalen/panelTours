@@ -124,10 +124,9 @@ watch(
 			</div>
 
 			<div class="card mb-3">
-				<div class="card-header bg-dark text-white">
-					<strong>📎 Archivos adjuntos ({{ proveedorActual?.archivos?.length }})</strong>
-				</div>
-				<div class="card-body p-0">
+				<div class="card-body">
+					<p><strong>📎 Archivos adjuntos ({{ proveedorActual?.archivos?.length }})</strong></p>
+
 					<ul class="list-group list-group-flush">
 						<li class="list-group-item" v-for="(archivo, index) in proveedorActual?.archivos" :key="index">
 							<div class="d-flex justify-content-between align-items-center">

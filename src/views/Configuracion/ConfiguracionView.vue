@@ -209,6 +209,7 @@ onMounted(() => {
 			<table class="users-table">
 				<thead>
 					<tr>
+						<th>#</th>
 						<th>Nombre</th>
 						<th>Usuario</th>
 						<th>Perfil</th>
@@ -219,12 +220,13 @@ onMounted(() => {
 				</thead>
 				<tbody>
 					<tr v-if="loadingUsers">
-						<td colspan="6">Cargando usuarios...</td>
+						<td colspan="7">Cargando usuarios...</td>
 					</tr>
 					<tr v-else-if="users.length === 0">
-						<td colspan="6">No hay usuarios registrados</td>
+						<td colspan="7">No hay usuarios registrados</td>
 					</tr>
-					<tr v-for="user in users" :key="user.id">
+					<tr v-for="(user, index) in users" :key="user.id">
+						<td>{{ index + 1 }}</td>
 						<td>{{ user.nombre }}</td>
 						<td>{{ user.user }}</td>
 						<td>{{ user.perfil || '-' }}</td>

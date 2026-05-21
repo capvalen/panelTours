@@ -8,14 +8,19 @@ export const useVehiculosStore = defineStore('vehiculos', {
 	}),
 
 	actions: {
-		async listar() {
-			const response = await api.get('/vehiculos');
+		async listar(params = {}) {
+			const response = await api.get('/vehiculos', { params });
 			this.vehiculos = response.data;
 			return response.data;
 		},
 
-		async buscar(termino) {
-			const response = await api.get('/vehiculos?buscar=' + termino);
+		async buscar(termino, params = {}) {
+			const response = await api.get('/vehiculos', {
+				params: {
+					buscar: termino,
+					...params,
+				},
+			});
 			this.vehiculos = response.data;
 			return response.data;
 		},
