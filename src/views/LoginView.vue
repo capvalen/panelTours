@@ -2,7 +2,6 @@
   <div class="login-container">
     <div class="login-card">
       <h2 class="login-title">Iniciar Sesión</h2>
-      
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
           <label for="email">Usuario</label>

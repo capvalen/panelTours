@@ -1,10 +1,11 @@
 <script setup>
 import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue'
 import ModalAddPago from './ModalAddPago.vue';
-import { reactive, onMounted, watch, computed } from 'vue'
+import { onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFormat } from '@/composables/formatos';
 import { useProveedoresStore } from '@/stores/proveedorStore'
+import { useDepartamentosStore } from '@/stores/departamentoStore';
 import { useDeudasStore } from '@/stores/deudasStore';
 import { storeToRefs } from 'pinia'
 import Swal from 'sweetalert2'
@@ -12,9 +13,14 @@ import Swal from 'sweetalert2'
 const route = useRoute() //instancia hacia la ruta
 const { fechaLatamSimple, rutaArchivo } = useFormat()
 const proveedorStore = useProveedoresStore()
+const departamentosStore = useDepartamentosStore();
 const deudasStore = useDeudasStore()
 //const proveedorActual = computed(() => proveedorStore.proveedorActual)
 const {proveedorActual} = storeToRefs(proveedorStore)
+const nombreDepartamento = computed(() => {
+	const depto = departamentosStore.departamentos.find(d => Number(d.id) === Number(proveedorActual.value?.departamento_id));
+	return depto ? depto.departamento : '-';
+});
 
 const cargarDatos = async ()=>{
 	await proveedorStore.obtenerPorId(route.params.id)
@@ -44,6 +50,7 @@ const eliminarDeuda = async (id, index)=>{
 }
 
 onMounted(()=>{ //al cargar la pagina
+	departamentosStore.listar();
 	cargarDatos()
 })
 
@@ -91,6 +98,7 @@ watch(
 					<p><strong>RUC:</strong> {{ proveedorActual?.ruc }}</p>
 					<p><strong>Razón Social:</strong> {{ proveedorActual?.razon_social }}</p>
 					<p><strong>Categoría:</strong> <span class="text-capitalize">{{ proveedorActual?.categoria }}</span></p>
+					<p><strong>Departamento:</strong> {{ nombreDepartamento }}</p>
 				</div>
 			</div>
 
@@ -186,7 +194,7 @@ watch(
 							<p class="mb-0">{{deuda.informacion}}</p>
 						</td>
 						<td>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarDeuda(deuda.id, index)"><i class="bi bi-x"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarDeuda(deuda.id, index)"><i class="bi bi-x-lg"></i></button>
 						</td>
 					</tr>
 					<tr v-if="proveedorActual?.deudas.length == 0">

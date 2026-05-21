@@ -169,15 +169,11 @@
 								</div>
 							</div>
 							<div class="space-y-2">
-								<label
-									class="text-sm font-semibold text-slate-700 flex items-center gap-2"
-								>
+								<label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
 									<i class="fas fa-users text-primary-500"></i>
 									N° de clientes
 								</label>
-								<div
-									class="px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium text-center"
-								>
+								<div class="px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium text-center">
 									{{ numClientes }} pasajeros
 								</div>
 							</div>
@@ -201,6 +197,23 @@
 						<div class="p-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 							<div class="space-y-2">
 								<label class="text-sm font-semibold text-slate-700"
+									>DNI del titular <span class="text-red-500">*</span></label
+								>
+								<div class="relative">
+									<i
+										class="fas fa-id-card absolute left-4 top-3.5 text-slate-400"
+									></i>
+									<input
+										type="text"
+										v-model="titular.dni"
+										required
+										placeholder="Ej: 12345678"
+										class="w-full pl-11 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:border-primary-500 focus:outline-none input-focus transition-all"
+									/>
+								</div>
+							</div>
+							<div class="space-y-2">
+								<label class="text-sm font-semibold text-slate-700"
 									>Nombre completo del titular
 									<span class="text-red-500">*</span></label
 								>
@@ -217,23 +230,7 @@
 									/>
 								</div>
 							</div>
-							<div class="space-y-2">
-								<label class="text-sm font-semibold text-slate-700"
-									>DNI del titular <span class="text-red-500">*</span></label
-								>
-								<div class="relative">
-									<i
-										class="fas fa-id-card absolute left-4 top-3.5 text-slate-400"
-									></i>
-									<input
-										type="text"
-										v-model="titular.dni"
-										required
-										placeholder="Ej: 12345678"
-										class="w-full pl-11 pr-4 py-3 border-2 border-slate-200 rounded-xl focus:border-primary-500 focus:outline-none input-focus transition-all"
-									/>
-								</div>
-							</div>
+							
 							<div class="space-y-2">
 								<label class="text-sm font-semibold text-slate-700"
 									>Fecha de nacimiento
@@ -881,14 +878,15 @@
 					<div class="flex flex-col items-center gap-4 py-8">
 						<button
 							type="submit"
-							class="group relative px-12 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold text-lg rounded-2xl shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 active:scale-95 transition-all overflow-hidden"
+							:disabled="guardadoExitoso"
+							class="group relative px-12 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold text-lg rounded-2xl shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 active:scale-95 transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
 						>
 							<div
 								class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"
 							></div>
 							<span class="relative flex items-center gap-3">
 								<i class="fas fa-paper-plane"></i>
-								Generar Registro JSON
+								{{ guardadoExitoso ? 'Datos guardados' : 'Guardar datos' }}
 							</span>
 						</button>
 						<p class="text-sm text-slate-400">
@@ -897,50 +895,42 @@
 						</p>
 					</div>
 				</form>
-
-				<!-- Resultado JSON -->
-				<div v-if="mostrarJSON" class="mt-8 fade-in">
-					<div
-						class="bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-700"
-					>
-						<div
-							class="bg-slate-800 px-6 py-4 flex items-center justify-between border-b border-slate-700"
+				<div
+					v-if="mostrarModalExito"
+					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
+				>
+					<div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center">
+						<div class="w-14 h-14 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
+							<i class="fas fa-check text-2xl"></i>
+						</div>
+						<h3 class="text-2xl font-bold text-slate-800 mb-2">Felicitaciones</h3>
+						<p class="text-slate-600 mb-6">Tus datos se guardaron correctamente.</p>
+						<button
+							type="button"
+							@click="cerrarModalExito"
+							class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all"
 						>
-							<div class="flex items-center gap-3">
-								<i class="fas fa-code text-green-400"></i>
-								<h3 class="text-white font-bold">Datos Generados (JSON)</h3>
-							</div>
-							<button
-								@click="copiarJSON"
-								class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2"
-							>
-								<i class="fas" :class="copiado ? 'fa-check' : 'fa-copy'"></i>
-								{{ copiado ? '¡Copiado!' : 'Copiar JSON' }}
-							</button>
-						</div>
-						<div class="p-6 overflow-x-auto">
-							<pre
-								class="text-green-400 font-mono text-sm leading-relaxed whitespace-pre-wrap"
-							>
-{{ jsonFormateado }}</pre
-							>
-						</div>
+							Aceptar
+						</button>
 					</div>
 				</div>
+
 			</div>
 		</div>
 
 		<script>
 			const { createApp } = Vue;
+			function decodeFromUrl(encoded) {
+				const reversed = atob(encoded);
+				const originalStr = reversed.split("").reverse().join("");
+				return JSON.parse(originalStr);
+			}
 
 			createApp({
 				data() {
 					return {
-						servicio: {
-							nombre: "Tour laguna de paca",
-							tipo: "vuelo",
-						},
-						numClientes: 3,
+						servicio: { nombre: "", tipo: "" },
+						numClientes: 0,
 						titular: {
 							nombre: "",
 							dni: "",
@@ -950,76 +940,96 @@
 							celularEmergencia: "",
 						},
 						pasajeros: [],
-						parentescos: [
-							"acompañante",
-							"alumno",
-							"amistad",
-							"empleado",
-							"esposo/a",
-							"hermano/a",
-							"hijo",
-							"jefe",
-							"madre",
-							"padre",
-							"pareja",
-							"tio/a",
-							"tutor/a",
-						],
+						parentescos: ["acompañante","alumno","amistad","empleado","esposo/a","hermano/a","hijo","jefe","madre","padre","pareja","tio/a","tutor/a"],
 						autorizacionImagen: "",
-						checks: {
-							privacidad: false,
-							terminos: false,
-							cancelacion: false,
-						},
-						mostrarJSON: false,
+						checks: { privacidad: false, terminos: false, cancelacion: false },
 						jsonResultado: null,
 						copiado: false,
+						mostrarModalExito: false,
+						guardadoExitoso: false,
 					};
 				},
 				computed: {
 					jsonFormateado() {
-						return this.jsonResultado
-							? JSON.stringify(this.jsonResultado, null, 2)
-							: "";
+						return this.jsonResultado ? JSON.stringify(this.jsonResultado, null, 2) : "";
 					},
 				},
 				watch: {
-					"titular.nombre"() {
-						this.copiarTitularAuto();
-					},
-					"titular.dni"() {
-						this.copiarTitularAuto();
-					},
-					"titular.fechaNacimiento"() {
-						this.copiarTitularAuto();
-					},
+					"titular.nombre"() { this.copiarTitularAuto(); },
+					"titular.dni"() { this.copiarTitularAuto(); },
+					"titular.fechaNacimiento"() { this.copiarTitularAuto(); },
 				},
-				mounted() {
+				async mounted() {
 					this.inicializarPasajeros();
+					await this.cargarDatosDesdeUrl();
 				},
 				methods: {
+					obtenerVentaIdDesdeUrl() {
+						const params = new URLSearchParams(window.location.search);
+						const encoded = params.get("p");
+						if (!encoded) return null;
+						try {
+							const decoded = decodeFromUrl(encoded);
+							if (decoded && decoded.id) return Number(decoded.id);
+						} catch (error) {
+							console.error("No se pudo decodificar el parámetro:", error);
+						}
+						return null;
+					},
+					mapearPersona(persona) {
+						return {
+							dni: persona?.dni || "",
+							nombre: persona?.nombre || "",
+							fechaNacimiento: persona?.fecha_nacimiento || "",
+							parentesco: persona?.parentesco || "acompañante",
+							enfermedades: persona?.enfermedades || "no",
+							detalleEnfermedades: persona?.detalle_enfermedades || "",
+							observaciones: persona?.observaciones || "",
+							pasaporte: persona?.pasaporte || "",
+							vencimientoPasaporte: persona?.fecha_caducidad_pasaporte || "",
+							paisEmision: persona?.pais_emision || "",
+							vacunas: persona?.vacunas || "no",
+							detalleVacunas: persona?.detalle_vacunas || "",
+						};
+					},
+					async cargarDatosDesdeUrl() {
+						const ventaId = this.obtenerVentaIdDesdeUrl();
+						if (!ventaId) return;
+						try {
+							const response = await fetch(`http://localhost:8000/api/personas/${ventaId}`, {
+								method: "GET",
+								headers: { "Content-Type": "application/json", Accept: "application/json" },
+							});
+							if (!response.ok) throw new Error(`Error ${response.status}`);
+							const data = await response.json();
+							const personas = Array.isArray(data.personas) ? data.personas : [];
+							const venta = data.venta || {};
+							const nroClientesVenta = parseInt(venta.nro_clientes, 10);
+							this.servicio.nombre = venta.descripcion || this.servicio.nombre;
+							this.servicio.tipo = venta.tipo || this.servicio.tipo;
+							this.numClientes = Number.isInteger(nroClientesVenta) && nroClientesVenta > 0 ? nroClientesVenta : personas.length;
+							if (personas.length === 0) {
+								this.inicializarPasajeros();
+								return;
+							}
+							const titular = data.titular || personas.find((p) => p.es_titular) || personas[0];
+							this.titular.nombre = titular?.nombre || "";
+							this.titular.dni = titular?.dni || "";
+							this.titular.fechaNacimiento = titular?.fecha_nacimiento || "";
+							this.pasajeros = personas.map((persona) => this.mapearPersona(persona));
+							while (this.pasajeros.length < this.numClientes) this.pasajeros.push(this.crearPasajeroVacio());
+							this.copiarTitularAuto();
+						} catch (error) {
+							console.error("No se pudieron cargar las personas:", error);
+						}
+					},
 					inicializarPasajeros() {
 						this.pasajeros = [];
-						for (let i = 0; i < this.numClientes; i++) {
-							this.pasajeros.push(this.crearPasajeroVacio());
-						}
+						for (let i = 0; i < this.numClientes; i++) this.pasajeros.push(this.crearPasajeroVacio());
 						this.copiarTitularAuto();
 					},
 					crearPasajeroVacio() {
-						return {
-							dni: "",
-							nombre: "",
-							fechaNacimiento: "",
-							parentesco: "padre",
-							enfermedades: "no",
-							detalleEnfermedades: "",
-							observaciones: "",
-							pasaporte: "",
-							vencimientoPasaporte: "",
-							paisEmision: "",
-							vacunas: "no",
-							detalleVacunas: "",
-						};
+						return { dni: "", nombre: "", fechaNacimiento: "", parentesco: "padre", enfermedades: "no", detalleEnfermedades: "", observaciones: "", pasaporte: "", vencimientoPasaporte: "", paisEmision: "", vacunas: "no", detalleVacunas: "" };
 					},
 					copiarTitularAuto() {
 						if (this.pasajeros.length > 0) {
@@ -1030,38 +1040,26 @@
 					},
 					copiarTitular() {
 						this.copiarTitularAuto();
-						// Animación visual
 						const inputs = document.querySelectorAll(".bg-blue-50\\/50");
 						inputs.forEach((el) => {
 							el.classList.add("ring-2", "ring-primary-400");
-							setTimeout(
-								() => el.classList.remove("ring-2", "ring-primary-400"),
-								500,
-							);
+							setTimeout(() => el.classList.remove("ring-2", "ring-primary-400"), 500);
 						});
 					},
 					validarFormulario() {
-						if (
-							!this.checks.privacidad ||
-							!this.checks.terminos ||
-							!this.checks.cancelacion
-						) {
-							alert(
-								"Por favor acepta todos los términos y políticas obligatorias.",
-							);
+						if (!this.checks.privacidad || !this.checks.terminos || !this.checks.cancelacion) {
+							alert("Por favor acepta todos los términos y políticas obligatorias.");
 							return false;
 						}
 						if (!this.autorizacionImagen) {
-							alert(
-								"Por favor selecciona una opción de autorización de imagen.",
-							);
+							alert("Por favor selecciona una opción de autorización de imagen.");
 							return false;
 						}
 						return true;
 					},
-					generarJSON() {
+					async generarJSON() {
+						if (this.guardadoExitoso) return;
 						if (!this.validarFormulario()) return;
-
 						const personas = this.pasajeros.map((p, index) => {
 							const persona = {
 								indice: index + 1,
@@ -1074,7 +1072,6 @@
 								detalle_enfermedades: p.detalleEnfermedades,
 								observaciones: p.observaciones,
 							};
-
 							if (this.servicio.tipo === "vuelo") {
 								persona.pasaporte = p.pasaporte;
 								persona.fecha_caducidad_pasaporte = p.vencimientoPasaporte;
@@ -1082,27 +1079,9 @@
 								persona.vacunas = p.vacunas;
 								persona.detalle_vacunas = p.detalleVacunas;
 							}
-
 							return persona;
 						});
-
 						this.jsonResultado = {
-							servicio: {
-								tour_contratado: this.servicio.nombre,
-								tipo: this.servicio.tipo,
-							},
-							titular: {
-								nombre: this.titular.nombre,
-								dni: this.titular.dni,
-								fecha_nacimiento: this.titular.fechaNacimiento,
-								celular: this.titular.celular,
-								contacto_emergencia: this.titular.contactoEmergencia,
-								celular_contacto_emergencia: this.titular.celularEmergencia,
-							},
-							pasajeros: {
-								total: this.numClientes,
-								lista: personas,
-							},
 							autorizaciones: {
 								politica_privacidad: this.checks.privacidad,
 								terminos_condiciones: this.checks.terminos,
@@ -1110,19 +1089,24 @@
 								uso_imagen: this.autorizacionImagen === "si",
 							},
 						};
-
-						this.mostrarJSON = true;
-						setTimeout(() => {
-							document
-								.getElementById("resultadoJSON")
-								?.scrollIntoView({ behavior: "smooth", block: "center" });
-						}, 100);
+						const ventaId = this.obtenerVentaIdDesdeUrl();
+						if (!ventaId) return;
+						try {
+							const response = await fetch(`http://localhost:8000/api/personas/${ventaId}`, {
+								method: "POST",
+								headers: { "Content-Type": "application/json", Accept: "application/json" },
+								body: JSON.stringify({ personas, autorizaciones: this.jsonResultado.autorizaciones }),
+							});
+							if (!response.ok) throw new Error(`Error ${response.status}`);
+							this.guardadoExitoso = true;
+							this.mostrarModalExito = true;
+						} catch (error) {
+							console.error("No se pudo guardar el registro:", error);
+							alert("Ocurrió un error al guardar los datos. Inténtalo nuevamente.");
+						}
 					},
-					copiarJSON() {
-						navigator.clipboard.writeText(this.jsonFormateado).then(() => {
-							this.copiado = true;
-							setTimeout(() => (this.copiado = false), 2000);
-						});
+					cerrarModalExito() {
+						this.mostrarModalExito = false;
 					},
 				},
 			}).mount("#app");

@@ -94,7 +94,7 @@ onMounted(() => {
 						<td class="text-capitalize">{{cliente.nacionalidad}} <span v-if="cliente.pais_origen">({{ cliente.pais_origen }})</span></td>
 						<td class="d-flex gap-2" v-if="cliente.id>1">
 							<router-link :to="{ name: 'editarCliente', params: { id: cliente.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarCliente(cliente.id, cliente.razon_social, cliente.apellidos)"><i class="bi bi-folder-x"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click="eliminarCliente(cliente.id, cliente.razon_social, cliente.apellidos)"><i class="bi bi-x-lg"></i></button>
 						</td>
 					</tr>
 				</tbody>

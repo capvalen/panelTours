@@ -145,7 +145,7 @@ const eliminarVuelo = async (id, vuelo) => {
 								<i class="bi bi-pencil"></i>
 							</button>
 							<button class="btn btn-sm btn-outline-danger" @click="eliminarVuelo(vuelo.id, vuelo.vuelo)">
-								<i class="bi bi-folder-x"></i>
+								<i class="bi bi-x-lg"></i>
 							</button>
 						</td>
 					</tr>

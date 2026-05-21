@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const urlBase = process.env.NODE_ENV === 'production'
-  ? 'https://grupoeuroandino.com/app/panel/api/'
+const urlBase = import.meta.env.MODE === 'production'
+	? 'https://apipanel.grupoeuroandino.com/api/'
   : 'http://127.0.0.1:8000/api/'
 
 const api = axios.create({

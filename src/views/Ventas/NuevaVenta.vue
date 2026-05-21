@@ -1,6 +1,6 @@
 <script setup>
 import { ref, reactive, onMounted, watch, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useClienteStore } from '@/stores/clienteStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useGuiasStore } from '@/stores/guiaStore';
@@ -8,6 +8,7 @@ import { useFormat } from '@/composables/formatos';
 import { useAuthStore } from '@/stores/auth'
 import { useDepartamentosStore } from '@/stores/departamentoStore';
 import { useVentasStore } from '@/stores/ventaStore';
+import { usePagosStore } from '@/stores/pagoStore';
 import { userestaurantestore } from '@/stores/restaurantStore';
 import { useHospedajesStore } from '@/stores/hospedajeStore';
 import { useAerolineasStore } from '@/stores/aerolineaStore';
@@ -26,10 +27,13 @@ const guiasStore = useGuiasStore();
 const authStore = useAuthStore();
 const departametosStore = useDepartamentosStore()
 const ventaStore = useVentasStore()
+const pagosStore = usePagosStore()
 const restaurantStore = userestaurantestore()
 const hospedajesStore = useHospedajesStore()
 const aerolineaStore = useAerolineasStore()
 const router = useRouter();
+const route = useRoute();
+const esEdicion = computed(() => Boolean(route.params.id));
 
 const { formatHoy, formatMoneda, capitalize } = useFormat();
 
@@ -39,6 +43,7 @@ const venta = reactive({
 	nacionalidad: 'peruana',
 	progreso: 'cotización',
 	estado_pago: 'pendiente',
+	metodo_pago:'efectivo',
 	fecha: formatHoy(),
 	precio: 0,
 	idServicio: 1,
@@ -58,6 +63,7 @@ const precioDolar= ref(null) ;
 
 
 const clienteSeleccionado = ref(null);
+const departamentoBusqueda = ref('');
 const tours = ref([]);
 
 const nuevoItem = {
@@ -244,14 +250,158 @@ onMounted(async () => {
 	} catch (error) {
 		console.error('Error al cargar los tours:', error);
 	}
+
+	if (esEdicion.value) {
+		try {
+			const ventaActual = await ventaStore.obtenerPorId(route.params.id);
+			// Helper para extraer solo YYYY-MM-DD de fechas ISO
+			const toDateStr = (v) => v ? v.substring(0, 10) : null;
+
+			venta.cliente_id = ventaActual?.cliente_id || '';
+			venta.nacionalidad = ventaActual?.nacionalidad || venta.nacionalidad;
+			venta.progreso = ventaActual?.progreso || venta.progreso;
+			venta.estado_pago = ventaActual?.estado_pago || venta.estado_pago;
+			venta.fecha = toDateStr(ventaActual?.fecha) || venta.fecha;
+			venta.precio = Number(ventaActual?.precio || 0);
+			venta.personas = Number(ventaActual?.cuantas_personas || ventaActual?.personas || 1);
+			venta.motivo_descuento = ventaActual?.motivo_descuento || '';
+			venta.descuento = Number(ventaActual?.descuento || 0);
+			venta.adelanto = Number(ventaActual?.adelanto || 0);
+			venta.departamento_id = ventaActual?.departamento_id ?? venta.departamento_id;
+			departamentoBusqueda.value = ventaActual?.departamento?.departamento || '';
+			venta.ciudad = ventaActual?.ciudad || '';
+			venta.nivel = Number(ventaActual?.nivel || venta.nivel);
+			venta.usuario_id = ventaActual?.usuario_id || venta.usuario_id;
+			venta.created_at = toDateStr(ventaActual?.created_at) || venta.created_at;
+
+			const cliente = ventaActual?.cliente || null;
+			if (cliente) {
+				clienteSeleccionado.value = cliente;
+				venta.cliente_busqueda = cliente.razon_social || `${cliente.apellidos || ''} ${cliente.nombres || ''}`.trim();
+			}
+
+			// Cargar items existentes en la canasta
+			if (ventaActual?.items?.length) {
+				canasta.value = ventaActual.items.map(item => {
+					const detalle = item.detalle || {};
+					const base = { tipo: item.tipo, precio: Number(item.precio || 0) };
+
+					switch (item.tipo) {
+						case 'tour':
+							return {
+								...base,
+								tour_id: detalle.tour_id,
+								nombre_tour: detalle.nombre_tour,
+								tipo_tour: detalle.tipo_tour,
+								descripcion: detalle.descripcion,
+								fecha_salida: toDateStr(detalle.fecha_salida),
+								fecha_retorno: toDateStr(detalle.fecha_retorno),
+								cantidad_personas: Number(detalle.cantidad_personas || 0),
+								cantidad_adultos: Number(detalle.cantidad_adultos || 0),
+								cantidad_ninos: Number(detalle.cantidad_ninos || 0),
+								peruanos_adultos: Number(detalle.peruanos_adultos || 0),
+								peruanos_kids: Number(detalle.peruanos_kids || 0),
+								extranjeros_adultos: Number(detalle.extranjeros_adultos || 0),
+								extranjeros_kids: Number(detalle.extranjeros_kids || 0),
+								precio: Number(detalle.precio || item.precio || 0),
+								costo: Number(detalle.costo || 0),
+								incluye: detalle.incluye,
+								no_incluye: detalle.no_incluye,
+								punto_partida: detalle.punto_partida || '',
+								punto_llegada: detalle.punto_llegada || '',
+								hora_salida: detalle.hora_salida,
+								hora_retorno: detalle.hora_retorno,
+								requisitos: detalle.requisitos || '',
+								observaciones: detalle.observaciones || '',
+							};
+						case 'hospedaje':
+							return {
+								...base,
+								hospedaje_id: detalle.hospedaje_id,
+								tipo_habitacion: detalle.tipo_habitacion || 'simple',
+								fecha_ingreso: toDateStr(detalle.fecha_ingreso),
+								fecha_salida: toDateStr(detalle.fecha_salida),
+								hora_checkin: detalle.hora_checkin,
+								hora_checkout: detalle.hora_checkout,
+								cantidad_noches: Number(detalle.cantidad_noches || 0),
+								num_habitaciones: Number(detalle.num_habitaciones || 1),
+								cantidad_adultos: Number(detalle.cantidad_adultos || 0),
+								cantidad_ninos: Number(detalle.cantidad_ninos || 0),
+								precio_por_noche: Number(detalle.precio_por_noche || 0),
+								precio: Number(detalle.precio || item.precio || 0),
+								requiere_cuna: detalle.requiere_cuna || false,
+								habitacion_fumador: detalle.habitacion_fumador || false,
+								preferencias_especiales: detalle.preferencias_especiales || '',
+							};
+						case 'transporte':
+							return {
+								...base,
+								vehiculo_id: detalle.vehiculo_id,
+								vehiculo_nombre: detalle.vehiculo_nombre || '',
+								origen: detalle.origen || '',
+								destino: detalle.destino || '',
+								fecha_inicio: toDateStr(detalle.fecha_inicio),
+								fecha_fin: toDateStr(detalle.fecha_fin),
+								hora_recogida: detalle.hora_recogida,
+								hora_devolucion: detalle.hora_devolucion,
+								pasajeros: Number(detalle.pasajeros || 0),
+								precio: Number(detalle.precio || item.precio || 0),
+								observaciones: detalle.observaciones || '',
+							};
+						case 'restaurante':
+							return {
+								...base,
+								restaurante_id: detalle.restaurante_id,
+								tipo_servicio: detalle.tipo_servicio || 'carta',
+								turno: detalle.turno || 'comida',
+								espacio: detalle.espacio || 'interior',
+								numero_personas: Number(detalle.numero_personas || item.nro_clientes || 0),
+								fecha_reserva: toDateStr(detalle.fecha_reserva),
+								hora_reserva: detalle.hora_reserva,
+								pedido_especial: detalle.pedido_especial,
+								precio: Number(detalle.precio || item.precio || 0),
+							};
+						case 'vuelo':
+							return {
+								...base,
+								vuelo_id: detalle.vuelo_id,
+								origen: detalle.origen || '',
+								destino: detalle.destino || '',
+								pasajeros: Number(detalle.pasajeros || 0),
+								lleva_equipaje: detalle.lleva_equipaje || 'no',
+								kilos: Number(detalle.kilos || 0),
+								que_equipaje: detalle.que_equipaje || '',
+								precio_ticket: Number(detalle.precio_ticket || 0),
+								precio_soles: Number(detalle.precio_soles || 0),
+								precio_dolares: Number(detalle.precio_dolares || 0),
+								precio: Number(detalle.precio || item.precio || 0),
+								aerolinea: detalle.aerolinea || 'ninguno',
+								fecha_salida: toDateStr(detalle.fecha_salida),
+								fecha_llegada: toDateStr(detalle.fecha_llegada),
+								hora_salida: detalle.hora_salida,
+								horario_llegada: detalle.horario_llegada,
+								clase_vuelo: detalle.clase_vuelo || 'económica',
+								escala: detalle.escala || false,
+								observaciones: detalle.observaciones || '',
+							};
+						default:
+							return { ...base, ...detalle };
+					}
+				});
+			}
+		} catch (error) {
+			Swal.fire('Error', 'No se pudo cargar la venta para edición', 'error');
+			router.push('/ventas');
+		}
+	}
 });
 
 const departamentoSeleccionado = computed(() => {
 	return departametosStore.departamentos.find(d => d.id === venta.departamento_id);
 });
 
-const filtrarDepartamentos = (event) => {
-	const valor = event.target.value.toLowerCase();
+const filtrarDepartamentos = () => {
+	const valor = departamentoBusqueda.value.toLowerCase();
 	if (valor == '') {
 		venta.departamento_id = null;
 		return
@@ -276,6 +426,10 @@ const calcularAdelanto = ()=>{
 	actualizarPrecioFinal();
 }
 const guardarVenta = async () => {
+	if (esEdicion.value) {
+		// continúa el flujo general para validar y enviar también canasta en edición
+	}
+
 	// Validar canasta vacía
 	if (canasta.value.length === 0) {
 		Swal.fire('Error', 'Debe rellenar items a la canasta', 'error');
@@ -287,6 +441,10 @@ const guardarVenta = async () => {
 	}
 	if (venta.descuento > 0 && venta.motivo_descuento == '') {
 		Swal.fire('Error', 'Debe ingresar un motivo de descuento', 'error');
+		return;
+	}
+	if (venta.nacionalidad == '') {
+		Swal.fire('Error', 'Debe seleccionar una nacionalidad', 'error');
 		return;
 	}
 
@@ -357,10 +515,11 @@ const guardarVenta = async () => {
 		}
 	}
 
-	// Si todas las validaciones pasan, guardar la venta
+	// Si todas las validaciones pasan, guardar/actualizar la venta
 	try {
 		venta.cliente_id ??= 1
 		venta.cliente_id = venta.cliente_id || 1
+		const adelantoInicial = Number(venta.adelanto || 0);
 		
 		
 		canasta.value.forEach(item=>{
@@ -381,13 +540,42 @@ const guardarVenta = async () => {
 			}
 		})
 		
-		const ventaCompleta = {venta, canasta: canasta.value}
-		const ventaGuardada = await ventaStore.guardar(ventaCompleta)
-		const ventaId = ventaGuardada?.id
+		const ventaPayload = { ...venta };
+		// El adelanto se registrará como pago para que también impacte en seguimientos.
+		if (adelantoInicial > 0) {
+			ventaPayload.adelanto = 0;
+			ventaPayload.estado_pago = 'pendiente';
+		}
+
+		const ventaCompleta = {venta: ventaPayload, canasta: canasta.value}
+		let ventaGuardada = null
+		let ventaId = null
+
+		if (esEdicion.value) {
+			ventaGuardada = await ventaStore.actualizar(route.params.id, ventaCompleta)
+			ventaId = route.params.id
+		} else {
+			ventaGuardada = await ventaStore.guardar(ventaCompleta)
+			ventaId = ventaGuardada?.id
+		}
+
+		if (!esEdicion.value && ventaId && adelantoInicial > 0) {
+			await pagosStore.guardar(ventaId, {
+				fecha: venta.fecha,
+				monto_abonado: adelantoInicial,
+				saldo_pendiente: Math.max(0, Number(venta.precio || 0) - adelantoInicial),
+				metodo_pago: venta.metodo_pago,
+				estado_pago: adelantoInicial >= Number(venta.precio || 0) ? 'pagado' : 'adelanto',
+				codigo_referencia: 'INICIAL',
+				observaciones: 'Adelanto registrado al crear la venta',
+				es_compromiso: false,
+				fecha_compromiso: null,
+			});
+		}
 
 		await Swal.fire({
 			title: 'Éxito',
-			text: 'Venta guardada',
+			text: esEdicion.value ? 'Venta actualizada' : 'Venta guardada',
 			icon: 'success',
 			timer: 5000,
 			timerProgressBar: true
@@ -399,24 +587,27 @@ const guardarVenta = async () => {
 			router.push('/ventas')
 		}
 	} catch (error) {
-		Swal.fire('Error', 'No se pudo guardar la venta', 'error');
+		Swal.fire('Error', esEdicion.value ? 'No se pudo actualizar la venta' : 'No se pudo guardar la venta', 'error');
 	}
 };
 </script>
 <template>
-	<h1>Nueva venta</h1>
+	<h1>{{ esEdicion ? 'Editar venta' : 'Nueva venta' }}</h1>
 
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
 			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Ruta de Servicio</a></li>
 			<li class="breadcrumb-item"><a href="/ventas">Ventas y cotizaciones</a></li>
-			<li class="breadcrumb-item active" aria-current="page">Nueva venta</li>
+			<li class="breadcrumb-item active" aria-current="page">{{ esEdicion ? 'Editar venta' : 'Nueva venta' }}</li>
 		</ol>
 	</nav>
 
 	<div class="row">
-		<div class="col-10 mx-auto">
+			<div class="col-10 mx-auto">
+				<div v-if="esEdicion" class="alert alert-info">
+					<i class="bi bi-info-circle"></i> Modo edición: se actualizan datos generales e items de la canasta.
+				</div>
 			<div class="card">
 				<div class="card-body">
 					<h6 class="card-title"><i class="bi bi-caret-right"></i> Datos básicos de la venta</h6>
@@ -424,13 +615,6 @@ const guardarVenta = async () => {
 						<div class="col">
 							<label for="usuario" class="form-label">Usuario</label>
 							<input type="text" class="form-control" id="usuario" :value="authStore.user?.nombre" disabled>
-						</div>
-						<div class="col">
-							<label for="usuario" class="form-label">Tipo</label>
-							<select name="" id="sltTipo" class="form-select" v-model="venta.tipo">
-								<option value="venta">Venta</option>
-								<option value="cotización">Cotización</option>
-							</select>
 						</div>
 
 						<div class="w-100"></div>
@@ -486,10 +670,11 @@ const guardarVenta = async () => {
 						<div class="col">
 							<label for="txtDepartamento" class="form-label">Departamento destino <span class="text-danger">*</span></label>
 							<input type="text" class="form-select" id="txtDepartamento" list="listaDepartamentos"
-								:placeholder="departamentoSeleccionado?.nombre || 'Buscar departamento...'"
+								v-model="departamentoBusqueda"
+								placeholder="Buscar departamento..."
 								@input="filtrarDepartamentos">
 							<datalist id="listaDepartamentos">
-								<option v-for="departamento in departametosStore.departamentos" :key="departamento.id" :value="departamento.nombre">
+								<option v-for="departamento in departametosStore.departamentos" :key="departamento.id" :value="departamento.departamento">
 									{{departamento.departamento}}
 								</option>
 							</datalist>
@@ -511,7 +696,7 @@ const guardarVenta = async () => {
 							<div class="d-flex justify-content-between align-items-center mb-3">
 								<h6 class="mb-0 text-capitalize"> {{ getItemIcon(item.tipo) }} #{{ index + 1 }}: {{ item.tipo }}</h6>
 								<button class="btn btn-sm btn-danger" @click="eliminarItem(index)">
-									<i class="bi bi-folder-x"></i> Eliminar
+									<i class="bi bi-x-lg"></i> Eliminar
 								</button>
 							</div>
 
@@ -549,7 +734,7 @@ const guardarVenta = async () => {
 			</div>
 
 			
-			<div class="card">
+			<div class="card" v-if="!esEdicion">
 				<div class="card-body">
 					<h6 class="card-title mb-3"><i class="bi bi-caret-right"></i> Datos del pago</h6>
 
@@ -560,13 +745,13 @@ const guardarVenta = async () => {
 								<option value="">Seleccionar...</option>
 								<option value="pendiente">Pendiente</option>
 								<option value="pagado">Pagado</option>
-								<option value="con adelanto">Con adelanto</option>
+								<option value="adelantado">Con adelanto</option>
 								<option value="cancelado">Cancelado</option>
 							</select>
 						</div>
 						<div class="col">
 							<label for="usuario" class="form-label">Método de pago</label>
-							<select name="" id="sltMetodoPago" class="form-select">
+							<select name="" id="sltMetodoPago" class="form-select" v-model="venta.metodo_pago">
 								<option value="">Seleccionar...</option>
 								<option value="yape">Yape</option>
 								<option value="plin">Plin</option>
@@ -606,7 +791,9 @@ const guardarVenta = async () => {
 	<div class="row mb-5">
 		<div class="col-8 mx-auto">
 			<div class="d-grid">
-				<button type="submit" class="btn btn-primary" @click="guardarVenta()">Guardar venta</button>
+				<button type="submit" class="btn btn-primary" @click="guardarVenta()">
+					{{ esEdicion ? 'Actualizar venta' : 'Guardar venta' }}
+				</button>
 			</div>
 		</div>
 	</div>

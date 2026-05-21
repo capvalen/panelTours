@@ -3,16 +3,34 @@ import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue'
 import { onMounted, watch, computed } from 'vue';
 import { useRoute } from 'vue-router'
 import { useClienteStore } from '@/stores/clienteStore';
+import { useVentasStore } from '@/stores/ventaStore';
 import { useFormat } from '@/composables/formatos';
 import { storeToRefs } from 'pinia';
+import Swal from 'sweetalert2'
 const route = useRoute() //instancia hacia la ruta
-const { fechaLatamSimple, rutaArchivo } = useFormat()
+const { fechaLatamSimple, rutaArchivo, formatMoneda, capitalize } = useFormat()
 
 const clienteStore = useClienteStore()
+const ventaStore = useVentasStore()
 const {clienteActual} = storeToRefs(clienteStore)
 const vacunas = computed( ()=> clienteActual.value?.vacunas)
 const seguros = computed( ()=> clienteActual.value?.seguros)
 const archivos = computed( ()=> clienteActual.value?.archivos)
+const compras = computed(() => clienteActual.value?.ventas || [])
+const MAX_CONCEPTO_LEN = 43
+
+const truncarTexto = (texto, max = MAX_CONCEPTO_LEN) => {
+	if (!texto) return '-'
+	const limpio = String(texto).trim()
+	return limpio.length > max ? `${limpio.slice(0, max)}...` : limpio
+}
+
+const badgeEstadoClass = (estadoPago) => {
+	const estado = (estadoPago || '').toLowerCase();
+	if (estado === 'pagado') return 'bg-success';
+	if (estado === 'adelanto') return 'bg-warning text-dark';
+	return 'bg-secondary';
+};
 
 const cargarDatos = async ()=>{	
 	await clienteStore.obtenerClienteId(route.params.id)
@@ -25,6 +43,23 @@ const eliminarAdjunto = async (index)=>{
 		clienteActual.actualizarCliente(clienteActual.value)
 	}
 }
+
+const anularVenta = async (id, concepto) => {
+	const result = await Swal.fire({
+		title: '¿Anular venta?',
+		text: `Se anulará el servicio "${concepto}"`,
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, anular',
+		cancelButtonText: 'Cancelar',
+		confirmButtonColor: '#d33',
+	});
+	if (result.isConfirmed) {
+		await ventaStore.anular(id);
+		await Swal.fire('Eliminado', 'Venta anulada', 'success');
+		await cargarDatos();
+	}
+};
 
 onMounted(()=>{ //al cargar la pagina
 	cargarDatos()
@@ -184,65 +219,49 @@ watch(
 					<tr>
 						<th>#</th>
 						<th>Tipo</th>
-						<th>Servicio</th>
+						<th>Etapa</th>
 						<th>Concepto</th>
 						<th>Fecha de registro</th>
 						<th>Fecha de salida</th>
 						<th>Monto (S/)</th>
 						<th>Estado</th>
 						<th>Método de Pago</th>
-						<th>Observaciones</th>
+						<th>Categorías</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
+					<tr v-for="(compra, index) in compras" :key="compra.id">
+						<td>{{ index + 1 }}</td>
 						<td><span class="badge bg-info text-white">Venta</span></td>
-						<td>Paquete</td>
-						<td class="tdLargo">Turismo vivencial en Cusco</td>
-						<td>10/10/2025</td>
-						<td class="tdLargo">25/11/2025 05:00 a.m.</td>
-						<td>1,450.00</td>
-						<td><span class="badge bg-secondary">Pendiente</span></td>
-						<td>Transferencia</td>
-						<td>Incluye Machu Picchu</td>
+						<td>{{ capitalize(compra.progreso || 'cotización') }}</td>
+						<td class="tdLargo">
+							{{ truncarTexto(compra.items?.map(i => i.descripcion).filter(Boolean).join(' | ')) }}
+						</td>
+						<td>{{ compra.created_at ? fechaLatamSimple(compra.created_at) : '-' }}</td>
+						<td class="tdLargo">{{ compra.fecha ? fechaLatamSimple(compra.fecha) : '-' }}</td>
+						<td>{{ formatMoneda(Number(compra.precio || 0)) }}</td>
 						<td>
-							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
-							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
+							<span class="badge" :class="badgeEstadoClass(compra.estado_pago)">
+								{{ capitalize(compra.estado_pago || 'pendiente') }}
+							</span>
+						</td>
+						<td class="text-capitalize">{{ capitalize(compra.metodo_pago || '-') }}</td>
+						<td class="text-capitalize">{{ compra.items?.map(i => i.tipo).filter(Boolean).join(', ') || '-' }}</td>
+						<td>
+							<div class="d-flex gap-2" v-if="compra.estado != 'anulado'">
+								<router-link :to="`/venta/detalle/${compra.id}`" class="btn btn-sm btn-outline-primary me-1">
+									<i class="bi bi-eye"></i>
+								</router-link>
+								<button class="btn btn-sm btn-outline-warning" @click="anularVenta(compra.id, `${capitalize(compra.items?.[0]?.descripcion || 'servicio')} ${clienteActual ? ' de ' + (clienteActual.razon_social || clienteActual.nombres) : ''}`)" title="Anular servicio">
+									<i class="bi bi-ban"></i>
+								</button>
+							</div>
+							<p v-else class="text-danger"><small>Anulado</small></p>
 						</td>
 					</tr>
-					<tr>
-						<td>2</td>
-						<td><span class="badge bg-warning text-dark">Reserva</span></td>
-						<td>Movibilidad</td>
-						<td class="tdLargo">Servicio ida y vuelta</td>
-						<td>12/10/2025</td>
-						<td class="tdLargo">12/10/2025 3:45 p.m.</td>
-						<td>120.00</td>
-						<td><span class="badge bg-success">Pagado</span></td>
-						<td>Efectivo</td>
-						<td>Vehículo SUV</td>
-						<td>
-							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
-							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
-						</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td><span class="badge bg-info text-white">Venta</span></td>
-						<td>Tour y vehículo</td>
-						<td class="tdLargo">Tour Paracas</td>
-						<td>14/10/2025</td>
-						<td class="tdLargo">15/10/2025 05:00 a.m.</td>
-						<td>280.50</td>
-						<td><span class="badge bg-warning text-dark">Con adelanto</span></td>
-						<td>Tarjeta</td>
-						<td>Con almuerzo incluido</td>
-						<td>
-							<button class="btn btn-sm btn-outline-primary me-1"><i class="bi bi-pencil-square"></i></button>
-							<button class="btn btn-sm btn-outline-danger"><i class="bi bi-x"></i></button>
-						</td>
+					<tr v-if="!compras.length">
+						<td colspan="11" class="text-center text-muted">Sin compras registradas</td>
 					</tr>
 				</tbody>
 			</table>

@@ -15,7 +15,7 @@
 		<div class="row">
 			<!-- Sidebar desktop -->
 			<div class="col-md-3 col-lg-2 p-0 d-none d-md-block" id="rowMenu">
-				<div id="logo" class="w-100 my-4">
+				<div id="logo" class="w-75 my-4 mx-auto">
 					<img src="@/assets/logo.webp" class="w-75 mx-auto d-block">
 				</div>
 				<router-link to="/dashboard">

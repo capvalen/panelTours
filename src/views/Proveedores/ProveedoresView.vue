@@ -1,12 +1,19 @@
 <script setup>
 import { useProveedoresStore } from '@/stores/proveedorStore';
-import { onMounted, reactive } from 'vue';
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { onMounted, ref } from 'vue';
 import Swal from 'sweetalert2'
 /* import { storeToRefs } from 'pinia'; */
 
 const proveedorStore = useProveedoresStore();
+const departamentosStore = useDepartamentosStore();
 /* const { clientes } = storeToRefs(clienteStore); */
-const texto =reactive('')
+const texto = ref('');
+const departamentoId = ref('');
+const nombreDepartamento = (departamento_id) => {
+	const depto = departamentosStore.departamentos.find(d => Number(d.id) === Number(departamento_id));
+	return depto ? depto.departamento : '-';
+};
 
 function eliminarProveedor(id, razonSocial, apellidos) {
 	if( confirm(`¿Confirma que desea eliminar al proveedor ${razonSocial ? razonSocial : apellidos}?`) ){
@@ -24,15 +31,19 @@ function eliminarProveedor(id, razonSocial, apellidos) {
 	}
 }
 function buscar() {
-	if(texto.trim() == ''){
-		proveedorStore.listar()
+	const filtros = {};
+	if (departamentoId.value) filtros.departamento_id = departamentoId.value;
+
+	if(texto.value.trim() == ''){
+		proveedorStore.listar(filtros)
 	}else{
-		proveedorStore.buscar(texto)
+		proveedorStore.buscar(texto.value, filtros)
 	}
 }
 
 onMounted(() => {
-	proveedorStore.listar()
+	departamentosStore.listar();
+	proveedorStore.listar();
 })
 </script>
 <template>
@@ -50,19 +61,20 @@ onMounted(() => {
 							</div>
 						</div>
 						<div class="col-12 col-md my-1">
-							<select name="" id="sltCategoria" class="form-select">
-								<option value="-1">Todas las categorías</option>
-								<option value="-1">Alojamiento</option>
-								<option value="-1">Agencia</option>
-								<option value="-1">Restaurant</option>
-								<option value="-1">Transporte</option>
+							<select id="sltDepartamento" class="form-select" v-model="departamentoId">
+								<option value="">Todos los departamentos</option>
+								<option v-for="dep in departamentosStore.departamentos" :key="dep.id" :value="dep.id">
+									{{ dep.departamento }}
+								</option>
 							</select>
 						</div>
 						<div class="col-5 col-md">
-							<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
+							<div><button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button></div>
 						</div>
 						<div class="col d-flex justify-content-center">
-							<router-link to="/proveedor/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</router-link>
+							<div>
+								<router-link to="/proveedor/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</router-link>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -82,6 +94,7 @@ onMounted(() => {
 							<th scope="col">Contacto</th>
 							<th scope="col">Celular</th>
 							<th scope="col">Categoría</th>
+							<th scope="col">Departamento</th>
 							<th>@</th>
 						</tr>
 					</thead>
@@ -97,9 +110,10 @@ onMounted(() => {
 							<td>{{ proveedor.contacto }}</td>
 							<td>{{ proveedor.celular }}</td>
 							<td class="text-capitalize">{{ proveedor.categoria }}</td>
+							<td>{{ nombreDepartamento(proveedor.departamento_id) }}</td>
 							<td class="d-flex gap-2" v-if="proveedor.id != 1">
 								<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-								<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-folder-x"></i></button>
+								<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-x-lg"></i></button>
 							</td>
 						</tr>
 					</tbody>

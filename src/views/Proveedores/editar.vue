@@ -2,10 +2,12 @@
 import { reactive, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useProveedoresStore } from '@/stores/proveedorStore'
+import { useDepartamentosStore } from '@/stores/departamentoStore';
 import Swal from 'sweetalert2'
 
 const route = useRoute() //instancia hacia la ruta
 const proveedorStore = useProveedoresStore()
+const departamentosStore = useDepartamentosStore();
 const nuevo = reactive({})
 
 const cargarDatos = async ()=>{
@@ -14,6 +16,7 @@ const cargarDatos = async ()=>{
 }
 
 onMounted(()=>{ //al cargar la pagina
+	departamentosStore.listar();
 	cargarDatos()
 })
 
@@ -88,6 +91,15 @@ function  guardar(){
 						<div class="col-md-6">
 							<label for="contacto" class="form-label">Contacto</label>
 							<input type="text" class="form-control" id="contacto" v-model="nuevo.contacto">
+						</div>
+						<div class="col-md-6">
+							<label for="departamento" class="form-label">Departamento</label>
+							<select class="form-select" id="departamento" v-model="nuevo.departamento_id">
+								<option value="">Seleccione departamento</option>
+								<option v-for="dep in departamentosStore.departamentos" :key="dep.id" :value="dep.id">
+									{{ dep.departamento }}
+								</option>
+							</select>
 						</div>
 					</div>
 

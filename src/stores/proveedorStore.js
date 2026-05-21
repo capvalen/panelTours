@@ -9,14 +9,19 @@ export const useProveedoresStore = defineStore('proveedores', {
 	}),
 
 	actions: {
-		async listar() {
-			const response = await api.get('/proveedores');
+		async listar(params = {}) {
+			const response = await api.get('/proveedores', { params });
 			this.proveedores = response.data;
 			return response.data;
 		},
 
-		async buscar(termino) {
-			const response = await api.get('/proveedores?buscar=' + termino);
+		async buscar(termino, params = {}) {
+			const response = await api.get('/proveedores', {
+				params: {
+					buscar: termino,
+					...params,
+				},
+			});
 			this.proveedores = response.data;
 			return response.data;
 		},

@@ -66,7 +66,7 @@ watch([() => props.item.cantidad_adultos, () => props.item.cantidad_ninos, ()=> 
 	<div class="row row-cols-3">
 		<div class="col">
 			<label class="form-label">Tour <span class="text-danger">*</span></label>
-			<input type="search" class="form-control" list="listaTours" v-model="texto"
+			<input type="search" class="form-select" list="listaTours" v-model="texto"
 				placeholder="Buscar tour...">
 			<datalist id="listaTours">
 				<option v-for="tour in tours" :key="tour.id" :value="tour.id+' - ' + tour.nombre">

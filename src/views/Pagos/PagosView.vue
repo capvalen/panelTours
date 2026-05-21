@@ -186,7 +186,7 @@ const eliminarPago = async (id, codigoRef) => {
 						<td>
 							<div class="d-flex gap-2">
 								<button class="btn btn-sm btn-outline-danger" @click="eliminarPago(pago.id, pago.codigo_referencia)" title="Eliminar">
-									<i class="bi bi-folder-x"></i>
+									<i class="bi bi-x-lg"></i>
 								</button>
 							</div>
 						</td>

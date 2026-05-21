@@ -95,6 +95,11 @@ export function useFormat() {
 		localStorage.setItem('dolar', data.series['USD-PEN'].data[0])
 		//return data.series['USD-PEN'].data[0];
 	}
+	const encodeForUrl = (json) =>{
+		const str = JSON.stringify(json);
+		const reversed = str.split('').reverse().join('');
+		return btoa(reversed);
+	}
 
 
   return {
@@ -106,6 +111,7 @@ export function useFormat() {
 		formatHoy, ahora,
 		rutaArchivo,
 		capitalize, usuarioActual,
-		listaDepartamentos, consultarApiDolar
+		listaDepartamentos, consultarApiDolar,
+		encodeForUrl
   }
 }

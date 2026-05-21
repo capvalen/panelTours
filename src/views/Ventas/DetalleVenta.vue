@@ -3,15 +3,30 @@ import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useVentasStore } from '@/stores/ventaStore';
 import { usePagosStore } from '@/stores/pagoStore';
+import { useHospedajesStore } from '@/stores/hospedajeStore';
+import { userestaurantestore } from '@/stores/restaurantStore';
+import { useVehiculosStore } from '@/stores/vehiculoStore';
+import { useGuiasStore } from '@/stores/guiaStore';
+import { useAerolineasStore } from '@/stores/aerolineaStore';
 import { useFormat } from '@/composables/formatos';
 import ModalNuevoPago from '@/components/ModalNuevoPago.vue';
+import ModalEditarConfirmaciones from './components/ModalEditarConfirmaciones.vue';
+import ModalEditarAsignaciones from './components/ModalEditarAsignaciones.vue';
+import RecursoRequerimientos from './components/RecursoRequerimientos.vue';
+import RecursoAsignado from './components/RecursoAsignado.vue';
 import Swal from 'sweetalert2';
+import api from '@/services/axios';
 
 const activeTab = ref('resumen');
 const route = useRoute();
 const ventaStore = useVentasStore();
 const pagosStore = usePagosStore();
-const { fechaLatamSimple, formatMoneda, capitalize, convertirHora } = useFormat();
+const hospedajesStore = useHospedajesStore();
+const restaurantesStore = userestaurantestore();
+const vehiculosStore = useVehiculosStore();
+const guiasStore = useGuiasStore();
+const aerolineasStore = useAerolineasStore();
+const { fechaLatamSimple, formatMoneda, capitalize, convertirHora, encodeForUrl } = useFormat();
 const pagoEditar = ref(null);
 
 const ventaActual = computed(() => ventaStore.ventaActual || {});
@@ -19,6 +34,19 @@ const clienteActual = computed(() => ventaActual.value.cliente || {});
 const pagos = computed(() => pagosStore.pagos || []);
 const serviciosVenta = computed(() => ventaActual.value.items || []);
 const progresoSeleccionado = ref('venta');
+const confirmacionEditar = ref({
+	itemId: null,
+	tipo: '',
+	detalleId: null,
+	payload: {}
+});
+const asignacionEditar = ref({
+	itemId: null,
+	tipo: '',
+	detalleId: null,
+	payload: {}
+});
+const ventaGuiasByItemId = ref({});
 
 const clienteDoc = computed(() => clienteActual.value.ruc || clienteActual.value.dni || '-');
 const clienteNombre = computed(() => {
@@ -125,6 +153,294 @@ const estadoSolicitudLabel = (estado) => {
 	const e = (estado || 'pendiente').toLowerCase();
 	return capitalize(e);
 };
+const endpointPorTipo = (tipo) => {
+	switch (normalizarTipoServicio(tipo)) {
+		case 'restaurant': return 'venta_restaurantes';
+		case 'hospedaje': return 'venta_hospedajes';
+		case 'vuelo': return 'venta_vuelos';
+		case 'tour': return 'venta_turismo';
+		case 'transporte': return 'venta_autos';
+		default: return null;
+	}
+};
+const cargarVentaGuias = async () => {
+	const ventaGuias = await api.get('/venta_guias');
+	const mapa = {};
+	(ventaGuias.data || []).forEach((g) => {
+		mapa[Number(g.venta_item_id)] = g;
+	});
+	ventaGuiasByItemId.value = mapa;
+};
+const abrirModalConfirmaciones = (item) => {
+	const tipo = normalizarTipoServicio(tipoServicioItem(item));
+	const d = item?.detalle || {};
+	const payloadBase = { ...d };
+	if (tipo === 'restaurant') {
+		confirmacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				estado: d.estado || 'pendiente',
+				fecha_reserva: d.fecha_reserva || null,
+				fecha_confirmacion: d.fecha_confirmacion || null,
+				hora_reserva: d.hora_reserva || null,
+				pedido_especial: d.pedido_especial || '',
+				precio: Number(d.precio || 0),
+			}
+		};
+		return;
+	}
+	if (tipo === 'hospedaje') {
+		confirmacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				fecha_ingreso: d.fecha_ingreso || null,
+				fecha_salida: d.fecha_salida || null,
+				hora_checkin: d.hora_checkin || null,
+				hora_checkout: d.hora_checkout || null,
+				preferencias_especiales: d.preferencias_especiales || '',
+				requiere_cuna: Boolean(d.requiere_cuna),
+				habitacion_fumador: Boolean(d.habitacion_fumador),
+				precio_por_noche: Number(d.precio_por_noche || 0),
+				precio: Number(d.precio || 0),
+			}
+		};
+		return;
+	}
+	if (tipo === 'vuelo') {
+		confirmacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				estado_tramo: d.estado_tramo || 'pendiente',
+				lleva_equipaje: d.lleva_equipaje || 'no',
+				kilos: Number(d.kilos || 0),
+				que_equipaje: d.que_equipaje || '',
+				fecha_salida: d.fecha_salida || null,
+				fecha_llegada: d.fecha_llegada || null,
+				hora_salida: d.hora_salida || null,
+				horario_llegada: d.horario_llegada || null,
+				observaciones: d.observaciones || '',
+			}
+		};
+		return;
+	}
+	if (tipo === 'tour') {
+		confirmacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				estado: d.estado || 'pendiente',
+				fecha_salida: d.fecha_salida || null,
+				fecha_retorno: d.fecha_retorno || null,
+				costo: Number(d.costo || 0),
+				punto_partida: d.punto_partida || '',
+				punto_llegada: d.punto_llegada || '',
+				hora_salida: d.hora_salida || null,
+				hora_retorno: d.hora_retorno || null,
+				observaciones: d.observaciones || '',
+			}
+		};
+		return;
+	}
+	if (tipo === 'transporte') {
+		confirmacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				estado_alquiler: d.estado_alquiler || 'pendiente',
+				fecha_inicio: d.fecha_inicio || null,
+				fecha_fin: d.fecha_fin || null,
+				hora_recogida: d.hora_recogida || null,
+				hora_devolucion: d.hora_devolucion || null,
+				observaciones: d.observaciones || '',
+				costo: Number(d.costo || 0),
+				precio: Number(d.precio || 0),
+			}
+		};
+		return;
+	}
+	confirmacionEditar.value = {
+		itemId: item.id,
+		tipo,
+		detalleId: d.id,
+		payload: payloadBase
+	};
+};
+const abrirModalAsignaciones = async (item) => {
+	const tipo = normalizarTipoServicio(tipoServicioItem(item));
+	const d = item?.detalle || {};
+	if (tipo === 'restaurant') {
+		asignacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				restaurante_id: d.restaurante_id || d.restaurante?.id || null,
+				comprobante: d.comprobante || '',
+			}
+		};
+		return;
+	}
+	if (tipo === 'hospedaje') {
+		asignacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				hospedaje_id: d.hospedaje_id || d.hospedaje?.id || null,
+				numero_habitacion: d.numero_habitacion || item.numero_habitacion || '',
+				estado_pago: d.estado_pago || item.estado_pago || '',
+				motivo_cancelacion: d.motivo_cancelacion || item.motivo_cancelacion || '',
+				nombre_titular: d.nombre_titular || item.nombre_titular || '',
+				documento_titular: d.documento_titular || item.documento_titular || '',
+				datos_contacto: d.datos_contacto || item.datos_contacto || '',
+			}
+		};
+		return;
+	}
+	if (tipo === 'vuelo') {
+		asignacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				aerolinea: d.aerolinea || '',
+				codigo_vuelo: d.codigo_vuelo || '',
+				numero_vuelo: d.numero_vuelo || '',
+				aeronave: d.aeronave || '',
+				clase_vuelo: d.clase_vuelo || item.clase_vuelo || '',
+				escala: Boolean(d.escala ?? item.escala),
+				terminal_salida: d.terminal_salida || '',
+				puerta_embarque: d.puerta_embarque || '',
+				terminal_llegada: d.terminal_llegada || '',
+				asientos_asignados: d.asientos_asignados || '',
+				duracion_minutos: Number(d.duracion_minutos || 0),
+				costo_soles: Number(d.costo_soles || 0),
+				costo_dolares: Number(d.costo_dolares || 0),
+			}
+		};
+		return;
+	}
+	if (tipo === 'transporte') {
+		asignacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				vehiculo_id: d.vehiculo_id || d.vehiculo?.id || null,
+				costo: Number(d.costo || 0),
+			}
+		};
+		return;
+	}
+	if (tipo === 'tour') {
+		const listadoGuias = await api.get('/venta_guias');
+		const guiaActual = (listadoGuias.data || []).find(g => Number(g.venta_item_id) === Number(item.id)) || {};
+		asignacionEditar.value = {
+			itemId: item.id,
+			tipo,
+			detalleId: d.id,
+			payload: {
+				venta_guia_id: guiaActual.id || null,
+				guia_id: guiaActual.guia_id || null,
+				fecha: guiaActual.fecha || null,
+				hora: guiaActual.hora || null,
+				lugar_encuentro: guiaActual.lugar_encuentro || '',
+				costo: Number(guiaActual.costo || 0),
+				tipo_servicio: guiaActual.tipo_servicio || 'grupal',
+			}
+		};
+		return;
+	}
+	asignacionEditar.value = {
+		itemId: item.id,
+		tipo,
+		detalleId: d.id,
+		payload: {}
+	};
+};
+const guardarConfirmaciones = async () => {
+	try {
+		const { tipo, payload, itemId } = confirmacionEditar.value;
+		const endpoint = endpointPorTipo(tipo);
+		if (!endpoint) {
+			await Swal.fire('Error', 'No se encontró el detalle del recurso para actualizar', 'error');
+			return;
+		}
+		let detalleId = confirmacionEditar.value.detalleId;
+		if (!detalleId && itemId) {
+			const listado = await api.get(`/${endpoint}`);
+			const detalle = (listado.data || []).find(d => Number(d.venta_item_id) === Number(itemId));
+			detalleId = detalle?.id || null;
+			confirmacionEditar.value.detalleId = detalleId;
+		}
+		if (!detalleId) {
+			await Swal.fire('Error', 'No se encontró el detalle del recurso para actualizar', 'error');
+			return;
+		}
+		await api.put(`/${endpoint}/${detalleId}`, payload);
+		await ventaStore.obtenerPorId(route.params.id);
+		await Swal.fire('Éxito', 'Confirmaciones actualizadas', 'success');
+	} catch (error) {
+		await Swal.fire('Error', 'No se pudieron actualizar las confirmaciones', 'error');
+	}
+};
+const guardarAsignaciones = async () => {
+	try {
+		const { tipo, payload, itemId } = asignacionEditar.value;
+		if (tipo === 'tour') {
+			const payloadGuia = {
+				venta_item_id: itemId,
+				guia_id: payload.guia_id || null,
+				fecha: payload.fecha || null,
+				hora: payload.hora || null,
+				lugar_encuentro: payload.lugar_encuentro || null,
+				costo: Number(payload.costo || 0),
+				tipo_servicio: payload.tipo_servicio || 'grupal',
+			};
+			const lista = await api.get('/venta_guias');
+			const existente = (lista.data || []).find(g => Number(g.venta_item_id) === Number(itemId));
+			if (existente?.id) {
+				await api.put(`/venta_guias/${existente.id}`, payloadGuia);
+			} else {
+				await api.post('/venta_guias', payloadGuia);
+			}
+			await ventaStore.obtenerPorId(route.params.id);
+			await cargarVentaGuias();
+			await Swal.fire('Éxito', 'Asignaciones actualizadas', 'success');
+			return;
+		}
+		const endpoint = endpointPorTipo(tipo);
+		if (!endpoint) {
+			await Swal.fire('Error', 'No se encontró el detalle del recurso para actualizar', 'error');
+			return;
+		}
+		let detalleId = asignacionEditar.value.detalleId;
+		if (!detalleId && itemId) {
+			const listado = await api.get(`/${endpoint}`);
+			const detalle = (listado.data || []).find(d => Number(d.venta_item_id) === Number(itemId));
+			detalleId = detalle?.id || null;
+			asignacionEditar.value.detalleId = detalleId;
+		}
+		if (!detalleId) {
+			await Swal.fire('Error', 'No se encontró el detalle del recurso para actualizar', 'error');
+			return;
+		}
+		await api.put(`/${endpoint}/${detalleId}`, payload);
+		await ventaStore.obtenerPorId(route.params.id);
+		await cargarVentaGuias();
+		await Swal.fire('Éxito', 'Asignaciones actualizadas', 'success');
+	} catch (error) {
+		await Swal.fire('Error', 'No se pudieron actualizar las asignaciones', 'error');
+	}
+};
 
 const badgeEstadoClass = (estado) => {
 	const estadoPago = (estado || '').toLowerCase();
@@ -173,12 +489,19 @@ const guardarPago = async (form, saldoPendiente=0) => {
 	if (pagoEditar.value?.id) {
 		await pagosStore.actualizar(route.params.id, pagoEditar.value.id, payload);
 		pagoEditar.value = null;
-		await pagosStore.listar(route.params.id);
-		await ventaStore.obtenerPorId(route.params.id);
-		return;
+	} else {
+		await pagosStore.guardar(route.params.id, payload);
 	}
 
-	await pagosStore.guardar(route.params.id, payload);
+	await pagosStore.listar(route.params.id);
+	await ventaStore.obtenerPorId(route.params.id);
+};
+
+const enviarEncuesta = () => {
+	const parametro = encodeForUrl({
+		id: route.params.id
+	})
+	window.open('http://localhost:5173/recopilacion-datos.html?p='+parametro, '_blank');
 };
 
 const anularPago = async (pago) => {
@@ -190,10 +513,41 @@ const anularPago = async (pago) => {
 	await ventaStore.obtenerPorId(route.params.id);
 };
 
+const seguimientosOrdenados = computed(() => {
+	const segs = [...(ventaActual.value.seguimientos || [])];
+	return segs.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+});
+
+const getTimelineDotClass = (nombreAccion) => {
+	const n = (nombreAccion || '').toLowerCase();
+	if (n.includes('pago realizado')) return 'bg-success';
+	if (n.includes('anulado') || n.includes('rechazado') || n.includes('eliminada')) return 'bg-danger';
+	if (n.includes('cambio de estado')) return 'bg-info';
+	return 'bg-primary';
+};
+
+const getTimelineIconClass = (nombreAccion) => {
+	const n = (nombreAccion || '').toLowerCase();
+	if (n.includes('pago realizado')) return 'bi-wallet2';
+	if (n.includes('anulado') || n.includes('rechazado')) return 'bi-x-lg-circle-fill';
+	if (n.includes('eliminada')) return 'bi-trash-fill';
+	if (n.includes('cambio de estado') || n.includes('progreso')) return 'bi-arrow-repeat';
+	if (n.includes('generada')) return 'bi-file-earmark-plus';
+	return 'bi-check-circle-fill';
+};
+
 onMounted(async () => {
 	if (route.params.id) {
-		await ventaStore.obtenerPorId(route.params.id);
-		await pagosStore.listar(route.params.id);
+		await Promise.all([
+			ventaStore.obtenerPorId(route.params.id),
+			pagosStore.listar(route.params.id),
+			hospedajesStore.listar(),
+			restaurantesStore.listar(),
+			vehiculosStore.listar(),
+			guiasStore.listar(),
+			aerolineasStore.listar(),
+		]);
+		await cargarVentaGuias();
 	}
 });
 </script>
@@ -214,14 +568,13 @@ onMounted(async () => {
 	<p class="text-muted">Acciones</p>
 	<div class="row mb-3">
 		<div class="col d-flex flex-wrap gap-2">
-			<button class="btn btn-outline-secondary">
+			<router-link :to="{ name: 'editarVenta', params: { id: route.params.id } }" class="btn btn-outline-secondary">
 				<i class="bi bi-pencil-square"></i> Editar venta
-			</button>
+			</router-link>
 			<button class="btn btn-outline-secondary">
 				<i class="bi bi-printer"></i> Imprimir A4
 			</button>
-			<a class="btn btn-outline-secondary" href="https://wa.me/send?phone=51977692100&text=EnvíoDeEncuesta"
-				target="_blank"><i class="bi bi-send"></i> Enviar encuesta</a>
+			<button class="btn btn-outline-secondary" @click="enviarEncuesta"><i class="bi bi-send"></i> Enviar encuesta</button>
 		</div>
 	</div>
 
@@ -232,9 +585,14 @@ onMounted(async () => {
 				Resumen
 			</button>
 		</li>
-		<li class="nav-item">
+		<li class="nav-item d-none">
 			<button class="nav-link" :class="{ active: activeTab === 'servicios' }" @click="activeTab = 'servicios'">
 				Servicios
+			</button>
+		</li>
+		<li class="nav-item">
+			<button class="nav-link" :class="{ active: activeTab === 'recursos' }" @click="activeTab = 'recursos'">
+				Recursos
 			</button>
 		</li>
 		<li class="nav-item">
@@ -247,11 +605,7 @@ onMounted(async () => {
 				Facturación
 			</button>
 		</li>
-		<li class="nav-item">
-			<button class="nav-link" :class="{ active: activeTab === 'recursos' }" @click="activeTab = 'recursos'">
-				Recursos
-			</button>
-		</li>
+		
 		<li class="nav-item">
 			<button class="nav-link" :class="{ active: activeTab === 'seguimiento' }" @click="activeTab = 'seguimiento'">
 				Seguimiento de Operatividad
@@ -272,10 +626,15 @@ onMounted(async () => {
 				<div class="col-12 my-3 px-3">
 					<div class="d-flex justify-content-between my-3">
 						<p class="text-muted">Progreso:</p>
-						<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCambiarProgreso"
-							@click="abrirModalProgreso">
-							<i class="bi bi-arrow-repeat"></i> Cambiar progreso
-						</button>
+						<div class="d-flex flex-column align-items-center gap-2">
+							<span v-if="ventaActual.estado === 'anulado'" class="badge bg-danger">
+								<i class="bi bi-x-lg-circle"></i> Venta Anulada
+							</span>
+							<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalCambiarProgreso"
+								@click="abrirModalProgreso" :disabled="ventaActual.estado === 'anulado'">
+								<i class="bi bi-arrow-repeat"></i> Cambiar progreso
+							</button>
+						</div>
 					</div>
 					<div class="timeline-wrapper position-relative w-100">
 						<div class="timeline-track position-absolute w-100"
@@ -320,7 +679,7 @@ onMounted(async () => {
 							<p><strong>Cliente:</strong> {{ `${ventaActual.cliente?.apellidos || ''} ${ventaActual.cliente?.nombres || ''}`.trim() || '-' }} · {{ ventaActual.cliente?.dni || '-' }}</p>
 							<p><strong>Contacto:</strong> {{ ventaActual.cliente?.celular || '-' }}</p>
 							<p><strong>Nacionalidad:</strong> {{ capitalize(ventaActual.nacionalidad) }}</p>
-							<p><strong>N° de pasajeros:</strong> {{ ventaActual.personas ?? 0 }}</p>
+							<p><strong>N° de pasajeros:</strong> {{ ventaActual.cuantas_personas ?? 0 }}</p>
 							<p><strong>Fecha de creación:</strong> {{ ventaActual.created_at ? fechaLatamSimple(ventaActual.created_at) : '-' }}</p>
 							
 						</div>
@@ -459,7 +818,7 @@ onMounted(async () => {
 													class="bi bi-pencil-square"></i></button>
 											<button class="btn btn-sm btn-outline-danger me-1 btnAnular" title="Anular pago"
 												@click="anularPago(pago)"><i
-													class="bi bi-capslock"></i></button>
+													class="bi bi-x-lg"></i></button>
 										</div>
 										<p v-else><span class="text-danger">Anulado</span></p>
 									</td>
@@ -511,6 +870,7 @@ onMounted(async () => {
 											<i class="bi me-1" :class="servicioIcono(item.tipo)"></i>{{ servicioNombre(item.tipo) }}
 										</span>
 										<span class="text-muted">{{ item.descripcion || '-' }}</span>
+										
 									</div>
 								</button>
 							</h2>
@@ -522,147 +882,45 @@ onMounted(async () => {
 								data-bs-parent="#accordionRecursos"
 							>
 								<div class="accordion-body">
+									<div class="row mb-3">
+										<div class="col">
+											<button class="btn btn-sm btn-outline-primary ms-2" type="button" data-bs-toggle="modal"
+												data-bs-target="#modalEditarConfirmaciones" @click.stop="abrirModalConfirmaciones(item)">
+												<i class="bi bi-pencil-square"></i> Editar confirmaciones
+											</button>
+										</div>
+										<div class="col">
+									<button class="btn btn-sm btn-outline-primary ms-2" type="button" data-bs-toggle="modal"
+										data-bs-target="#modalEditarAsignaciones" @click.stop="abrirModalAsignaciones(item)">
+										<i class="bi bi-pencil-square"></i> Editar asignaciones
+									</button>
+										</div>
+									</div>
 									<div class="row g-3">
 										<div class="col-12 col-md-6">
-											<h6 class="fw-bold">Requerimientos</h6>
-											<template v-if="normalizarTipoServicio(tipoServicioItem(item)) === 'restaurant'">
-												<p><strong>Número personas:</strong> {{ item.detalle?.numero_personas ?? 0 }}</p>
-												<p><strong>Fecha confirmación:</strong> {{ item.detalle?.fecha_confirmacion ? fechaLatamSimple(item.detalle?.fecha_confirmacion) : '-' }}</p>
-												<p><strong>Turno:</strong> <span class="text-capitalize">{{ item.detalle?.turno || '-' }}</span></p>
-												<p><strong>Tipo servicio:</strong> <span class="text-capitalize">{{ item.detalle?.tipo_servicio || '-' }}</span></p>
-												<p><strong>Espacio:</strong> <span class="text-capitalize">{{ item.detalle?.espacio || '-' }}</span></p>
-												<p><strong>Precio:</strong> {{ formatMoneda(Number(item.detalle?.precio || 0)) }}</p>
-												<p><strong>Fecha reserva:</strong> {{ item.detalle?.fecha_reserva ? fechaLatamSimple(item.detalle?.fecha_reserva) : '-' }}</p>
-												<p><strong>Hora reserva:</strong> {{ item.detalle?.hora_reserva || '-' }}</p>
-												<p><strong>Pedido especial:</strong> {{ item.detalle?.pedido_especial || '-' }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'hospedaje'">
-												<p><strong>Cantidad noches:</strong> {{ item.detalle?.cantidad_noches ?? 0 }}</p>
-												<p><strong>N° habitaciones:</strong> {{ item.detalle?.num_habitaciones ?? 0 }}</p>
-												<p><strong>Tipo habitación:</strong> {{ item.detalle?.tipo_habitacion || '-' }}</p>
-												<p><strong>Fecha ingreso:</strong> {{ item.detalle?.fecha_ingreso ? fechaLatamSimple(item.detalle?.fecha_ingreso) : '-' }}</p>
-												<p><strong>Fecha salida:</strong> {{ item.detalle?.fecha_salida ? fechaLatamSimple(item.detalle?.fecha_salida) : '-' }}</p>
-												<p><strong>Hora checkin:</strong> {{ item.detalle?.hora_checkin || '-' }}</p>
-												<p><strong>Hora checkout:</strong> {{ item.detalle?.hora_checkout || '-' }}</p>
-												<p><strong>Adultos:</strong> {{ item.detalle?.cantidad_adultos ?? 0 }} · <strong>Niños:</strong> {{ item.detalle?.cantidad_ninos ?? 0 }}</p>
-												<p><strong>Precio por noche:</strong> {{ formatMoneda(Number(item.detalle?.precio_por_noche || 0)) }}</p>
-												<p><strong>Precio:</strong> {{ formatMoneda(Number(item.detalle?.precio || 0)) }}</p>
-												<p><strong>Requiere cuna:</strong> {{ boolLabel(item.detalle?.requiere_cuna) }}</p>
-												<p><strong>Habitación fumador:</strong> {{ boolLabel(item.detalle?.habitacion_fumador) }}</p>
-												<p><strong>Preferencias especiales:</strong> {{ item.detalle?.preferencias_especiales || '-' }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'vuelo'">
-												<p><strong>Origen:</strong> {{ item.detalle?.origen || '-' }}</p>
-												<p><strong>Destino:</strong> {{ item.detalle?.destino || '-' }}</p>
-												<p><strong>Pasajeros:</strong> {{ item.detalle?.pasajeros ?? item.detalle?.nro_clientes ?? 0 }}</p>
-												<p><strong>Lleva equipaje:</strong> {{ item.detalle?.lleva_equipaje === 'si' ? 'Sí' : 'No' }}</p>
-												<p><strong>Kilos:</strong> {{ parseInt(item.detalle?.kilos || 0) }} kg</p>
-												<p><strong>Equipaje:</strong> {{ item.detalle?.que_equipaje || '-' }}</p>
-												<p><strong>Precio ticket:</strong> {{ formatMoneda(Number(item.detalle?.precio_ticket || 0)) }}</p>
-												<p><strong>Precio soles:</strong> {{ formatMoneda(Number(item.detalle?.precio_soles || 0)) }}</p>
-												<p><strong>Precio dólares:</strong> {{ Number(item.detalle?.precio_dolares || 0) }}</p>
-												<p><strong>Fecha salida:</strong> {{ item.detalle?.fecha_salida ? fechaLatamSimple(item.detalle?.fecha_salida) : '-' }} · {{ convertirHora(item.detalle?.hora_salida) || '-' }}</p>
-												<p><strong>Fecha llegada:</strong> {{ item.detalle?.fecha_llegada ? fechaLatamSimple(item.detalle?.fecha_llegada) : '-' }} · {{ convertirHora(item.detalle?.horario_llegada) || '-' }}</p>
-												<p><strong>Observaciones:</strong> {{ item.detalle?.observaciones || '-' }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'transporte'">
-												<p><strong>Origen:</strong> {{ item.detalle.origen || '-' }}</p>
-												<p><strong>Destino:</strong> {{ item.detalle.destino || '-' }}</p>
-												<p><strong>Fecha inicio:</strong> {{ item.detalle.fecha_inicio ? fechaLatamSimple(item.detalle.fecha_inicio) : '-' }}</p>
-												<p><strong>Fecha fin:</strong> {{ item.detalle.fecha_fin ? fechaLatamSimple(item.detalle.fecha_fin) : '-' }}</p>
-												<p><strong>Hora recogida:</strong> {{ convertirHora(item.detalle.hora_recogida) || '-' }}</p>
-												<p><strong>Hora devolución:</strong> {{ convertirHora(item.detalle.hora_devolucion) || '-' }}</p>
-												<p><strong>Precio:</strong> {{ formatMoneda(Number(item.detalle.precio || 0)) }}</p>
-												<p><strong>Pasajeros:</strong> {{ item.detalle.pasajeros ?? item.detalle.nro_clientes ?? 0 }}</p>
-												<p><strong>Observaciones:</strong> {{ item.detalle.observaciones || '-' }}</p>
-											</template>
+											<RecursoRequerimientos
+												:item="item"
+												:tipo-normalizado="normalizarTipoServicio(tipoServicioItem(item))"
+												:nacionalidad-venta="ventaActual?.nacionalidad || ''"
+												:fecha-latam-simple="fechaLatamSimple"
+												:format-moneda="formatMoneda"
+												:convertir-hora="convertirHora"
+												:bool-label="boolLabel"
+											/>
 										</div>
 
 										<div class="col-12 col-md-6">
-											<h6 class="fw-bold">Asignado</h6>
-											<template v-if="normalizarTipoServicio(tipoServicioItem(item)) === 'restaurant'">
-												<p>
-													<strong>Estado:</strong>
-													<span class="ms-2" :class="estadoSolicitudClass(item.detalle?.estado)">
-														<i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
-														{{ estadoSolicitudLabel(item.detalle?.estado) }}
-													</span>
-												</p>
-												<p><strong>Restaurant asignado:</strong> {{ item.detalle?.restaurante?.nombre || '-' }}</p>
-												<p><strong>Contacto:</strong> {{ item.detalle?.restaurante?.contacto || 'sin contacto' }}</p>
-												<p><strong>Comprobante:</strong> {{ item.detalle?.comprobante || '-' }}</p>
-												<p v-if="(item.detalle?.restaurante?.estado || item.estado || '').toLowerCase() === 'cancelado'"><strong>Motivo cancelación:</strong> {{ item.detalle?.restaurante?.motivo_cancelacion || '-' }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'hospedaje'">
-												<p>
-													<strong>Estado:</strong>
-													<span class="ms-2" :class="estadoSolicitudClass(item.estado)">
-														<i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
-														{{ estadoSolicitudLabel(item.estado) }}
-													</span>
-												</p>
-												<p><strong>Hospedaje asignado:</strong> {{ item.detalle?.hospedaje?.hospedaje || '-' }}</p>
-												<p><strong>Contacto hospedaje:</strong> {{ `${item.detalle?.hospedaje?.contacto || '-'} - ${item.detalle?.hospedaje?.celular || '-'}` }}</p>
-												<p><strong>Número habitación:</strong> {{ item.numero_habitacion || '-' }}</p>
-												<p><strong>Estado pago:</strong> {{ item.estado_pago || '-' }}</p>
-												<p><strong>Motivo cancelación:</strong> {{ item.motivo_cancelacion || '-' }}</p>
-												<p><strong>Nombre titular:</strong> {{ item.nombre_titular || '-' }}</p>
-												<p><strong>Documento titular:</strong> {{ item.documento_titular || '-' }}</p>
-												<p><strong>Datos contacto:</strong> {{ item.datos_contacto || '-' }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'vuelo'">
-												<p>
-													<strong>Estado:</strong>
-													<span class="ms-2" :class="estadoSolicitudClass(item.detalle?.estado_tramo)">
-														<i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
-														{{ estadoSolicitudLabel(item.detalle?.estado_tramo) }}
-													</span>
-												</p>
-												<p><strong>Aerolínea:</strong> {{ item.detalle?.aerolinea || '-' }}</p>
-												<p><strong>Código vuelo:</strong> {{ item.detalle?.codigo_vuelo || '-' }}</p>
-												<p><strong>Número vuelo:</strong> {{ item.detalle?.numero_vuelo || '-' }}</p>
-												<p><strong>Aeronave:</strong> {{ item.detalle?.aeronave || '-' }}</p>
-												<p><strong>Clase vuelo:</strong> <span class="text-capitalize">{{ item.detalle?.clase_vuelo || item.clase_vuelo || '-' }}</span></p>
-												<p><strong>Escala:</strong> {{ boolLabel(item.detalle?.escala ?? item.escala) }}</p>
-												<p><strong>Terminal salida:</strong> {{ item.detalle?.terminal_salida || '-' }}</p>
-												<p><strong>Puerta embarque:</strong> {{ item.detalle?.puerta_embarque || '-' }}</p>
-												<p><strong>Terminal llegada:</strong> {{ item.detalle?.terminal_llegada || '-' }}</p>
-												
-												<p><strong>Asientos asignados:</strong> {{ item.detalle?.asientos_asignados || '-' }}</p>
-												<p><strong>Duración minutos:</strong> {{ item.detalle?.duracion_minutos ?? '-' }}</p>
-												<p><strong>Costo soles:</strong> {{ formatMoneda(Number(item.detalle?.costo_soles || 0)) }}</p>
-												<p><strong>Costo dólares:</strong> $ {{ parseFloat(Number(item.detalle?.costo_dolares || 0)).toFixed(2) }}</p>
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'transporte'">
-												<p>
-													<strong>Estado alquiler:</strong>
-													<span class="ms-2" :class="estadoSolicitudClass(item.detalle?.estado_alquiler)">
-														<i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
-														{{ estadoSolicitudLabel(item.detalle?.estado_alquiler) }}
-													</span>
-												</p>
-												<p><strong>Conductor:</strong> {{ item.detalle?.vehiculo?.nombre_conductor || '-' }}</p>
-												<p><strong>Placa:</strong> {{ item.detalle?.vehiculo?.placa || '-' }}</p>
-												<p><strong>Tipo combustible:</strong> {{ item.detalle?.vehiculo?.tipo_combustible || '-' }}</p>
-												<p><strong>Costo:</strong> {{ formatMoneda(Number(item.detalle.costo || 0)) }}</p>
-
-											</template>
-
-											<template v-else-if="normalizarTipoServicio(tipoServicioItem(item)) === 'tour'">
-												<p>
-													<strong>Estado:</strong>
-													<span class="ms-2" :class="estadoSolicitudClass(item.detalle?.estado)">
-														<i class="bi bi-circle-fill me-1" style="font-size: 0.55rem; vertical-align: middle;"></i>
-														{{ estadoSolicitudLabel(item.detalle?.estado) }}
-													</span>
-												</p>
-											</template>
+											<RecursoAsignado
+												:item="item"
+												:tipo-normalizado="normalizarTipoServicio(tipoServicioItem(item))"
+												:estado-solicitud-class="estadoSolicitudClass"
+												:estado-solicitud-label="estadoSolicitudLabel"
+												:bool-label="boolLabel"
+												:format-moneda="formatMoneda"
+												:convertir-hora="convertirHora"
+												:fecha-latam-simple="fechaLatamSimple"
+												:venta-guia="ventaGuiasByItemId[Number(item.id)] || null"
+											/>
 										</div>
 									</div>
 								</div>
@@ -845,6 +1103,16 @@ onMounted(async () => {
 			</div>
 		</div>
 	</div>
+	<ModalEditarConfirmaciones :confirmacion-editar="confirmacionEditar" @guardar="guardarConfirmaciones" />
+	<ModalEditarAsignaciones
+		:asignacion-editar="asignacionEditar"
+		:hospedajes="hospedajesStore.hospedajes"
+		:restaurantes="restaurantesStore.restaurantes"
+		:vehiculos="vehiculosStore.vehiculos"
+		:guias="guiasStore.guias"
+		:aerolineas="aerolineasStore.aerolineas"
+		@guardar="guardarAsignaciones"
+	/>
 </template>
 
 <style>

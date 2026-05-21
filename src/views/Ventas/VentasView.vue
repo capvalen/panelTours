@@ -211,7 +211,7 @@ const eliminarVenta = async (id, concepto) => {
 							</router-link>
 						</td>
 						<td>{{ formatoServicio(venta.items) }}</td>
-						<td>{{ venta.personas || 0 }}</td>
+						<td>{{ venta.cuantas_personas || 0 }}</td>
 						<td>{{ venta.departamento?.departamento }} {{ venta.ciudad ? ' - '+venta.ciudad : '' }}</td>
 						<td>{{ capitalize(formatoConcepto(venta.items)) }}</td>
 						<td class="nowrap-cell">
@@ -228,10 +228,10 @@ const eliminarVenta = async (id, concepto) => {
 						</td>
 						<td>
 							<div class="d-flex gap-2" v-if="venta.estado != 'anulado'">
-								<button class="btn btn-sm btn-outline-warning" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
-									<i class="bi bi-ban"></i>
+								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
+									<i class="bi bi-x-lg"></i>
 								</button>
-								<button class="btn btn-sm btn-outline-danger" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Eliminar servicio">
+								<button class="btn btn-sm btn-outline-danger d-none" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Eliminar servicio">
 									<i class="bi bi-x-lg"></i>
 								</button>
 							</div>

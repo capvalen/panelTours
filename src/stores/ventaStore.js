@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import api from '@/services/axios';
+import { useAuthStore } from './auth';
 
 export const useVentasStore = defineStore('ventas', {
 	state: () => ({
@@ -63,7 +64,7 @@ export const useVentasStore = defineStore('ventas', {
 		},
 
 		async eliminar(id) {
-			await api.delete(`/ventas/${id}`);
+			await api.delete(`/ventas/${id}`,{usuario_id: useAuthStore().user.id });
 
 			this.ventas = this.ventas.filter(v => v.id !== id);
 

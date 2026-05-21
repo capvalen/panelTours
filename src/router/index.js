@@ -181,6 +181,12 @@ const router = createRouter({
 					component: () => import('../views/Ventas/NuevaVenta.vue'),
 				},
 				{
+					path: '/venta/editar/:id',
+					name: 'editarVenta',
+					component: () => import('../views/Ventas/NuevaVenta.vue'),
+					props: true
+				},
+				{
 					path: '/pagos',
 					name: 'Pagos',
 					component: () => import('../views/Pagos/PagosView.vue'),

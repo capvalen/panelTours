@@ -4,7 +4,7 @@ import api from '@/services/axios';
 export const useClienteStore = defineStore('cliente', {
 	state:() => ({
 		clientes: [],
-		clienteActual: []
+		clienteActual: {}
 	}),
 	//acciones
 	actions: {
@@ -20,7 +20,10 @@ export const useClienteStore = defineStore('cliente', {
 		},
 		async obtenerClienteId(id){
 			const resp = await api.get('/clientes/'+id)
-			this.clienteActual = resp.data
+			this.clienteActual = {
+				...resp.data,
+				ventas: Array.isArray(resp.data?.ventas) ? resp.data.ventas : []
+			}
 			return this.clienteActual
 		},
 		async guardarCliente(cliente){
