@@ -1,10 +1,11 @@
 <script setup>
 import { ref, watch } from 'vue';
 import {useCajaStore} from '@/stores/cajaStore'
+import Swal from 'sweetalert2';
 
 import { useFormat} from '@/composables/formatos.js'
 const { ahora } = useFormat()
-const props = defineProps(['id']) //'titulo', 'color'
+const props = defineProps(['id', 'efectivoFinal']) //'titulo', 'color'
 const cajaStore = useCajaStore()
 
 const registro = ref({	
@@ -15,12 +16,18 @@ const registro = ref({
 	//venta_id: null,
 })
 const guardar = async ()=>{
-	cajaStore.cerrarCaja(registro.value)
+	await cajaStore.cerrarCaja(registro.value)
+	Swal.fire('Caja cerrada', 'La caja se cerró correctamente', 'success')
 }
 watch(
 	()=> props.id, (newId) => {
 		registro.value.caja_id = newId
 	}
+)
+watch(
+	()=> props.efectivoFinal, (newMonto) => {
+		registro.value.monto_final = newMonto
+	}, { immediate: true }
 )
 </script>
 <template>

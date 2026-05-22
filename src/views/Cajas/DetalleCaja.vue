@@ -3,7 +3,7 @@ import ModalIngresoCaja from '@/components/ModalIngresoCaja.vue';
 import ModalSalidaCaja from '@/components/ModalSalidaCaja.vue';
 import ModalCerrarCaja from '@/components/ModalCerrarCaja.vue';
 
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router'
 import { useCajaStore } from '@/stores/cajaStore';
 import { useFormat } from '@/composables/formatos';
@@ -15,6 +15,17 @@ const cajaStore = useCajaStore()
 const cajaActual = ref(null)
 const cajaDetalles = ref(null)
 const {fechaLatamCorta, horaCorta} = useFormat()
+
+const efectivoFinal = computed(() => {
+	if (!cajaDetalles.value || !cajaActual.value) return 0
+	const ingresos = cajaDetalles.internos?.value
+		.filter(d => d.tipo === 'ingreso' && d.metodo_pago === 'efectivo')
+		.reduce((sum, d) => sum + parseFloat(d.monto), 0)
+	const egresos = cajaDetalles.internos?.value
+		.filter(d => d.tipo === 'egreso' && d.metodo_pago === 'efectivo')
+		.reduce((sum, d) => sum + parseFloat(d.monto), 0)
+	return parseFloat(cajaActual.value.monto_inicial) + ingresos - egresos
+})
 
 const cargarDatos = async ()=>{
 	
@@ -55,11 +66,9 @@ watch(() => route.params.id, (newId, oldId) => {
 	<p class="text-muted">Acciones</p>
 
 	<div class="row mb-3">
-		<div class="col d-flex flex-wrap gap-2">
+		<div class="col d-flex flex-wrap gap-2" v-if="cajaActual?.estado != 'cerrada'">
 			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalIngreso"><i class="bi bi-plus"></i> Registrar ingreso</button>
 			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalSalida"><i class="bi bi-dash"></i> Registrar egreso</button>
-			
-			
 		</div>
 	</div>
 
@@ -115,12 +124,12 @@ watch(() => route.params.id, (newId, oldId) => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(detalle, index) in cajaDetalles" :key="detalle.id">
+					<tr v-for="(detalle, index) in cajaDetalles?.internos" :key="detalle.id">
 						<td>{{ index + 1 }}</td>
 						<td>{{ horaCorta(detalle.fecha) }}</td>
 						<td>{{ detalle.concepto }}</td>
-						<td v-if="detalle.tipo === 'ingreso'" class="text-primary">{{ formatoMoneda(detalle.monto) }}</td>
-						<td v-else class="text-danger">-{{ formatoMoneda(detalle.monto) }}</td>
+						<td v-if="detalle.tipo === 'ingreso'" class="text-primary">S/ {{ formatoMoneda(detalle.monto) }}</td>
+						<td v-else class="text-danger">-S/ {{ formatoMoneda(detalle.monto) }}</td>
 						<td class="text-capitalize">{{ detalle.categoria }}</td>
 						<td>Efectivo</td>
 					</tr>
@@ -142,59 +151,27 @@ watch(() => route.params.id, (newId, oldId) => {
 					<tr>
 						<th>#</th>
 						<th>Hora</th>
-						<th>Servicio</th>
-						<th># Pasajes</th>
 						<th>Concepto</th>
+						<th># Personas</th>
 						<th>Cliente</th>
 						<th>Monto</th>
 						<th>Estado de pago</th>
-						<th>Moneda</th>
+						<th>Método de pago</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr>
-						<td>1</td>
-						<td>09:30</td>
-						<td>Tour</td>
-						<td>3</td>
-						<td>Tour selva 3n/2d</td>
-						<td><router-link :to="{ name: 'perfilCliente', params: { id: 1 } }">Juan Pérez</router-link></td>
-						<td class="text-primary">1200.00</td>
-						<td>Pago completo</td>
-						<td>Yape</td>
+					<tr v-for="(detalle, index) in cajaDetalles?.especiales" :key="detalle.id">
+						<td>{{ index + 1 }}</td>
+						<td>{{ horaCorta(detalle.fecha) }}</td>
+						<td>{{ detalle.concepto }}</td>
+						<td>{{ detalle.venta?.cuantas_personas }}</td>
+						<td><router-link :to="{ name: 'perfilCliente', params: { id: detalle.venta?.cliente?.id } }">{{ detalle.venta?.cliente?.nombres }} {{ detalle.venta?.cliente?.apellidos }}</router-link></td>
+						<td class="text-primary">S/ {{ formatoMoneda(detalle.monto) }}</td>
+						<td class="text-capitalize">{{ detalle.estado_pago }}</td>
+						<td class="text-capitalize">{{ detalle.metodo_pago }}</td>
 					</tr>
 					<tr>
-						<td>2</td>
-						<td>11:15</td>
-						<td>Paquete</td>
-						<td>5</td>
-						<td>Jauja inolvidable</td>
-						<td><router-link :to="{ name: 'perfilCliente', params: { id: 2 } }">María López</router-link></td>
-						<td class="text-primary">800.00</td>
-						<td>Adelanto</td>
-						<td>Tarjeta</td>
-					</tr>
-					<tr>
-						<td>3</td>
-						<td>14:00</td>
-						<td>Tour y transporte</td>
-						<td>3</td>
-						<td>Lima la primera ciudad del virreinato</td>
-						<td><router-link :to="{ name: 'perfilCliente', params: { id: 3 } }">Carlos Ruiz</router-link></td>
-						<td class="text-primary">450.00</td>
-						<td>Pago completo</td>
-						<td>Efectivo</td>
-					</tr>
-					<tr>
-						<td>4</td>
-						<td>16:45</td>
-						<td>Transporte</td>
-						<td>2</td>
-						<td>Laguna de paca</td>
-						<td><router-link :to="{ name: 'perfilCliente', params: { id: 4 } }">Ana Gómez</router-link></td>
-						<td class="text-primary">60.00</td>
-						<td>Pago completo</td>
-						<td>Depósito</td>
+						<td colspan="8" v-if="cajaDetalles?.especiales?.length==0">No hay datos registrados aún</td>
 					</tr>
 				</tbody>
 			</table>
@@ -230,7 +207,7 @@ watch(() => route.params.id, (newId, oldId) => {
 		<div class="col">
 			<p><strong>Cierre de sistema:</strong> S/ 1469.1</p>
 			<hr>
-			<p><strong>Efectivo final:</strong> S/ 800.40</p>
+			<p><strong>Efectivo final:</strong> S/ {{ efectivoFinal }}</p>
 			<button v-if="cajaActual?.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
 			
 		</div>
@@ -238,6 +215,6 @@ watch(() => route.params.id, (newId, oldId) => {
 
 	<ModalIngresoCaja :id="cajaActual?.id"></ModalIngresoCaja>
 	<ModalSalidaCaja :id="cajaActual?.id"></ModalSalidaCaja>
-	<ModalCerrarCaja :id="cajaActual?.id"></ModalCerrarCaja>
+	<ModalCerrarCaja :id="cajaActual?.id" :efectivoFinal="efectivoFinal"></ModalCerrarCaja>
 </template>
 

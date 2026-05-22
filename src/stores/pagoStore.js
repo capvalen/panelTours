@@ -21,7 +21,7 @@ export const usePagosStore = defineStore('pagos', {
 			if (precio > 0 && adelanto >= precio) {
 				estado_pago = 'completo';
 			} else if (adelanto > 0) {
-				estado_pago = 'adelantado';
+				estado_pago = 'adelanto';
 			}
 
 			const ventaActualizada = await ventaStore.actualizar(ventaActual.id, { estado_pago });
@@ -54,7 +54,8 @@ export const usePagosStore = defineStore('pagos', {
 		async actualizar(idVenta, pago, datos) {
 			const indexAnterior = this.pagos.findIndex(p => p.id === pago);
 			const pagoAnterior = indexAnterior !== -1 ? this.pagos[indexAnterior] : null;
-			const response = await api.put(`/ventas/${idVenta}/pagos/${pago}`, datos);
+			datos.fecha = new Date().toISOString();
+			const response = await api.put(`/ventas/${idVenta}/pagos`, datos);
 
 			const index = this.pagos.findIndex(p => p.id === pago);
 			if (index !== -1) {

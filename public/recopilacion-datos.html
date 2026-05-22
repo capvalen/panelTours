@@ -82,7 +82,8 @@
 				box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.2);
 			}
 		</style>
-	</head>
+	<base target="_blank">
+</head>
 	<body class="bg-slate-50 min-h-screen">
 		<div id="app">
 			<!-- Header -->
@@ -929,6 +930,7 @@
 			createApp({
 				data() {
 					return {
+						baseUrl: "",
 						servicio: { nombre: "", tipo: "" },
 						numClientes: 0,
 						titular: {
@@ -960,6 +962,7 @@
 					"titular.fechaNacimiento"() { this.copiarTitularAuto(); },
 				},
 				async mounted() {
+					this.baseUrl = window.location.origin;
 					this.inicializarPasajeros();
 					await this.cargarDatosDesdeUrl();
 				},
@@ -996,7 +999,7 @@
 						const ventaId = this.obtenerVentaIdDesdeUrl();
 						if (!ventaId) return;
 						try {
-							const response = await fetch(`http://localhost:8000/api/personas/${ventaId}`, {
+							const response = await fetch( this.baseUrl + `/api/personas/${ventaId}`, {
 								method: "GET",
 								headers: { "Content-Type": "application/json", Accept: "application/json" },
 							});
@@ -1092,7 +1095,7 @@
 						const ventaId = this.obtenerVentaIdDesdeUrl();
 						if (!ventaId) return;
 						try {
-							const response = await fetch(`http://localhost:8000/api/personas/${ventaId}`, {
+							const response = await fetch(this.baseUrl+ `/api/personas/${ventaId}`, {
 								method: "POST",
 								headers: { "Content-Type": "application/json", Accept: "application/json" },
 								body: JSON.stringify({ personas, autorizaciones: this.jsonResultado.autorizaciones }),

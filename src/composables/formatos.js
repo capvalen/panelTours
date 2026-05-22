@@ -24,7 +24,7 @@ export function useFormat() {
   }
   const horaCorta = (date, format = 'h:mm a') => {
     if (!date) return ''
-    return dayjs.utc(date).format(format)
+    return dayjs.utc(date).local().format(format)
   }
 	const convertirHora = (hora24) => {
 		if (!hora24 || !/^\d{2}:\d{2}:\d{2}$/.test(hora24)) {

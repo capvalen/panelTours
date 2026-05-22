@@ -19,7 +19,7 @@ export const useCajaStore = defineStore('caja', {
 		},
 		async aperturarCaja(caja){
 			const resp = await api.post('/cajas', caja)
-			this.cajaActual = resp.data.data
+			this.cajaActual = resp.data
 			this.cajas.unshift(this.cajaActual)
 			return this.cajaActual.id
 		},
@@ -39,10 +39,10 @@ export const useCajaStore = defineStore('caja', {
 			return this.cajaDetalles
 		},
 		async guardarDetalle(registro){
-			console.log('obtengo', registro)
+			registro.fecha = new Date().toISOString();
 			const resp = await api.post('/caja_detalles/', registro)
-			this.cajaActual = resp.data.data
-			return this.cajaActual
+			this.cajaDetalles?.internos.unshift(resp.data)
+			return this.cajaDetalles
 		}
 
 	}

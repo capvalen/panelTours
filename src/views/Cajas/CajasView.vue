@@ -16,7 +16,7 @@ onMounted(() => {
 });
 </script>
 <template>
-	<h1>Panel de caja chica</h1>
+	<h1>Caja chica</h1>
 
 	<div class="row">
 		<div class="col-md-10">
@@ -78,8 +78,8 @@ onMounted(() => {
 						<td>{{ formatMoneda(caja.monto_final) }}</td>
 						<td class="text-capitalize">
 							<span class="badge rounded-pill text-capitalize" :class="{
-								'text-bg-danger': caja.estado == 'abierta',
-								'text-bg-success': caja.estado == 'cerrada'
+								'text-bg-success': caja.estado == 'abierta',
+								'text-bg-secondary': caja.estado == 'cerrada'
 							}">{{ caja.estado }}</span>
 						</td>
 						<td>{{ caja.observaciones }}</td>

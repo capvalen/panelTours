@@ -597,8 +597,7 @@ const guardarVenta = async () => {
 	<nav aria-label="breadcrumb" style="content: '\F285';">
 		<ol class="breadcrumb">
 			<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-			<li class="breadcrumb-item"><a href="/rutas-de-servicio">Ruta de Servicio</a></li>
-			<li class="breadcrumb-item"><a href="/ventas">Ventas y cotizaciones</a></li>
+			<li class="breadcrumb-item"><a href="/ventas">Ventas</a></li>
 			<li class="breadcrumb-item active" aria-current="page">{{ esEdicion ? 'Editar venta' : 'Nueva venta' }}</li>
 		</ol>
 	</nav>
@@ -745,7 +744,7 @@ const guardarVenta = async () => {
 								<option value="">Seleccionar...</option>
 								<option value="pendiente">Pendiente</option>
 								<option value="pagado">Pagado</option>
-								<option value="adelantado">Con adelanto</option>
+								<option value="adelanto">Con adelanto</option>
 								<option value="cancelado">Cancelado</option>
 							</select>
 						</div>

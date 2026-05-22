@@ -454,7 +454,7 @@ const estadoPagoVenta = computed(() => (ventaActual.value.estado_pago || 'pendie
 const estadoPagoColorClass = computed(() => {
 	switch (estadoPagoVenta.value) {
 		case 'pendiente': return 'text-warning';
-		case 'adelantado': return 'text-info';
+		case 'adelanto': return 'text-info';
 		case 'completo': return 'text-success';
 		case 'anulado': return 'text-danger';
 		default: return 'text-secondary';
@@ -483,6 +483,7 @@ const guardarPago = async (form, saldoPendiente=0) => {
 		observaciones: form.observaciones || null,
 		es_compromiso: Boolean(form.esCompromiso),
 		fecha_compromiso: form.fechaCompromiso || null,
+		concepto: ventaActual.value.items?.[0]?.descripcion || null,
 	};
 	
 
@@ -501,7 +502,8 @@ const enviarEncuesta = () => {
 	const parametro = encodeForUrl({
 		id: route.params.id
 	})
-	window.open('http://localhost:5173/recopilacion-datos.html?p='+parametro, '_blank');
+	const url = import.meta.env.MODE == 'production' ? 'https://panel.grupoeuroandino.com/': 'http://localhost:5173/'	
+	window.open(url+'recopilacion-datos.html?p='+parametro, '_blank');
 };
 
 const anularPago = async (pago) => {
@@ -1077,6 +1079,7 @@ onMounted(async () => {
 	</div>
 
 	<ModalNuevoPago :pago-editar="pagoEditar" :saldo-pendiente-base="saldoPendiente" @guardar="guardarPago"></ModalNuevoPago>
+
 	<div class="modal fade" id="modalCambiarProgreso" tabindex="-1" aria-labelledby="modalCambiarProgresoLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
