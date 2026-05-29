@@ -3,15 +3,16 @@ import api from '@/services/axios';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
+import { useCajaStore } from '@/stores/cajaStore';
 
 export const useDashboardStore = defineStore('dashboard', {
 	state: () => ({
 		ventasHoy: 0,
-		reservasHoy: 0,
 		montoVentasHoy: 0,
+		ventasDelMes: 0,
+		ingresosHoy: 0,
 		gastosHoy: 0,
-		pagosProveedoresHoy: 0,
-		recordatoriosHoy: 0,
+		pasajerosEnRuta: 42,
 		cargando: false,
 	}),
 
@@ -19,40 +20,50 @@ export const useDashboardStore = defineStore('dashboard', {
 		async cargarEstadisticas() {
 			this.cargando = true;
 			const hoy = dayjs.utc().format('YYYY-MM-DD');
+			const mesActual = hoy.substring(0, 7); // YYYY-MM
 
 			try {
-				const [ventasRes, cajaRes, deudasRes, recordatoriosRes] = await Promise.all([
-					api.get('/ventas'),
-					api.get('/caja_detalles'),
-					api.get('/deudas'),
-					api.get('/recordatorios'),
-				]);
+				const ventasRes = await api.get('/ventas');
 
-				const ventas = (ventasRes.data || []).filter(v =>
-					v.estado !== 'anulado' && v.fecha && v.fecha.substring(0, 10) === hoy
+				// Ventas del día
+				const ventasHoyArr = (ventasRes.data || []).filter(v =>
+					v.estado !== 'anulado' && v.fecha && v.fecha.substring(0, 10) === hoy && v.progreso !== 'cotizacion'
 				);
+				this.ventasHoy = ventasHoyArr.length;
+				this.montoVentasHoy = ventasHoyArr.reduce((sum, v) => sum + parseFloat(v.precio || 0), 0);
 
-				this.ventasHoy = ventas.filter(v => v.progreso !== 'cotizacion').length;
-				this.reservasHoy = ventas.filter(v => v.progreso === 'cotizacion').length;
-				this.montoVentasHoy = ventas.reduce((sum, v) => sum + parseFloat(v.precio || 0), 0);
-
-				const egresos = (cajaRes.data.data || cajaRes.data || []).filter(d =>
-					d.tipo === 'egreso' && d.fecha && d.fecha.substring(0, 10) === hoy
+				// Ventas del mes
+				const ventasMesArr = (ventasRes.data || []).filter(v =>
+					v.estado !== 'anulado' && v.fecha && v.fecha.substring(0, 7) === mesActual && v.progreso !== 'cotizacion'
 				);
-				this.gastosHoy = egresos.reduce((sum, d) => sum + parseFloat(d.monto || 0), 0);
+				this.ventasDelMes = ventasMesArr.reduce((sum, v) => sum + parseFloat(v.precio || 0), 0);
 
-				const deudas = (deudasRes.data || []).filter(d =>
-					d.fecha_pago && d.fecha_pago.substring(0, 10) === hoy
-				);
-				this.pagosProveedoresHoy = deudas.length;
+				// Caja del día: usar cajaStore para obtener ingresos y egresos
+				const cajaStore = useCajaStore()
+				await cajaStore.obtenerCajasPorDia(hoy);
 
-				const recordatorios = (recordatoriosRes.data.data || recordatoriosRes.data || []).filter(r => {
-					if (!r.activo || !r.fecha_hora) return false;
-					const fecha = r.fecha_hora.substring(0, 10);
-					if (fecha === hoy) return true;
-					return fecha < hoy && (r.estado === 'pendiente' || r.estado === 'activo');
-				});
-				this.recordatoriosHoy = recordatorios.length;
+				const cajasLista = cajaStore.cajas?.data || cajaStore.cajas || [];
+				console.log('lista', cajasLista)
+
+				if (cajasLista.length > 0) {
+					const cajaHoy = cajasLista[0];
+					const cajaId = cajaHoy.id || cajaHoy.caja_id;
+
+					await cajaStore.obtenerDetalleCajaId(cajaId);
+					const detalles = cajaStore.cajaDetalles?.internos || [];
+					console.log('detalles', detalles)
+
+					this.ingresosHoy = detalles
+						.filter(d => d.tipo === 'ingreso')
+						.reduce((sum, d) => sum + parseFloat(d.monto || 0), 0);
+
+					this.gastosHoy = detalles
+						.filter(d => d.tipo === 'egreso')
+						.reduce((sum, d) => sum + parseFloat(d.monto || 0), 0);
+				}
+
+				// Pasajeros en ruta (dato ficticio con variación)
+				this.pasajerosEnRuta = Math.floor(Math.random() * 30) + 25;
 			} catch (error) {
 				console.error('Error al cargar estadísticas del dashboard:', error);
 			} finally {

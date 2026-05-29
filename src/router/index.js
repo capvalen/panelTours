@@ -197,6 +197,21 @@ const router = createRouter({
 					component: () => import('../views/Recordatorios/RecordatoriosView.vue'),
 				},
 				{
+					path: '/cotizaciones',
+					name: 'cotizaciones',
+					component: () => import('../views/Cotizaciones/CotizacionesView.vue'),
+				},
+				{
+					path: '/operaciones',
+					name: 'operaciones',
+					component: () => import('../views/Operaciones/OperacionesView.vue'),
+				},
+				{
+					path: '/finanzas',
+					name: 'finanzas',
+					component: () => import('../views/Finanzas/FinanzasView.vue'),
+				},
+				{
 					path: '/configuraciones',
 					name: 'configuraciones',
 					component: () => import('../views/Configuracion/ConfiguracionView.vue'),

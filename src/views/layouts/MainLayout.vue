@@ -18,6 +18,71 @@
 				<div id="logo" class="w-75 my-4 mx-auto">
 					<img src="@/assets/logo.webp" class="w-75 mx-auto d-block">
 				</div>
+
+				<!-- SECCIÓN: Inicio -->
+				<router-link to="/dashboard">
+					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
+				</router-link>
+
+				<!-- SECCIÓN: Ventas y Cotizaciones -->
+				<router-link to="/cotizaciones" class="menuSeccionLink">
+					<div class="menuSeccion"><i class="bi bi-file-text"></i> Ventas y Cotizaciones</div>
+				</router-link>
+				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-cart"></i> Ventas</div>
+				</router-link>
+				<router-link to="/tarifario" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-tag"></i> Tarifario</div>
+				</router-link>
+				<router-link to="/rutas-de-servicio" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-signpost-2"></i> Rutas de servicio</div>
+				</router-link>
+
+				<!-- SECCIÓN: Operaciones y Logística -->
+				<router-link to="/operaciones" class="menuSeccionLink">
+					<div class="menuSeccion"><i class="bi bi-truck"></i> Operaciones y Logística</div>
+				</router-link>
+				<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-truck"></i> Proveedores</div>
+				</router-link>
+				<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-car-front"></i> Vehículos</div>
+				</router-link>
+				<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
+				</router-link>
+				<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-person-badge"></i> Guías</div>
+				</router-link>
+				<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-airplane"></i> Vuelos</div>
+				</router-link>
+
+				<!-- SECCIÓN: Caja -->
+				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
+					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
+				</router-link>
+
+				<!-- SECCIÓN: Finanzas -->
+				<router-link to="/finanzas" class="menuSeccionLink">
+					<div class="menuSeccion"><i class="bi bi-currency-dollar"></i> Finanzas</div>
+				</router-link>
+				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
+				</router-link>
+
+				<!-- SECCIÓN: Configuraciones -->
+				<router-link to="/configuraciones" class="menuSeccionLink">
+					<div class="menuSeccion"><i class="bi bi-gear"></i> Configuraciones</div>
+				</router-link>
+				<router-link to="/recordatorios" class="menuSubItem">
+					<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
+				</router-link>
+
+				<!-- LÍNEA DIVISORIA -->
+				<hr class="my-2 mx-3">
+
+				<!-- MENÚ EXISTENTE (tal cual) -->
 				<router-link to="/dashboard">
 					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
 				</router-link>
@@ -70,6 +135,70 @@
 					<button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
 				</div>
 				<div class="offcanvas-body p-0" style="overflow-y: auto; height: calc(100vh - 60px);">
+					<!-- SECCIÓN: Inicio -->
+					<router-link to="/dashboard" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-house"></i> Inicio
+					</router-link>
+
+					<!-- SECCIÓN: Ventas y Cotizaciones -->
+					<router-link to="/cotizaciones" class="menuSeccion-mobile" @click="closeOffcanvas">
+						<i class="bi bi-file-text"></i> Ventas y Cotizaciones
+					</router-link>
+					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-cart"></i> Ventas
+					</router-link>
+					<router-link to="/tarifario" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-tag"></i> Tarifario
+					</router-link>
+					<router-link to="/rutas-de-servicio" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-signpost-2"></i> Rutas de servicio
+					</router-link>
+
+					<!-- SECCIÓN: Operaciones y Logística -->
+					<router-link to="/operaciones" class="menuSeccion-mobile" @click="closeOffcanvas">
+						<i class="bi bi-truck"></i> Operaciones y Logística
+					</router-link>
+					<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-truck"></i> Proveedores
+					</router-link>
+					<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-car-front"></i> Vehículos
+					</router-link>
+					<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-building"></i> Hospedajes
+					</router-link>
+					<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-person-badge"></i> Guías
+					</router-link>
+					<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-airplane"></i> Vuelos
+					</router-link>
+
+					<!-- SECCIÓN: Caja -->
+					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-piggy-bank"></i> Caja
+					</router-link>
+
+					<!-- SECCIÓN: Finanzas -->
+					<router-link to="/finanzas" class="menuSeccion-mobile" @click="closeOffcanvas">
+						<i class="bi bi-currency-dollar"></i> Finanzas
+					</router-link>
+					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-journal-bookmark"></i> Control de pagos
+					</router-link>
+
+					<!-- SECCIÓN: Configuraciones -->
+					<router-link to="/configuraciones" class="menuSeccion-mobile" @click="closeOffcanvas">
+						<i class="bi bi-gear"></i> Configuraciones
+					</router-link>
+					<router-link to="/recordatorios" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<i class="bi bi-stars"></i> Recordatorios
+					</router-link>
+
+					<!-- LÍNEA DIVISORIA -->
+					<hr class="my-2 mx-3">
+
+					<!-- MENÚ EXISTENTE (tal cual) -->
 					<router-link to="/dashboard" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-house"></i> Inicio
 					</router-link>
@@ -231,6 +360,76 @@ a {
 	color: white;
 	border-radius: 8px;
 	margin: 0 8px;
+}
+
+/* Estilos para secciones del menú */
+.menuSeccion {
+	padding: 6px 10px;
+	padding-left: 40px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #023475;
+	transition: all 0.3s ease-out;
+	margin-top: 8px;
+}
+
+.menuSeccion:hover {
+	background-color: #1e4b87;
+	color: white;
+	cursor: pointer;
+	margin: 8px 8px 0 8px;
+	border-radius: 6px;
+}
+
+.menuSeccionLink {
+	text-decoration: none;
+}
+
+.menuSeccionLink .menuSeccion i {
+	font-size: 1rem;
+}
+
+.menuFila-sub {
+	padding-left: 55px !important;
+	font-size: 0.95rem !important;
+}
+
+.menuFila-sub i {
+	font-size: 1.1rem !important;
+}
+
+.menuSubItem {
+	text-decoration: none;
+}
+
+/* Secciones en versión móvil */
+.menuSeccion-mobile {
+	padding: 8px 20px;
+	padding-left: 30px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #023475;
+	display: block;
+	transition: all 0.3s ease-out;
+	margin-top: 6px;
+}
+
+.menuSeccion-mobile:hover {
+	background-color: #023475;
+	color: white;
+}
+
+.menuSeccion-mobile i {
+	font-size: 1rem;
+	margin-right: 8px;
+}
+
+.menuSubItem-mobile {
+	padding-left: 50px !important;
 }
 
 /* Estilos para menú móvil */

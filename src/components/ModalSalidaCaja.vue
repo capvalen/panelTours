@@ -56,10 +56,10 @@ watch(
 						
 					</select>
 				</div>
+				<p>Monto (S/.)</p>
+				<input type="number" class="form-control" autocomplete="off" v-model="registro.monto">
 				<p>Concepto</p>
 				<input type="text" class="form-control" autocomplete="off" v-model="registro.concepto">
-					<p>Monto (S/.)</p>
-					<input type="number" class="form-control" autocomplete="off" v-model="registro.monto">
 				<p>Datos extras</p>
 				<input type="text" class="form-control" autocomplete="off" v-model="registro.observaciones">
       </div>
