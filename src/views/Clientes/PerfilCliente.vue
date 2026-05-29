@@ -89,6 +89,7 @@ watch(
 	<div class="row mb-3">
 		<div class="col d-flex flex-wrap gap-2">
 			<router-link :to="`/cliente/editar/${route.params.id}`" class="btn btn-outline-secondary"><i class="bi bi-pencil-square"></i> Editar datos</router-link>
+			<router-link :to="`/cotizacion/nueva?clienteId=${route.params.id}`" class="btn btn-outline-primary"><i class="bi bi-file-text"></i> Crear cotización</router-link>
 			<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo"><i class="bi bi-file-earmark-plus"></i> Agregar documentación</button>
 		</div>
 	</div>

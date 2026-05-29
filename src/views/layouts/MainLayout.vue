@@ -24,18 +24,24 @@
 					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
 				</router-link>
 
-				<!-- SECCIÓN: Ventas y Cotizaciones -->
-				<router-link to="/cotizaciones" class="menuSeccionLink">
-					<div class="menuSeccion"><i class="bi bi-file-text"></i> Ventas y Cotizaciones</div>
+				<!-- Cotizaciones -->
+				<router-link to="/cotizaciones">
+					<div class="menuFila"><i class="bi bi-file-text"></i> Cotizaciones</div>
 				</router-link>
-				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-cart"></i> Ventas</div>
+
+				<!-- Ventas -->
+				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }">
+					<div class="menuFila"><i class="bi bi-cart"></i> Ventas</div>
 				</router-link>
-				<router-link to="/tarifario" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-tag"></i> Tarifario</div>
+
+				<!-- Tarifario -->
+				<router-link to="/tarifario">
+					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
 				</router-link>
-				<router-link to="/rutas-de-servicio" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-signpost-2"></i> Rutas de servicio</div>
+
+				<!-- Rutas de servicio -->
+				<router-link to="/rutas-de-servicio">
+					<div class="menuFila"><i class="bi bi-signpost-2"></i> Rutas de servicio</div>
 				</router-link>
 
 				<!-- SECCIÓN: Operaciones y Logística -->
@@ -140,17 +146,23 @@
 						<i class="bi bi-house"></i> Inicio
 					</router-link>
 
-					<!-- SECCIÓN: Ventas y Cotizaciones -->
-					<router-link to="/cotizaciones" class="menuSeccion-mobile" @click="closeOffcanvas">
-						<i class="bi bi-file-text"></i> Ventas y Cotizaciones
+					<!-- Cotizaciones -->
+					<router-link to="/cotizaciones" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-file-text"></i> Cotizaciones
 					</router-link>
-					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+
+					<!-- Ventas -->
+					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-cart"></i> Ventas
 					</router-link>
-					<router-link to="/tarifario" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+
+					<!-- Tarifario -->
+					<router-link to="/tarifario" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-tag"></i> Tarifario
 					</router-link>
-					<router-link to="/rutas-de-servicio" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+
+					<!-- Rutas de servicio -->
+					<router-link to="/rutas-de-servicio" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-signpost-2"></i> Rutas de servicio
 					</router-link>
 
