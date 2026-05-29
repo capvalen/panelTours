@@ -60,8 +60,8 @@ const authStore = useAuthStore()
 
 // Formulario
 const form = reactive({
-  email: '',
-  password: ''
+  email: 'cpariona',
+  password: 'nus'
 })
 
 // Estados
