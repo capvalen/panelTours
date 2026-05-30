@@ -23,24 +23,17 @@
 				<router-link to="/dashboard">
 					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
 				</router-link>
-
-				<div class="menuSeccion-estatico"><i class="bi bi-truck"></i> Cotizaciones y Ventas</div>
-				<!-- Cotizaciones -->
 				<router-link to="/cotizaciones" :class="{ active: $route.path.startsWith('/cotizacion') }">
 					<div class="menuFila"><i class="bi bi-file-text"></i> Cotizaciones</div>
 				</router-link>
-
-				<!-- Ventas -->
 				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }">
 					<div class="menuFila"><i class="bi bi-cart"></i> Ventas</div>
 				</router-link>
-
-				<div class="menuSeccion-estatico"><i class="bi bi-truck"></i> Financiero</div>
+				<router-link to="/logistica" :class="{ active: $route.path.startsWith('/logistica') }">
+					<div class="menuFila"><i class="bi bi-truck"></i> Logística</div>
+				</router-link>
 				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
 					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
-				</router-link>
-				<router-link to="/finanzas" >
-					<div class="menuFila"><i class="bi bi-currency-dollar"></i> Finanzas</div>
 				</router-link>
 				
 				<!-- Tarifario -->
@@ -48,80 +41,33 @@
 					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
 				</router-link>
 
-				<!-- Rutas de servicio -->
-				<router-link to="/rutas-de-servicio">
-					<div class="menuFila"><i class="bi bi-signpost-2"></i> Rutas de servicio</div>
-				</router-link>
+				<!-- SECCIÓN: Configuraciones (desplegable) -->
+				<div class="menuSeccion" style="cursor:pointer;" @click="toggleConfig">
+					<i class="bi bi-gear"></i> Configuraciones <i class="bi" :class="configOpen ? 'bi-chevron-up' : 'bi-chevron-down'" style="float:right;margin-right:20px;"></i>
+				</div>
+				<transition name="slide">
+					<div v-if="configOpen">
+						<router-link to="/configuraciones" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-gear"></i> Usuarios</div>
+						</router-link>
+						<router-link to="/clientes" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-wechat"></i> Clientes</div>
+						</router-link>
+						<router-link to="/guias" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-people"></i> Guías</div>
+						</router-link>
+						<router-link to="/vehiculos" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-truck"></i> Vehículos</div>
+						</router-link>
+						<router-link to="/hospedajes" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
+						</router-link>
+						<router-link to="/recordatorios" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
+						</router-link>
+					</div>
+				</transition>
 
-				<!-- SECCIÓN: Operaciones y Logística -->
-				<router-link to="/operaciones" class="menuSeccionLink">
-					<div class="menuSeccion"><i class="bi bi-truck"></i> Operaciones y Logística</div>
-				</router-link>
-				<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-truck"></i> Proveedores</div>
-				</router-link>
-				<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-car-front"></i> Vehículos</div>
-				</router-link>
-				<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
-				</router-link>
-				<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-person-badge"></i> Guías</div>
-				</router-link>
-				<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-airplane"></i> Vuelos</div>
-				</router-link>
-
-				
-				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
-				</router-link>
-
-				<!-- SECCIÓN: Configuraciones -->
-				<router-link to="/configuraciones" class="menuSeccionLink">
-					<div class="menuSeccion"><i class="bi bi-gear"></i> Configuraciones</div>
-				</router-link>
-				<router-link to="/recordatorios" class="menuSubItem">
-					<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
-				</router-link>
-
-				<!-- LÍNEA DIVISORIA -->
-				<hr class="my-2 mx-3">
-
-				<!-- MENÚ EXISTENTE (tal cual) -->
-				
-				<router-link to="/clientes" :class="{ active: $route.path.startsWith('/cliente') }">
-					<div class="menuFila"><i class="bi bi-wechat"></i> Clientes</div>
-				</router-link>
-				<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }">
-					<div class="menuFila"><i class="bi bi-truck"></i> Proveedores</div>
-				</router-link>
-				<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }">
-					<div class="menuFila"><i class="bi bi-car-front"></i> Vehículos</div>
-				</router-link>
-				<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }">
-					<div class="menuFila"><i class="bi bi-building"></i> Hospedajes</div>
-				</router-link>
-				<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }">
-					<div class="menuFila"><i class="bi bi-person-badge"></i> Guías</div>
-				</router-link>
-				<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }">
-					<div class="menuFila"><i class="bi bi-airplane"></i> Vuelos</div>
-				</router-link>
-			
-				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
-					<div class="menuFila"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
-				</router-link>
-				<router-link to="/recordatorios">
-					<div class="menuFila"><i class="bi bi-stars"></i> Recordatorios</div>
-				</router-link>
-				<router-link to="/configuraciones">
-					<div class="menuFila"><i class="bi bi-gear"></i> Configuración</div>
-				</router-link>
-				<router-link to="/tarifario">
-					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
-				</router-link>
 				<div class="menuFila d-none"><i class="bi bi-stickies"></i> Reportes</div>
 				<a href="#!">
 					<div class="menuFila" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
@@ -140,14 +86,14 @@
 						<i class="bi bi-house"></i> Inicio
 					</router-link>
 
-					<!-- Cotizaciones -->
 					<router-link to="/cotizaciones" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-file-text"></i> Cotizaciones
 					</router-link>
-
-					<!-- Ventas -->
 					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-cart"></i> Ventas
+					</router-link>
+					<router-link to="/logistica" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-truck"></i> Logística
 					</router-link>
 
 					<!-- Tarifario -->
@@ -155,95 +101,41 @@
 						<i class="bi bi-tag"></i> Tarifario
 					</router-link>
 
-					<!-- Rutas de servicio -->
-					<router-link to="/rutas-de-servicio" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-signpost-2"></i> Rutas de servicio
-					</router-link>
-
-					<!-- SECCIÓN: Operaciones y Logística -->
-					<router-link to="/operaciones" class="menuSeccion-mobile" @click="closeOffcanvas">
-						<i class="bi bi-truck"></i> Operaciones y Logística
-					</router-link>
-					<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-truck"></i> Proveedores
-					</router-link>
-					<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-car-front"></i> Vehículos
-					</router-link>
-					<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-building"></i> Hospedajes
-					</router-link>
-					<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-person-badge"></i> Guías
-					</router-link>
-					<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-airplane"></i> Vuelos
-					</router-link>
-
 					<!-- SECCIÓN: Caja -->
 					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-piggy-bank"></i> Caja
 					</router-link>
 
-					<!-- SECCIÓN: Finanzas -->
-					<router-link to="/finanzas" class="menuSeccion-mobile" @click="closeOffcanvas">
-						<i class="bi bi-currency-dollar"></i> Finanzas
-					</router-link>
-					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-journal-bookmark"></i> Control de pagos
-					</router-link>
-
-					<!-- SECCIÓN: Configuraciones -->
-					<router-link to="/configuraciones" class="menuSeccion-mobile" @click="closeOffcanvas">
-						<i class="bi bi-gear"></i> Configuraciones
-					</router-link>
-					<router-link to="/recordatorios" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
-						<i class="bi bi-stars"></i> Recordatorios
-					</router-link>
+					<!-- SECCIÓN: Configuraciones (desplegable) -->
+					<div class="menuSeccion-mobile" style="cursor:pointer;" @click="configOpen = !configOpen">
+						<i class="bi bi-gear"></i> Configuración general <i class="bi" :class="configOpen ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+					</div>
+					<transition name="slide">
+						<div v-if="configOpen">
+							<router-link to="/configuraciones" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+								<i class="bi bi-gear"></i> Configuraciones
+							</router-link>
+						<router-link to="/clientes" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-wechat"></i> Clientes
+						</router-link>
+						<router-link to="/guias" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-people"></i> Guías
+						</router-link>
+						<router-link to="/vehiculos" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-truck"></i> Vehículos
+						</router-link>
+						<router-link to="/hospedajes" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-building"></i> Hospedajes
+						</router-link>
+						<router-link to="/recordatorios" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-stars"></i> Recordatorios
+						</router-link>
+						</div>
+					</transition>
 
 					<!-- LÍNEA DIVISORIA -->
 					<hr class="my-2 mx-3">
 
-					<!-- MENÚ EXISTENTE (tal cual) -->
-					<router-link to="/dashboard" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-house"></i> Inicio
-					</router-link>
-					<router-link to="/clientes" :class="{ active: $route.path.startsWith('/cliente') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-wechat"></i> Clientes
-					</router-link>
-					<router-link to="/proveedores" :class="{ active: $route.path.startsWith('/proveedor') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-truck"></i> Proveedores
-					</router-link>
-					<router-link to="/vehiculos" :class="{ active: $route.path.startsWith('/vehiculo') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-car-front"></i> Vehículos
-					</router-link>
-					<router-link to="/hospedajes" :class="{ active: $route.path.startsWith('/hospedaje') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-building"></i> Hospedajes
-					</router-link>
-					<router-link to="/guias" :class="{ active: $route.path.startsWith('/guia') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-person-badge"></i> Guías
-					</router-link>
-					<router-link to="/vuelos" :class="{ active: $route.path.startsWith('/vuelo') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-airplane"></i> Vuelos
-					</router-link>
-					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-piggy-bank"></i> Caja
-					</router-link>
-					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-cart"></i> Ventas
-					</router-link>
-					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-journal-bookmark"></i> Control de pagos
-					</router-link>
-					<router-link to="/recordatorios" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-stars"></i> Recordatorios
-					</router-link>
-					<router-link to="/tarifario" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-tag"></i> Tarifario
-					</router-link>
-					<router-link to="/configuraciones" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-gear"></i> Configuración
-					</router-link>
 					<div class="menuFila-mobile d-none"><i class="bi bi-stickies"></i> Reportes</div>
 					<div class="menuFila-mobile" @click="logout()"><i class="bi bi-door-open"></i> Salir</div>
 				</div>
@@ -260,13 +152,18 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { Offcanvas } from 'bootstrap';
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useFormat } from '@/composables/formatos'
 const { consultarApiDolar } = useFormat()
 const router = useRouter()
 
 import { useAuthStore } from '@/stores/auth';
 const authStore = useAuthStore()
+
+const configOpen = ref(false)
+function toggleConfig() {
+	configOpen.value = !configOpen.value
+}
 
 function closeOffcanvas() {
 	const offcanvas = document.getElementById('sidebarMenu');
@@ -491,5 +388,27 @@ a {
 
 .tdLargo {
 	white-space: nowrap;
+}
+
+.slide-enter-active, .slide-leave-active {
+	transition: all 0.3s ease;
+	overflow: hidden;
+	display: block;
+}
+.slide-enter-from {
+	opacity: 0;
+	max-height: 0;
+}
+.slide-enter-to {
+	opacity: 1;
+	max-height: 200px;
+}
+.slide-leave-from {
+	opacity: 1;
+	max-height: 200px;
+}
+.slide-leave-to {
+	opacity: 0;
+	max-height: 0;
 }
 </style>

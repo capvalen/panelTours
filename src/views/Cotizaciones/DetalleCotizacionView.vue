@@ -189,6 +189,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
+import api from '@/services/axios';
 import { useRouter } from 'vue-router';
 import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { useAuthStore } from '@/stores/auth';
@@ -291,6 +292,22 @@ const convertirReserva = async () => {
 		const data = await cotizacionStore.convertirReserva(props.id, {
 			usuario_id: authStore.user?.id
 		});
+
+		const c = cotizacion.value?.cliente;
+		if (c) {
+			const nombreCompleto = [c.apellidos, c.nombres].filter(Boolean).join(' ');
+			try {
+				await api.post('/personas', {
+					venta_id: data.venta_id,
+					nombre: nombreCompleto || c.razon_social || 'Sin nombre',
+					dni: c.dni || '',
+					es_titular: true,
+					parentesco: 'titular',
+				});
+			} catch (e) {
+				console.error('Error al crear persona titular:', e);
+			}
+		}
 		
 		const result = await Swal.fire({
 			icon: 'success',

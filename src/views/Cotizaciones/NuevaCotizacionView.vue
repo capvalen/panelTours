@@ -40,7 +40,7 @@
 								@click="seleccionarCliente(cliente)"
 							>
 								<span>
-									<strong>{{ cliente.razon_social || (cliente.apellidos + ' ' + cliente.nombres) }}</strong>
+									<strong>{{ cliente.razon_social || [cliente.apellidos, cliente.nombres].filter(Boolean).join(' ') }}</strong>
 									<br>
 									<small class="text-muted">{{ cliente.dni || cliente.ruc || 'Sin DNI/RUC' }} {{ cliente.celular ? '| ' + cliente.celular : '' }}</small>
 								</span>
@@ -69,7 +69,7 @@
 				<div class="row row-cols-2 row-cols-md-5 g-3">
 					<div class="col">
 						<label class="form-label text-muted small mb-0">Nombre / Razón Social</label>
-						<p class="fw-semibold mb-0 fs-6">{{ clienteSeleccionado.razon_social || (clienteSeleccionado.apellidos + ' ' + clienteSeleccionado.nombres) || 'cliente sin especificar' }}</p>
+						<p class="fw-semibold mb-0 fs-6">{{ clienteSeleccionado.razon_social || [clienteSeleccionado.apellidos, clienteSeleccionado.nombres].filter(Boolean).join(' ') || 'cliente sin especificar' }}</p>
 					</div>
 					<div class="col">
 						<label class="form-label text-muted small mb-0">DNI / RUC</label>
@@ -309,7 +309,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue';
+import { ref, reactive, watch, onMounted, computed } from 'vue';
+import api from '@/services/axios';
 import { useRoute, useRouter } from 'vue-router';
 import { useClienteStore } from '@/stores/clienteStore';
 import { useAuthStore } from '@/stores/auth';
@@ -387,6 +388,12 @@ const filtros = reactive({
 });
 
 // ── Servicios agregados a la cotización ──
+watch(() => filtros.fechaInicio, (nueva) => {
+	if (nueva && filtros.fechaFin && filtros.fechaFin < nueva) {
+		filtros.fechaFin = nueva;
+	}
+});
+
 const servicios = ref([]);
 
 const capitalize = (str) => {

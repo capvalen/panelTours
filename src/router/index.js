@@ -213,6 +213,17 @@ const router = createRouter({
 					props: true
 				},
 				{
+					path: '/logistica',
+					name: 'Logistica',
+					component: () => import('../views/Logistica/LogisticaView.vue'),
+				},
+				{
+					path: '/logistica/:id',
+					name: 'LogisticaDetalle',
+					component: () => import('../views/Logistica/LogisticaDetalleView.vue'),
+					props: true,
+				},
+				{
 					path: '/operaciones',
 					name: 'operaciones',
 					component: () => import('../views/Operaciones/OperacionesView.vue'),

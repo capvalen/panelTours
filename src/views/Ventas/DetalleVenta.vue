@@ -24,7 +24,9 @@
 				<div>
 					<h2 class="mb-1">Venta {{ ventaIdFormateado }}</h2>
 					<p class="text-muted mb-0">
-						<i class="bi bi-calendar"></i> {{ formatFecha(venta.fecha) }} &middot;
+						<i class="bi bi-calendar"></i>
+						{{ venta.fecha_inicio && venta.fecha_fin ? `${formatFecha(venta.fecha_inicio)} - ${formatFecha(venta.fecha_fin)}` : formatFecha(venta.fecha) }}
+						&middot;
 						<span :class="'badge bg-' + estadoBadgeColor">
 							{{ capitalize(venta.estado) }}
 						</span>
@@ -75,6 +77,14 @@
 									<td class="text-muted small" style="width: 100px;">Destino</td>
 									<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
 								</tr>
+								<tr v-if="venta.fecha_inicio">
+									<td class="text-muted small">Fecha inicio</td>
+									<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
+								</tr>
+								<tr v-if="venta.fecha_fin">
+									<td class="text-muted small">Fecha fin</td>
+									<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
+								</tr>
 								<tr>
 									<td class="text-muted small">Adultos</td>
 									<td>{{ venta.adults || 0 }}</td>
@@ -87,22 +97,11 @@
 									<td class="text-muted small">Total personas</td>
 									<td>{{ venta.cuantas_personas || (venta.adults + venta.kids) || 0 }}</td>
 								</tr>
-							<tr v-if="venta.ciudad">
+								<tr v-if="venta.ciudad">
 									<td class="text-muted small">Ciudad</td>
 									<td>{{ venta.ciudad }}</td>
 								</tr>
-								<tr class="border-top">
-									<td class="text-muted small">Descuento</td>
-									<td class="fw-semibold">S/ {{ formatPrecio(venta.descuento) }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Adelanto</td>
-									<td class="fw-semibold">S/ {{ formatPrecio(venta.adelanto) }}</td>
-								</tr>
-								<tr>
-									<td class="fw-bold fs-6">Total a cobrar</td>
-									<td class="fw-bold fs-6 text-primary">S/ {{ formatPrecio(totalFinal) }}</td>
-								</tr>
+								
 						</table>
 					</div>
 				</div>
@@ -261,7 +260,7 @@
 											</td>
 											<td>{{ persona.dni || '-' }}</td>
 											<td>{{ capitalize(persona.parentesco || '-') }}</td>
-											<td>{{ persona.fecha_nacimiento ? formatFechaSimple(persona.fecha_nacimiento) : '-' }}</td>
+											<td>{{ persona.fecha_nacimiento ?? '-' }}</td>
 											<td>
 												<span v-if="persona.enfermedades === 'si'" class="text-danger">Sí</span>
 												<span v-else class="text-muted">No</span>
@@ -300,9 +299,9 @@
 							</router-link>
 						</div>
 						<div class="d-flex gap-2">
-							<button class="btn btn-success" @click="generarPDF">
-								<i class="bi bi-file-pdf"></i>
-								Generar PDF
+							<button class="btn btn-success" @click="enviarLogistica">
+								<i class="bi bi-truck"></i>
+								Enviar a logística
 							</button>
 						</div>
 					</div>
@@ -365,6 +364,44 @@
 					<button type="button" class="btn btn-primary" @click="guardarPago" :disabled="guardandoPago">
 						<span v-if="guardandoPago" class="spinner-border spinner-border-sm me-1"></span>
 						{{ pagoEditando ? 'Actualizar' : 'Guardar' }}
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal Logística -->
+	<div class="modal fade" id="modalLogistica" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-sm modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Enviar a logística</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row g-3">
+						<div class="col-12">
+							<label class="form-label">Fecha de destino del viaje</label>
+							<p class="form-control-plaintext fw-semibold">{{ formatFechaSimple(logisticaForm.fecha) }}</p>
+						</div>
+						<div class="col-12" v-if="logisticaSalidas.length > 0">
+							<label class="form-label">Elija la salida</label>
+							<select class="form-select" v-model="logisticaForm.logisticaExistenteId">
+								<option value="">-- Seleccione --</option>
+								<option v-for="s in logisticaSalidas" :key="s.id" :value="s.id">{{ s.titulo }}</option>
+							</select>
+						</div>
+						<div class="col-12" v-if="!logisticaForm.logisticaExistenteId">
+							<label class="form-label">Nombre de la salida</label>
+							<input type="text" class="form-control" :value="capitalize(logisticaForm.titulo)" @input="logisticaForm.titulo = capitalize($event.target.value)">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" @click="confirmarEnvioLogistica" :disabled="guardandoEnvio">
+						<span v-if="guardandoEnvio" class="spinner-border spinner-border-sm me-1"></span>
+						Enviar
 					</button>
 				</div>
 			</div>
@@ -464,19 +501,26 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import api from '@/services/axios';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 import { useVentasStore } from '@/stores/ventaStore';
 import { usePagosStore } from '@/stores/pagoStore';
+import { useLogisticaStore } from '@/stores/logisticaStore';
+import { useCajaStore } from '@/stores/cajaStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
 
 const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
 const ventaStore = useVentasStore();
 const pagosStore = usePagosStore();
-const { encodeForUrl, formatMoneda, fechaLatamSimple } = useFormat();
+const logisticaStore = useLogisticaStore();
+const cajaStore = useCajaStore();
+const { encodeForUrl, formatMoneda, fechaLatamSimple, capitalize } = useFormat();
 
 const venta = ref(null);
 const cargando = ref(true);
@@ -520,27 +564,44 @@ const getIcono = (tipo) => {
 	return iconos[tipo] || '📦';
 };
 
-const capitalize = (str) => {
-	if (!str) return '';
-	return str.charAt(0).toUpperCase() + str.slice(1);
-};
-
 const formatPrecio = (val) => {
 	if (val === null || val === undefined || val === '') return '0.00';
 	const num = Number(val);
 	return isNaN(num) ? '0.00' : num.toFixed(2);
 };
 
+const parseLocalDate = (fecha) => {
+	if (!fecha) return null;
+	const [y, m, d] = fecha.slice(0, 10).split('-');
+	return new Date(Number(y), Number(m) - 1, Number(d));
+};
+
 const formatFecha = (fecha) => {
 	if (!fecha) return '-';
-	const d = new Date(fecha);
+	const d = parseLocalDate(fecha);
+	if (!d) return '-';
 	return d.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+};
+
+const formatFechaLarga = (fecha) => {
+	if (!fecha) return '-';
+	const d = parseLocalDate(fecha);
+	if (!d) return '-';
+	return d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
 };
 
 const formatFechaSimple = (fecha) => {
 	if (!fecha) return '-';
+	const d = parseLocalDate(fecha);
+	if (!d) return '-';
+	return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+
+const formatFechaDestino = (fecha) => {
+	if (!fecha) return '-';
 	const d = new Date(fecha);
-	return d.toLocaleDateString('es-PE', { year: 'numeric', month: '2-digit', day: '2-digit' });
+	return d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 const clienteNombre = computed(() => {
@@ -593,6 +654,37 @@ const pagoForm = ref({
 	estadoPago: 'pendiente',
 });
 
+const modalLogisticaInstance = ref(null);
+const logisticaSalidas = ref([]);
+const guardandoEnvio = ref(false);
+const logisticaForm = ref({
+	fecha: '',
+	titulo: '',
+	logisticaExistenteId: '',
+});
+
+watch(() => logisticaForm.value.fecha, async (nuevaFecha) => {
+	if (nuevaFecha) {
+		try {
+			const salidas = await logisticaStore.listarPorFecha(nuevaFecha);
+			logisticaSalidas.value = salidas;
+			if (salidas.length === 0) {
+				logisticaForm.value.logisticaExistenteId = '';
+			}
+		} catch {}
+	}
+});
+
+const resetLogisticaForm = () => {
+	const firstItem = venta.value?.items?.[0];
+	const tituloDefault = firstItem ? `${capitalize(firstItem.tipo)} - ${firstItem.descripcion}` : '';
+	logisticaForm.value = {
+		fecha: venta.value?.fecha_inicio?.slice(0, 10) || new Date().toISOString().slice(0, 10),
+		titulo: tituloDefault,
+		logisticaExistenteId: '',
+	};
+};
+
 const totalPagado = computed(() => {
 	return pagos.value
 		.filter(p => p.estado_pago !== 'anulado')
@@ -608,7 +700,8 @@ const apiBaseUrl = import.meta.env.MODE === 'production'
 	: 'http://127.0.0.1:8000/api';
 
 const abrirTicketPago = (pagoId) => {
-	window.open(`${apiBaseUrl}/ventas/${route.params.id}/pagos/${pagoId}/ticket`, '_blank');
+	const encoded = encodeForUrl({ idVenta: Number(route.params.id), pago: pagoId });
+	window.open(`${apiBaseUrl}/ticket-pdf/${encoded}`, '_blank');
 };
 
 const badgeEstadoPago = (estado) => {
@@ -641,7 +734,18 @@ const resetPagoForm = () => {
 	};
 };
 
-const abrirModalNuevoPago = () => {
+const cajaAbierta = ref(null);
+
+const abrirModalNuevoPago = async () => {
+	cajaAbierta.value = await cajaStore.obtenerCajaAbierta();
+	if (!cajaAbierta.value) {
+		Swal.fire({
+			title: 'No hay caja abierta',
+			html: 'No Hay ninguna caja abierta. <a href="/caja" target="_blank">Ir a aperturar caja</a>',
+			icon: 'warning',
+		});
+		return;
+	}
 	pagoEditando.value = null;
 	resetPagoForm();
 	if (!modalPagoInstance.value) {
@@ -677,6 +781,7 @@ const guardarPago = async () => {
 	try {
 		const nuevoTotalPagado = totalPagado.value + Number(pagoForm.value.monto);
 		const estadoPagoCalculado = nuevoTotalPagado >= totalFinal.value ? 'pagado' : 'adelantado';
+		const nuevoSaldoPendiente = Math.max(0, totalFinal.value - nuevoTotalPagado);
 		const payload = {
 			fecha: pagoForm.value.fechaPago,
 			monto_abonado: Number(pagoForm.value.monto),
@@ -685,13 +790,28 @@ const guardarPago = async () => {
 			codigo_referencia: pagoForm.value.numeroComprobante || null,
 			observaciones: pagoForm.value.observaciones || null,
 			concepto: venta.value?.items?.[0]?.descripcion || 'Pago de venta',
-			saldo_pendiente: saldoPendiente.value,
+			saldo_pendiente: nuevoSaldoPendiente,
 		};
 		let pagoCreado;
 		if (pagoEditando.value) {
 			pagoCreado = await pagosStore.actualizar(route.params.id, pagoEditando.value.id, payload);
 		} else {
 			pagoCreado = await pagosStore.guardar(route.params.id, payload);
+			const firstItem = venta.value?.items?.[0];
+			await api.post('/caja_detalles', {
+				caja_id: cajaAbierta.value?.id,
+				tipo: 'ingreso',
+				categoria: 'venta',
+				monto: Number(pagoForm.value.monto),
+				concepto: `${estadoPagoCalculado === 'pagado' ? 'Pago' : 'Adelanto'} de ${firstItem?.tipo || ''} ${firstItem?.descripcion || ''}`.trim(),
+				fecha: pagoForm.value.fechaPago,
+				comprobante_pago: 'interno',
+				venta_id: Number(route.params.id),
+				observaciones: '',
+				proveedor_id: 1,
+				metodo_pago: pagoForm.value.metodoPago,
+				estado_pago: estadoPagoCalculado,
+			});
 		}
 		venta.value = ventaStore.ventaActual;
 		modalPagoInstance.value?.hide();
@@ -858,9 +978,46 @@ onMounted(async () => {
 	}
 });
 
-const generarPDF = () => {
-	const url = `${apiBaseUrl}/ventas/${route.params.id}/pdf`;
-	window.open(url, '_blank');
+const enviarLogistica = async () => {
+	resetLogisticaForm();
+	if (!modalLogisticaInstance.value) {
+		const el = document.getElementById('modalLogistica');
+		modalLogisticaInstance.value = new Modal(el);
+	}
+	try {
+		const salidas = await logisticaStore.listarPorFecha(logisticaForm.value.fecha);
+		logisticaSalidas.value = salidas;
+	} catch {}
+	modalLogisticaInstance.value.show();
+};
+
+const confirmarEnvioLogistica = async () => {
+	guardandoEnvio.value = true;
+	try {
+		let logisticaId = logisticaForm.value.logisticaExistenteId;
+		if (!logisticaId) {
+			const nueva = await logisticaStore.guardar({
+				fecha: logisticaForm.value.fecha,
+				titulo: logisticaForm.value.titulo,
+				estado: 'pendiente',
+				destino: venta.value?.departamento?.departamento || null,
+				usuario_id: authStore.user?.id || null,
+				venta_id: Number(route.params.id),
+			});
+			logisticaId = nueva.id;
+		} else {
+			await logisticaStore.vincularVenta(logisticaId, Number(route.params.id));
+		}
+		const data = await ventaStore.actualizar(route.params.id, { nivel: 2 });
+		venta.value = data;
+		modalLogisticaInstance.value?.hide();
+		window.location.href = '/logistica';
+	} catch (err) {
+		console.error('Error al enviar a logística:', err);
+		Swal.fire('Error', 'No se pudo enviar a logística', 'error');
+	} finally {
+		guardandoEnvio.value = false;
+	}
 };
 
 const copiarLinkCheckin = () => {

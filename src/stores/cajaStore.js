@@ -43,6 +43,11 @@ export const useCajaStore = defineStore('caja', {
 			const resp = await api.post('/caja_detalles/', registro)
 			this.cajaDetalles?.internos.unshift(resp.data)
 			return this.cajaDetalles
+		},
+		async obtenerCajaAbierta(){
+			const resp = await api.get('/cajas', { params: { estado: 'abierta' } })
+			const data = resp.data
+			return Array.isArray(data) && data.length > 0 ? data[0] : null
 		}
 
 	}

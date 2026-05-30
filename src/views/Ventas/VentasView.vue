@@ -32,7 +32,7 @@ watch(() => filtros.fecha, (nuevaFecha) => {
 }, { immediate: true });
 
 const filteredVentas = computed(() => {
-	let resultados = [...ventaStore.ventas];
+	let resultados = [...ventaStore.ventas].filter(v => Number(v.nivel) === 1);
 
 	if (filtros.search.trim()) {
 		const t = filtros.search.toLowerCase();
@@ -193,7 +193,7 @@ const eliminarVenta = async (id, concepto) => {
 						<td>{{ venta.departamento?.departamento }} {{ venta.ciudad ? ' - '+venta.ciudad : '' }}</td>
 						<td class="nowrap-cell" @click.stop>
 							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
-								{{ venta.cliente?.razon_social || venta.cliente?.apellidos + ' ' + venta.cliente?.nombres || 'Sin cliente' }}
+								{{ venta.cliente?.razon_social || [venta.cliente?.apellidos, venta.cliente?.nombres].filter(Boolean).join(' ') || 'Sin cliente' }}
 							</router-link>
 							<span v-else>-</span>
 						</td>
@@ -207,18 +207,18 @@ const eliminarVenta = async (id, concepto) => {
 						</td>
 						<td @click.stop>
 							<div class="d-flex gap-2" v-if="venta.estado != 'anulado'">
-								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
+								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || [venta.cliente.apellidos, venta.cliente.nombres].filter(Boolean).join(' ')) : ''}`)" title="Anular servicio">
 									<i class="bi bi-x-lg"></i>
 								</button>
-								<button class="btn btn-sm btn-outline-danger d-none" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Eliminar servicio">
+								<button class="btn btn-sm btn-outline-danger d-none" @click="eliminarVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || [venta.cliente.apellidos, venta.cliente.nombres].filter(Boolean).join(' ')) : ''}`)" title="Eliminar servicio">
 									<i class="bi bi-x-lg"></i>
 								</button>
 							</div>
 							<p v-else class="text-danger"><small>Anulado</small></p>
 						</td>
 					</tr>
-					<tr v-if="ventaStore.ventas.length === 0">
-						<td colspan="9" class="text-muted">No hay ventas registradas</td>
+					<tr v-if="filteredVentas.length === 0">
+						<td colspan="9" class="text-muted">Lista vacía</td>
 					</tr>
 				</tbody>
 			</table>

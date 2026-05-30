@@ -42,17 +42,9 @@ function agregarSeguro() {
 	nuevo.seguros.push({ seguro: '', fecha: null })
 }
 async function  guardarCliente() {
-	if(nuevo.dni == '' && nuevo.ruc == '' ){
-		Swal.fire('Faltan datos', 'Complete los campos de DNI o RUC', 'error')
-		return
-	}
-	if(nuevo.dni && nuevo.apellidos == '' ){
-		Swal.fire('Faltan datos', 'Complete el campo de apellidos', 'error')
-		return
-	}
-	if(nuevo.ruc && nuevo.razon_social == '' ){
-		Swal.fire('Faltan datos', 'Complete el campo de razón social', 'error')
-		return
+	if (!nuevo.apellidos && !nuevo.razon_social) {
+		Swal.fire('Faltan datos', 'Debe ingresar Apellidos o Razón social', 'error');
+		return;
 	}
 	const resp = await clienteStore.guardarCliente(nuevo)
 	if(await resp)
@@ -94,30 +86,32 @@ const cambioVisado = () => {
 
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="dni" class="form-label">DNI <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="dni" v-model="nuevo.dni" required>
+							<label for="dni" class="form-label">DNI</label>
+							<input type="text" class="form-control" id="dni" v-model="nuevo.dni">
+						</div>
+						<div class="col-md-6">
+							<label for="celular" class="form-label">Celular</label>
+							<input type="tel" class="form-control" id="celular" v-model="nuevo.celular" required>
 						</div>
 					</div>
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="apellidos" class="form-label">Apellidos <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="apellidos" v-model="nuevo.apellidos" required>
+							<label for="apellidos" class="form-label">Apellidos</label>
+							<input type="text" class="form-control" id="apellidos" v-model="nuevo.apellidos">
 						</div>
 						<div class="col-md-6">
 							<label for="nombres" class="form-label">Nombres</label>
 							<input type="text" class="form-control" id="nombres" v-model="nuevo.nombres" required>
 						</div>
 					</div>
-					<div class="row mb-3">
-						<div class="col-md-6">
-							<label for="ruc" class="form-label">R.U.C. <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="ruc" v-model="nuevo.ruc" required>
+					<div class="row">
+						<div class="col mb-6">
+							<label for="ruc" class="form-label">R.U.C.</label>
+							<input type="text" class="form-control" id="ruc" v-model="nuevo.ruc">
 						</div>
-					</div>
-					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="razon_social" class="form-label">Razón social <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="razon_social" v-model="nuevo.razon_social" required>
+							<label for="razon_social" class="form-label">Razón social</label>
+							<input type="text" class="form-control" id="razon_social" v-model="nuevo.razon_social">
 						</div>
 					</div>
 					<div class="row mb-3">
@@ -133,10 +127,7 @@ const cambioVisado = () => {
 
 					<div class="row mb-3">
 
-						<div class="col-md-6">
-							<label for="celular" class="form-label">Celular</label>
-							<input type="tel" class="form-control" id="celular" v-model="nuevo.celular" required>
-						</div>
+						
 						<div class="col-md-6">
 							<label for="telefono" class="form-label">Teléfono</label>
 							<input type="tel" class="form-control" id="telefono" v-model="nuevo.telefono">

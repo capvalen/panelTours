@@ -80,7 +80,7 @@
 								class="align-middle"
 							>
 								<td class="fw-semibold">COT-{{ String(cot.id).padStart(3, '0') }}</td>
-								<td>{{ cot.cliente?.razon_social || (cot.cliente?.apellidos + ' ' + cot.cliente?.nombres) || '-' }}</td>
+								<td>{{ cot.cliente?.razon_social || [cot.cliente?.apellidos, cot.cliente?.nombres].filter(Boolean).join(' ') || '-' }}</td>
 								<td>{{ cot.departamento?.departamento || '-' }}</td>
 								<td class="text-center">{{ cot.adults || 0 }}</td>
 								<td class="text-center">{{ cot.kids || 0 }}</td>
