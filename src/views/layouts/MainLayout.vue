@@ -24,8 +24,9 @@
 					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
 				</router-link>
 
+				<div class="menuSeccion-estatico"><i class="bi bi-truck"></i> Cotizaciones y Ventas</div>
 				<!-- Cotizaciones -->
-				<router-link to="/cotizaciones">
+				<router-link to="/cotizaciones" :class="{ active: $route.path.startsWith('/cotizacion') }">
 					<div class="menuFila"><i class="bi bi-file-text"></i> Cotizaciones</div>
 				</router-link>
 
@@ -34,6 +35,14 @@
 					<div class="menuFila"><i class="bi bi-cart"></i> Ventas</div>
 				</router-link>
 
+				<div class="menuSeccion-estatico"><i class="bi bi-truck"></i> Financiero</div>
+				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
+					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
+				</router-link>
+				<router-link to="/finanzas" >
+					<div class="menuFila"><i class="bi bi-currency-dollar"></i> Finanzas</div>
+				</router-link>
+				
 				<!-- Tarifario -->
 				<router-link to="/tarifario">
 					<div class="menuFila"><i class="bi bi-tag"></i> Tarifario</div>
@@ -64,15 +73,7 @@
 					<div class="menuFila menuFila-sub"><i class="bi bi-airplane"></i> Vuelos</div>
 				</router-link>
 
-				<!-- SECCIÓN: Caja -->
-				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
-					<div class="menuFila"><i class="bi bi-piggy-bank"></i> Caja</div>
-				</router-link>
-
-				<!-- SECCIÓN: Finanzas -->
-				<router-link to="/finanzas" class="menuSeccionLink">
-					<div class="menuSeccion"><i class="bi bi-currency-dollar"></i> Finanzas</div>
-				</router-link>
+				
 				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuSubItem">
 					<div class="menuFila menuFila-sub"><i class="bi bi-journal-bookmark"></i> Control de pagos</div>
 				</router-link>
@@ -89,9 +90,7 @@
 				<hr class="my-2 mx-3">
 
 				<!-- MENÚ EXISTENTE (tal cual) -->
-				<router-link to="/dashboard">
-					<div class="menuFila"><i class="bi bi-house"></i> Inicio</div>
-				</router-link>
+				
 				<router-link to="/clientes" :class="{ active: $route.path.startsWith('/cliente') }">
 					<div class="menuFila"><i class="bi bi-wechat"></i> Clientes</div>
 				</router-link>
@@ -393,6 +392,24 @@ a {
 	cursor: pointer;
 	margin: 8px 8px 0 8px;
 	border-radius: 6px;
+}
+
+.menuSeccion-estatico {
+	padding: 6px 10px;
+	padding-left: 40px;
+	font-size: 0.8rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	color: #023475;
+	margin-top: 8px;
+	user-select: none;
+	cursor: default;
+	pointer-events: none;
+}
+
+.menuSeccion-estatico i {
+	font-size: 1rem;
 }
 
 .menuSeccionLink {

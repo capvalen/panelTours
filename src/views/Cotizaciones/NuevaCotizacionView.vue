@@ -137,6 +137,9 @@
 			<button class="btn btn-outline-secondary" @click="agregarServicio('vuelo')">
 				<i class="bi bi-airplane"></i> Avión
 			</button>
+			<button class="btn btn-outline-secondary" @click="agregarServicio('restaurante')">
+				<i class="bi bi-shop"></i> Restaurante
+			</button>
 		</div>
 
 		<!-- Lista de servicios agregados (tabla) -->
@@ -149,6 +152,7 @@
 							<th class="text-center" style="width: 40px;">N°</th>
 							<th>Tipo servicio</th>
 							<th>Servicio</th>
+							<th>Destino</th>
 							<th class="text-end" style="width: 100px;">P. Adulto</th>
 							<th class="text-end" style="width: 100px;">P. Niño</th>
 							<th style="width: 90px;">Descuento</th>
@@ -161,9 +165,36 @@
 						<tr v-for="(servicio, index) in servicios" :key="index">
 							<td class="text-center text-muted">{{ index + 1 }}</td>
 							<td>{{ getIcono(servicio.tipo) }} {{ capitalize(servicio.tipo) }}</td>
-							<td>{{ servicio.descripcion || '—' }}</td>
-							<td class="text-end">S/ {{ formatPrecio(servicio.precio_adulto) }}</td>
-							<td class="text-end">S/ {{ formatPrecio(servicio.precio_kids) }}</td>
+							
+							<td>
+								<input
+									type="text"
+									class="form-control form-control-sm"
+									v-model="servicio.descripcion"
+									placeholder="Describir servicio..."
+								>
+							</td>
+							<td>
+								<input type="text" class="form-control form-control-sm" v-model="servicio.destino" placeholder="">
+							</td>
+							<td>
+								<input
+									type="number"
+									class="form-control form-control-sm text-end"
+									v-model.number="servicio.precio_adulto"
+									min="0"
+									style="width: 100px;"
+								>
+							</td>
+							<td>
+								<input
+									type="number"
+									class="form-control form-control-sm text-end"
+									v-model.number="servicio.precio_kids"
+									min="0"
+									style="width: 100px;"
+								>
+							</td>
 							<td>
 								<input
 									type="number"
@@ -178,7 +209,7 @@
 									type="text"
 									class="form-control form-control-sm"
 									v-model="servicio.motivo_descuento"
-									placeholder="—"
+									placeholder=""
 								>
 							</td>
 							<td class="text-end fw-semibold">S/ {{ formatPrecio(calcularSubtotal(servicio)) }}</td>
@@ -195,6 +226,17 @@
 				<div class="bg-light p-3 rounded border">
 					<strong class="fs-5">Total a cobrar: <span class="text-primary">S/ {{ formatPrecio(totalAPagar) }}</span></strong>
 				</div>
+			</div>
+			<div class="d-flex justify-content-end mt-3">
+				<button
+					class="btn btn-lg btn-success"
+					@click="guardarCotizacion"
+					:disabled="guardando"
+				>
+					<i v-if="guardando" class="bi bi-arrow-repeat spinner"></i>
+					<i v-else class="bi bi-check2-circle"></i>
+					{{ guardando ? 'Guardando...' : 'Guardar cotización' }}
+				</button>
 			</div>
 		</div>
 
@@ -268,13 +310,21 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useClienteStore } from '@/stores/clienteStore';
+import { useAuthStore } from '@/stores/auth';
+import { useDepartamentosStore } from '@/stores/departamentoStore';
+import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { Modal } from 'bootstrap';
+import Swal from 'sweetalert2';
 
 const API_URL = import.meta.env.VITE_API_URL;
 const route = useRoute();
+const router = useRouter();
 const clienteStore = useClienteStore();
+const authStore = useAuthStore();
+const departamentoStore = useDepartamentosStore();
+const cotizacionStore = useCotizacionStore();
 
 // ── Cliente ──
 const terminoBusqueda = ref('');
@@ -345,22 +395,30 @@ const capitalize = (str) => {
 };
 
 const getIcono = (tipo) => {
-	const iconos = {			web: '🌐',
+	const iconos = {
+			web: '🌐',
 			tour: '🧳',
 			hospedaje: '🏨',
 			vuelo: '✈️',
+			restaurante: '🍽️',
 	};
 	return iconos[tipo] || '📦';
 };
 
 const agregarServicio = (tipo) => {
+	if (!filtros.departamento) {
+		Swal.fire('Selecciona un departamento', 'Debes seleccionar un departamento antes de agregar un servicio.', 'warning');
+		return;
+	}
 	const nombreMap = {
 		tour: 'Tour privado',
 		hospedaje: 'Hospedaje',
 		vuelo: 'Avión',
+		restaurante: 'Restaurante',
 	};
 	servicios.value.push({
 		tipo,
+		destino: filtros.departamento,
 		descripcion: nombreMap[tipo] || tipo,
 		precio_adulto: 0,
 		precio_kids: 0,
@@ -439,6 +497,10 @@ const buscarToursWeb = async () => {
 };
 
 const abrirModalExtraer = () => {
+	if (!filtros.departamento) {
+		Swal.fire('Selecciona un destino', 'Debes seleccionar un departamento de destino antes de buscar tours.', 'warning');
+		return;
+	}
 	const modalEl = document.getElementById('modalExtraerTour');
 	if (modalEl) {
 		const modal = new Modal(modalEl);
@@ -458,6 +520,7 @@ const agregarTourWeb = (tour) => {
 
 	servicios.value.push({
 		tipo: 'web',
+		destino: filtros.departamento,
 		descuento: 0,
 		motivo_descuento: '',
 		precio_adulto,
@@ -468,6 +531,11 @@ const agregarTourWeb = (tour) => {
 
 // ── Inicialización ──
 onMounted(async () => {
+	try {
+		await departamentoStore.listar();
+	} catch (e) {
+		console.warn('No se pudieron cargar departamentos', e);
+	}
 	const clienteId = route.query.clienteId || 1;
 	try {
 		const cliente = await clienteStore.obtenerClienteId(clienteId);
@@ -478,4 +546,112 @@ onMounted(async () => {
 		console.warn('No se pudo cargar el cliente, usando valores predeterminados');
 	}
 });
+
+// ── Guardar cotización ──
+const guardando = ref(false);
+
+const obtenerDepartamentoId = (nombreDepartamento) => {
+	if (!nombreDepartamento) return null;
+	// Mapeo manual para sub-regiones que no existen en la tabla departamentos
+	const departamentoIdMap = {
+		'Chanchamayo': 12, 'Chupaca': 12, 'Concepción': 12, 'Huancayo': 12,
+		'Jauja': 12, 'Satipo': 12, 'Tarma': 12, 'Yauli': 12,
+		'El Callao': 7,
+	};
+	if (departamentoIdMap[nombreDepartamento]) return departamentoIdMap[nombreDepartamento];
+
+	// Normalizar: quitar acentos para comparación
+	const normalizar = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+	const nombreNorm = normalizar(nombreDepartamento);
+
+	// Primero buscar match exacto (normalizado)
+	const exacto = departamentoStore.departamentos.find(d =>
+		normalizar(d.departamento) === nombreNorm
+	);
+	if (exacto) return exacto.id;
+
+	// Fallback: buscar por inclusión (de la BD hacia el input, no al revés)
+	const porInclusion = departamentoStore.departamentos.find(d =>
+		normalizar(nombreDepartamento).includes(normalizar(d.departamento))
+	);
+	return porInclusion?.id || null;
+};
+
+const generarFechaHoy = () => {
+	const hoy = new Date();
+	return hoy.toISOString().substring(0, 10);
+};
+
+const guardarCotizacion = async () => {
+	// Validaciones
+	if (!clienteSeleccionado.value?.id) {
+		Swal.fire('Selecciona un cliente', 'Debes seleccionar un cliente antes de guardar.', 'warning');
+		return;
+	}
+	if (!filtros.departamento) {
+		Swal.fire('Selecciona un destino', 'Debes seleccionar un departamento de destino.', 'warning');
+		return;
+	}
+	if (servicios.value.length === 0) {
+		Swal.fire('Agrega servicios', 'Debes agregar al menos un servicio a la cotización.', 'warning');
+		return;
+	}
+
+	guardando.value = true;
+
+	try {
+		const departamentoId = obtenerDepartamentoId(filtros.departamento);
+		const hoy = filtros.fechaInicio || generarFechaHoy();
+		const totalAdultos = servicios.value.reduce((sum, s) => sum + (Number(s.precio_adulto || 0) * filtros.adultos), 0);
+		const totalKids = servicios.value.reduce((sum, s) => sum + (Number(s.precio_kids || 0) * filtros.ninos), 0);
+		const totalGlobal = totalAPagar.value;
+
+		// Preparar canasta: agregar precio (subtotal) a cada item
+		const canasta = servicios.value.map(s => ({
+			tipo: s.tipo,
+			descripcion: s.descripcion || '',
+			destino: s.destino || '',
+			precio_adulto: Number(s.precio_adulto || 0),
+			precio_kids: Number(s.precio_kids || 0),
+			descuento: Number(s.descuento || 0),
+			motivo_descuento: s.motivo_descuento || '',
+			precio: calcularSubtotal(s),
+		}));
+
+		const payload = {
+			venta: {
+				usuario_id: authStore.user?.id || 1,
+				cliente_id: clienteSeleccionado.value.id,
+				fecha: hoy,
+				adults: filtros.adultos,
+				kids: filtros.ninos,
+				cuantas_personas: filtros.adultos + filtros.ninos,
+				departamento_id: departamentoId,
+				precio_adultos: totalAdultos,
+				precio_kids: totalKids,
+				precio: totalGlobal,
+				nacionalidad: esPeruano.value ? 'peruana' : 'extranjera',
+				estado: 'activo',
+			},
+			canasta,
+		};
+
+		const resultado = await cotizacionStore.guardar(payload);
+
+		await Swal.fire({
+			title: 'Cotización guardada',
+			text: `Cotización #${resultado.id} creada correctamente.`,
+			icon: 'success',
+			timer: 3000,
+			timerProgressBar: true,
+		});
+
+		router.push(`/cotizacion/detalle/${resultado.id}`);
+	} catch (error) {
+		console.error('Error al guardar cotización:', error);
+		Swal.fire('Error', 'No se pudo guardar la cotización. Intente nuevamente.', 'error');
+	} finally {
+		guardando.value = false;
+	}
+};
 </script>

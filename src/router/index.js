@@ -207,6 +207,12 @@ const router = createRouter({
 					component: () => import('../views/Cotizaciones/NuevaCotizacionView.vue'),
 				},
 				{
+					path: '/cotizacion/detalle/:id',
+					name: 'detalleCotizacion',
+					component: () => import('../views/Cotizaciones/DetalleCotizacionView.vue'),
+					props: true
+				},
+				{
 					path: '/operaciones',
 					name: 'operaciones',
 					component: () => import('../views/Operaciones/OperacionesView.vue'),
