@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import {useCajaStore} from '@/stores/cajaStore'
 import Swal from 'sweetalert2';
 
@@ -7,6 +8,7 @@ import { useFormat} from '@/composables/formatos.js'
 const { ahora } = useFormat()
 const props = defineProps(['id', 'efectivoFinal']) //'titulo', 'color'
 const cajaStore = useCajaStore()
+const router = useRouter()
 
 const registro = ref({	
 	monto_final:0,
@@ -17,7 +19,8 @@ const registro = ref({
 })
 const guardar = async ()=>{
 	await cajaStore.cerrarCaja(registro.value)
-	Swal.fire('Caja cerrada', 'La caja se cerró correctamente', 'success')
+	await Swal.fire('Caja cerrada', 'La caja se cerró correctamente', 'success')
+	router.push('/cajas')
 }
 watch(
 	()=> props.id, (newId) => {

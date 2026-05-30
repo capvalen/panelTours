@@ -319,7 +319,7 @@ import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { Modal } from 'bootstrap';
 import Swal from 'sweetalert2';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_GRUPO;
 const route = useRoute();
 const router = useRouter();
 const clienteStore = useClienteStore();
@@ -371,12 +371,10 @@ const seleccionarCliente = (cliente) => {
 
 // ── Filtros de viaje ──
 const departamentosLista = [
-	'Amazonas', 'Ancash', 'Apurimac', 'Arequipa', 'Ayacucho', 'Cajamarca',
-	'Cusco',	'El Callao', 'Huancavelica', 'Huánuco', 'Ica', 'Junín',
-	'Chanchamayo', 'Chupaca', 'Concepción', 'Huancayo', 'Jauja',
-	'Satipo', 'Tarma', 'Yauli', 'La Libertad', 'Lambayeque', 'Lima',
-	'Loreto', 'Madre de Dios', 'Moquegua', 'Pasco', 'Piura', 'Puno',
-	'San Martín', 'Tacna', 'Tumbes', 'Ucayali'
+	'Amazonas', 'Ancash', 'Apurímac', 'Arequipa', 'Ayacucho', 'Cajamarca',
+	'Cusco', 'El Callao', 'Huancavelica', 'Huánuco', 'Ica', 'Junín',
+	'La Libertad', 'Lambayeque', 'Lima', 'Loreto', 'Madre de Dios',
+	'Moquegua', 'Pasco', 'Piura', 'Puno', 'San Martín', 'Tacna', 'Tumbes', 'Ucayali'
 ];
 
 const filtros = reactive({

@@ -15,6 +15,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 // Importar JS de Bootstrap (opcional, solo si usas componentes interactivos)
 import 'bootstrap'
 import 'bootstrap-icons/font/bootstrap-icons.css'; 
+import './assets/estilosGenerales.css'
 
 const pinia = createPinia()
 const app = createApp(App)

@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useCajaStore } from '@/stores/cajaStore';
 import { useFormat } from '@/composables/formatos'
 const { formatDate, formatMoneda, formatHoy } = useFormat()
+const router = useRouter()
 
 const cajaStore = useCajaStore()
 const dia = ref(formatHoy())
@@ -66,13 +68,9 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(caja,index) in cajaStore.cajas" :key="caja.id">
+					<tr v-for="(caja,index) in cajaStore.cajas" :key="caja.id" style="cursor:pointer;" @click="router.push({ name: 'detalleCaja', params: { id: caja.id } })">
 						<td>{{index+1}}</td>
-						<td>
-							<router-link :to="{ name: 'detalleCaja', params: { id: caja.id } }">
-								{{formatDate(caja.fecha_apertura)}}
-							</router-link>
-						</td>
+						<td>{{formatDate(caja.fecha_apertura)}}</td>
 						<td>{{formatDate(caja.fecha_cierre)}}</td>
 						<td>{{ formatMoneda(caja.monto_inicial) }}</td>
 						<td>{{ formatMoneda(caja.monto_final) }}</td>

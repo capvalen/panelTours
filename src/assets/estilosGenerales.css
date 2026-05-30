@@ -1,3 +1,138 @@
-.puntero{
+.puntero {
 	cursor: pointer;
+}
+
+/* ── Paleta azul global ── */
+/* Override Bootstrap primarios */
+:root {
+	--bs-primary: #3b82f6;
+	--bs-primary-rgb: 59, 130, 246;
+	--bs-primary-bg-subtle: #dbeafe;
+	--bs-primary-border-subtle: #93c5fd;
+	--bs-link-color: #3b82f6;
+	--bs-link-hover-color: #1d4ed8;
+	--bs-info: #3b82f6;
+	--bs-info-rgb: 59, 130, 246;
+	--bs-success: #10b981;
+	--bs-success-rgb: 16, 185, 129;
+	--bs-success-bg-subtle: #d1fae5;
+	--bs-success-border-subtle: #6ee7b7;
+}
+
+/* Resetear botones primary a la paleta */
+.btn-primary {
+	background-color: #3b82f6 !important;
+	border-color: #3b82f6 !important;
+}
+.btn-primary:hover {
+	background-color: #2563eb !important;
+	border-color: #2563eb !important;
+}
+.btn-success {
+	background-color: #10b981 !important;
+	border-color: #10b981 !important;
+}
+.btn-success:hover {
+	background-color: #059669 !important;
+	border-color: #059669 !important;
+}
+.btn-outline-primary {
+	color: #3b82f6 !important;
+	border-color: #3b82f6 !important;
+}
+.btn-outline-primary:hover {
+	background-color: #3b82f6 !important;
+	color: #fff !important;
+}
+.btn-outline-success {
+	color: #10b981 !important;
+	border-color: #10b981 !important;
+}
+.btn-outline-success:hover {
+	background-color: #10b981 !important;
+	color: #fff !important;
+}
+
+/* Text y badges */
+.text-primary { color: #3b82f6 !important; }
+.text-success { color: #10b981 !important; }
+.bg-primary { background-color: #3b82f6 !important; }
+.bg-success { background-color: #10b981 !important; }
+
+/* Labels / form labels */
+.form-label, label {
+	color: #334155;
+	font-weight: 500;
+}
+
+/* ── Cards globales ── */
+.card {
+	border-radius: 12px;
+	border: 1px solid rgba(59,130,246,0.08);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	background: white;
+}
+.card:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 25px rgba(59,130,246,0.12) !important;
+}
+
+/* Evitar hover en cards que ya tienen efectos específicos */
+.card:has(table):hover,
+.card:has(.table-responsive):hover,
+.card.card-no-hover:hover {
+	transform: none;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+}
+
+/* ── Headers ── */
+h1, h2, h3, h4, h5, h6 {
+	color: #1e293b;
+}
+h2 { border-bottom: 2px solid #bfdbfe; padding-bottom: 6px; display: inline-block; }
+h3 { color: #334155; }
+
+/* Breadcrumb */
+.breadcrumb-item a { color: #3b82f6 !important; }
+.breadcrumb-item.active { color: #64748b !important; }
+
+/* ── Tables ── */
+.table thead th,
+.table thead td,
+thead.table-light th,
+thead.table-light td {
+	background: white !important;
+	color: #2563eb;
+	font-weight: 600;
+	border-bottom: 2px solid #93c5fd !important;
+}
+.table-striped > tbody > tr:nth-of-type(odd) {
+	background-color: #eff6ff;
+}
+
+/* ── Alerts / Navs ── */
+.alert-info {
+	background-color: #dbeafe;
+	border-color: #93c5fd;
+	color: #1e40af;
+}
+.text-muted {
+	color: #64748b !important;
+}
+
+/* ── Inputs ── */
+.form-control:focus, .form-select:focus {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 0.2rem rgba(59,130,246,0.15);
+}
+
+/* ── Badges ── */
+.badge.bg-primary { background-color: #3b82f6 !important; }
+
+/* ── Pagination ── */
+.page-link { color: #3b82f6; }
+.page-link:hover { color: #1d4ed8; background-color: #eff6ff; }
+.page-item.active .page-link {
+	background-color: #3b82f6;
+	border-color: #3b82f6;
 }

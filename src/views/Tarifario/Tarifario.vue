@@ -11,7 +11,7 @@
 	<p class="text-muted">Acciones</p>
 	<p>Nota: el excel tiene en la suma un error de un "13" como número fijo. La multiplicación para la utilidad esta multiplicando la celda incorrecta</p>
 
-	<div class="table-responsive">
+	<div class="table-responsive mb-4">
 		<table class="table table-hover">
 		<thead>
 			<tr>
@@ -24,7 +24,7 @@
 		</thead>
 		<tbody>
 			<tr v-for="(item, clave) in tarifarios" :key="clave">
-				<th class="text-capitalize">{{ clave }}</th>
+				<th class="text-capitalize text-muted">{{ clave }}</th>
 				<template v-if="['transporte', 'guia', 'refrigerio', 'entradas', 'desayuno', 'almuerzo', 'cena', 'seguro', 'hotel'].includes(clave)">
 					<td> <input type="number" class="form-control" v-model.number="item['4']"> </td>
 					<td> <input type="number" class="form-control" v-model.number="item['10']"> </td>

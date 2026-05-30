@@ -158,7 +158,7 @@ const eliminarVenta = async (id, concepto) => {
 								<i class="bi bi-search"></i> Buscar
 							</button>
 						</div>
-						<div class="col-md-2 d-flex align-items-end justify-content-end">
+						<div class="col-md-2 d-flex align-items-end justify-content-end d-none">
 							<router-link to="/venta/nueva" class="btn btn-sm btn-outline-primary w-100">
 								<i class="bi bi-star"></i> Nueva venta
 							</router-link>

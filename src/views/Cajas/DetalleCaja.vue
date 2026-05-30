@@ -14,17 +14,55 @@ const route = useRoute() //instancia hacia la ruta
 const cajaStore = useCajaStore()
 const cajaActual = ref(null)
 const cajaDetalles = ref(null)
-const {fechaLatamCorta, horaCorta} = useFormat()
+const {fechaLatamCorta, horaCorta, capitalize} = useFormat()
+
+const cierreSistema = computed(() => {
+	return parseFloat(cajaActual.value?.monto_final || 0) 
+})
 
 const efectivoFinal = computed(() => {
 	if (!cajaDetalles.value || !cajaActual.value) return 0
-	const ingresos = cajaDetalles.internos?.value
+	const ingresos = (cajaDetalles.value?.internos || [])
 		.filter(d => d.tipo === 'ingreso' && d.metodo_pago === 'efectivo')
 		.reduce((sum, d) => sum + parseFloat(d.monto), 0)
-	const egresos = cajaDetalles.internos?.value
+	const egresos = (cajaDetalles.value?.internos || [])
 		.filter(d => d.tipo === 'egreso' && d.metodo_pago === 'efectivo')
 		.reduce((sum, d) => sum + parseFloat(d.monto), 0)
 	return parseFloat(cajaActual.value.monto_inicial) + ingresos - egresos
+})
+
+const resumenIngresos = computed(() => {
+	const items = (cajaDetalles.value?.internos || []).filter(d => d.tipo === 'ingreso')
+	const porMetodo = {}
+	items.forEach(d => {
+		const m = d.metodo_pago || 'efectivo'
+		porMetodo[m] = (porMetodo[m] || 0) + parseFloat(d.monto)
+	})
+	return { total: items.reduce((s, d) => s + parseFloat(d.monto), 0), porMetodo }
+})
+
+const resumenEgresos = computed(() => {
+	const items = (cajaDetalles.value?.internos || []).filter(d => d.tipo === 'egreso')
+	const porMetodo = {}
+	items.forEach(d => {
+		const m = d.metodo_pago || 'efectivo'
+		porMetodo[m] = (porMetodo[m] || 0) + parseFloat(d.monto)
+	})
+	return { total: items.reduce((s, d) => s + parseFloat(d.monto), 0), porMetodo }
+})
+
+const resumenVentas = computed(() => {
+	const items = cajaDetalles.value?.especiales || []
+	const porMetodo = {}
+	let adelantos = 0
+	let completos = 0
+	items.forEach(d => {
+		const m = d.metodo_pago || 'otros'
+		porMetodo[m] = (porMetodo[m] || 0) + parseFloat(d.monto)
+		if (d.estado_pago === 'adelantado') adelantos += parseFloat(d.monto)
+		else completos += parseFloat(d.monto)
+	})
+	return { total: items.reduce((s, d) => s + parseFloat(d.monto), 0), porMetodo, adelantos, completos }
 })
 
 const cargarDatos = async ()=>{
@@ -38,12 +76,6 @@ const cargarDatos = async ()=>{
 onMounted(()=>{ //al cargar la pagina
 	cargarDatos()
 })
-
-watch(
-	route.params.id, (newId) => {
-		cargarDatos()
-	}
-, { immediate: true })
 
 /* //autogenerado:
 watch(() => route.params.id, (newId, oldId) => {
@@ -144,7 +176,7 @@ watch(() => route.params.id, (newId, oldId) => {
 	</div>
 	<div class="row">
 		<div class="col">
-			<p class="text-danger"><strong>Registro de ventas y adelantos de servicios</strong></p>
+			<p class=""><strong>Registro de ventas y adelantos de servicios</strong></p>
 			<div class="table-responsive">
 				<table class="table table-hover">
 				<thead>
@@ -181,40 +213,37 @@ watch(() => route.params.id, (newId, oldId) => {
 	<p><strong>Resumen</strong></p>
 	<div class="row px-4">
 		<div class="col">
-			<p><strong>Todal en entradas:</strong> S/ 30.00</p>
+			<p><strong>Total de ingresos:</strong> S/ {{ formatoMoneda(resumenIngresos.total) }}</p>
 			<hr>
-			<p><strong>Efectivo:</strong> S/ 30.00</p>
+			<p v-for="(tot, met) in resumenIngresos.porMetodo" :key="met"><strong>{{ capitalize(met) }}:</strong> S/ {{ formatoMoneda(tot) }}</p>
+			<p v-if="Object.keys(resumenIngresos.porMetodo).length === 0" class="text-muted small">Sin ingresos</p>
 		</div>
 		<div class="col">
-			<p><strong>Total en salidas:</strong> S/ 1070.90</p>
+			<p><strong>Total de salidas:</strong> S/ {{ formatoMoneda(resumenEgresos.total) }}</p>
 			<hr>
-			<p><strong>Efectivo:</strong> S/ 30.40</p>
-			<p><strong>Depósito:</strong> S/ 800.00</p>
-			<p><strong>Tarjeta:</strong> S/ 240.50</p>
-			<p><strong>Yape:</strong> S/ 2430.00</p>
+			<p v-for="(tot, met) in resumenEgresos.porMetodo" :key="met"><strong>{{ capitalize(met) }}:</strong> S/ {{ formatoMoneda(tot) }}</p>
+			<p v-if="Object.keys(resumenEgresos.porMetodo).length === 0" class="text-muted small">Sin salidas</p>
 		</div>
 		<div class="col">
-			<p><strong>Total en ventas:</strong> S/ 2510.00</p>
+			<p><strong>Total en ventas:</strong> S/ {{ formatoMoneda(resumenVentas.total) }}</p>
 			<hr>
-			<p><strong>Efectivo:</strong> S/ 800.00</p>
-			<p><strong>Depósito:</strong> S/ 2430.00</p>
-			<p><strong>Tarjeta:</strong> S/ 2430.00</p>
-			<p><strong>Yape:</strong> S/ 2430.00</p>
+			<p v-for="(tot, met) in resumenVentas.porMetodo" :key="met"><strong>{{ capitalize(met) }}:</strong> S/ {{ formatoMoneda(tot) }}</p>
 			<hr>
-			<p><strong>Adelantos:</strong> S/ 800.00</p>
-			<p><strong>Pagos completos:</strong> S/ 2430.00</p>
+			<p><strong>Adelantos:</strong> S/ {{ formatoMoneda(resumenVentas.adelantos) }}</p>
+			<p><strong>Pagos completos:</strong> S/ {{ formatoMoneda(resumenVentas.completos) }}</p>
 		</div>
 		<div class="col">
-			<p><strong>Cierre de sistema:</strong> S/ 1469.1</p>
-			<hr>
-			<p><strong>Efectivo final:</strong> S/ {{ efectivoFinal }}</p>
-			<button v-if="cajaActual?.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
 			
+			<p><strong>Efectivo final:</strong> S/ {{ formatoMoneda(efectivoFinal) }}</p>
+			<p><strong>Cierre de sistema:</strong> {{ cajaActual?.estado === 'abierta' ? '-' : 'S/ ' + formatoMoneda(cierreSistema) }}</p>
+			<button v-if="cajaActual?.estado != 'cerrada'" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCerrarCaja"><i class="bi bi-door-closed-fill"></i> Cerrar caja</button>
 		</div>
 	</div>
 
 	<ModalIngresoCaja :id="cajaActual?.id"></ModalIngresoCaja>
 	<ModalSalidaCaja :id="cajaActual?.id"></ModalSalidaCaja>
 	<ModalCerrarCaja :id="cajaActual?.id" :efectivoFinal="efectivoFinal"></ModalCerrarCaja>
+
+	<div class="mb-4"></div>
 </template>
 
