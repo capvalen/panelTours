@@ -60,8 +60,8 @@ export const useCotizacionStore = defineStore('cotizacion', {
 			return true;
 		},
 
-		async convertirReserva(id) {
-			const response = await api.post(`/cotizacion/${id}/convertir-reserva`);
+		async convertirReserva(id, data = {}) {
+			const response = await api.post(`/cotizacion/${id}/convertir-reserva`, data);
 			return response.data;
 		},
 	},

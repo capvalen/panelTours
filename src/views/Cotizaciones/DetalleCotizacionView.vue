@@ -191,6 +191,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCotizacionStore } from '@/stores/cotizacionStore';
+import { useAuthStore } from '@/stores/auth';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
@@ -199,6 +200,7 @@ const props = defineProps({
 
 const router = useRouter();
 const cotizacionStore = useCotizacionStore();
+const authStore = useAuthStore();
 
 const cotizacion = ref(null);
 const cargando = ref(true);
@@ -270,7 +272,9 @@ const generarPDF = () => {
 		: 'http://127.0.0.1:8000/api';
 	const url = `${baseUrl}/cotizacion/${props.id}/pdf`;
 	window.open(url, '_blank');
-};	const convertirReserva = async () => {
+};
+
+const convertirReserva = async () => {
 		const result = await Swal.fire({
 			title: '¿Convertir en reserva?',
 			text: 'Se creará una venta a partir de esta cotización y se marcará como convertida.',
@@ -284,7 +288,9 @@ const generarPDF = () => {
 
 	convirtiendo.value = true;
 	try {
-		const data = await cotizacionStore.convertirReserva(props.id);
+		const data = await cotizacionStore.convertirReserva(props.id, {
+			usuario_id: authStore.user?.id
+		});
 		
 		const { isConfirmed } = await Swal.fire({
 			icon: 'success',

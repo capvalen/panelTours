@@ -531,6 +531,10 @@ const agregarTourWeb = (tour) => {
 
 // ── Inicialización ──
 onMounted(async () => {
+	// Fecha por defecto: hoy (hora local)
+	filtros.fechaInicio = generarFechaHoy();
+	filtros.fechaFin = generarFechaHoy();
+
 	try {
 		await departamentoStore.listar();
 	} catch (e) {
@@ -579,7 +583,10 @@ const obtenerDepartamentoId = (nombreDepartamento) => {
 
 const generarFechaHoy = () => {
 	const hoy = new Date();
-	return hoy.toISOString().substring(0, 10);
+	const year = hoy.getFullYear();
+	const month = String(hoy.getMonth() + 1).padStart(2, '0');
+	const day = String(hoy.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
 };
 
 const guardarCotizacion = async () => {
@@ -594,6 +601,17 @@ const guardarCotizacion = async () => {
 	}
 	if (servicios.value.length === 0) {
 		Swal.fire('Agrega servicios', 'Debes agregar al menos un servicio a la cotización.', 'warning');
+		return;
+	}
+
+	const servicioConCero = servicios.value.find(s => calcularSubtotal(s) <= 0);
+	if (servicioConCero) {
+		const idx = servicios.value.indexOf(servicioConCero) + 1;
+		Swal.fire({
+			title: 'Servicio con subtotal en cero',
+			html: `El servicio <strong>#${idx}</strong> (${capitalize(servicioConCero.tipo)}: ${servicioConCero.descripcion || 'sin descripción'}) tiene un subtotal de <strong>S/ 0.00</strong>.<br><br>Asigna un precio antes de guardar la cotización.`,
+			icon: 'warning',
+		});
 		return;
 	}
 
@@ -623,6 +641,8 @@ const guardarCotizacion = async () => {
 				usuario_id: authStore.user?.id || 1,
 				cliente_id: clienteSeleccionado.value.id,
 				fecha: hoy,
+				fecha_inicio: filtros.fechaInicio || null,
+				fecha_fin: filtros.fechaFin || null,
 				adults: filtros.adultos,
 				kids: filtros.ninos,
 				cuantas_personas: filtros.adultos + filtros.ninos,
