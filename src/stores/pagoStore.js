@@ -18,10 +18,11 @@ export const usePagosStore = defineStore('pagos', {
 			const adelanto = Number(ventaActual.adelanto || 0);
 
 			let estado_pago = 'pendiente';
+			console.log('qprec', adelanto , precio)
 			if (precio > 0 && adelanto >= precio) {
-				estado_pago = 'completo';
+				estado_pago = 'pagado';
 			} else if (adelanto > 0) {
-				estado_pago = 'adelanto';
+				estado_pago = 'adelantado';
 			}
 
 			const ventaActualizada = await ventaStore.actualizar(ventaActual.id, { estado_pago });
@@ -55,7 +56,7 @@ export const usePagosStore = defineStore('pagos', {
 			const indexAnterior = this.pagos.findIndex(p => p.id === pago);
 			const pagoAnterior = indexAnterior !== -1 ? this.pagos[indexAnterior] : null;
 			datos.fecha = new Date().toISOString();
-			const response = await api.put(`/ventas/${idVenta}/pagos`, datos);
+			const response = await api.put(`/ventas/${idVenta}/pagos/${pago}`, datos);
 
 			const index = this.pagos.findIndex(p => p.id === pago);
 			if (index !== -1) {

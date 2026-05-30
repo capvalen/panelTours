@@ -292,16 +292,18 @@ const convertirReserva = async () => {
 			usuario_id: authStore.user?.id
 		});
 		
-		const { isConfirmed } = await Swal.fire({
+		const result = await Swal.fire({
 			icon: 'success',
 			title: 'Reserva creada',
 			text: `Venta #${data.venta_id} creada exitosamente`,
+			timer: 5000,
+			timerProgressBar: true,
 			showCancelButton: true,
 			confirmButtonText: 'Ir a la venta',
 			cancelButtonText: 'Seguir aquí',
 		});
 
-		if (isConfirmed) {
+		if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
 			router.push(`/venta/detalle/${data.venta_id}`);
 		} else {
 			// Recargar la cotización para reflejar el nuevo estado

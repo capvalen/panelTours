@@ -1,25 +1,41 @@
 <script setup>
 import { useVentasStore } from '@/stores/ventaStore';
-import { onMounted, ref, computed } from 'vue';
+import { reactive, computed, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2'
 
+const router = useRouter();
 const ventaStore = useVentasStore();
 const { fechaLatamSimple, formatMoneda, capitalize } = useFormat();
 
-const search = ref('');
-const tipoFilter = ref('todos');
-const fechaFilter = ref('');
+const irADetalle = (id) => {
+	router.push({ name: 'detalleVenta', params: { id } });
+};
 
-onMounted(() => {
-	ventaStore.listar();
+const obtenerFechaLocal = () => {
+	const hoy = new Date();
+	const año = hoy.getFullYear();
+	const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+	const dia = String(hoy.getDate()).padStart(2, '0');
+	return `${año}-${mes}-${dia}`;
+};
+
+const filtros = reactive({
+	fecha: obtenerFechaLocal(),
+	search: '',
+	estadoPago: 'todos',
 });
+
+watch(() => filtros.fecha, (nuevaFecha) => {
+	ventaStore.listar(nuevaFecha);
+}, { immediate: true });
 
 const filteredVentas = computed(() => {
 	let resultados = [...ventaStore.ventas];
 
-	if (search.value.trim()) {
-		const t = search.value.toLowerCase();
+	if (filtros.search.trim()) {
+		const t = filtros.search.toLowerCase();
 		resultados = resultados.filter(v =>
 			(v.cliente?.dni || '').toLowerCase().includes(t) ||
 			(v.cliente?.ruc || '').toLowerCase().includes(t) ||
@@ -31,37 +47,21 @@ const filteredVentas = computed(() => {
 		);
 	}
 
-	if (tipoFilter.value !== 'todos') {
-		resultados = resultados.filter(v => v.tipo === tipoFilter.value);
-	}
-
-	if (fechaFilter.value) {
-		resultados = resultados.filter(v => {
-			if (!v.created_at) return false;
-			const fechaVenta = new Date(v.fecha).toISOString().split('T')[0];
-			return fechaVenta === fechaFilter.value;
-		});
+	if (filtros.estadoPago !== 'todos') {
+		resultados = resultados.filter(v =>
+			(v.estado_pago || '').toLowerCase() === filtros.estadoPago
+		);
 	}
 
 	return resultados;
 });
 
-const buscar = () => {
-	if (search.value.trim() === '') {
-		ventaStore.listar();
+const handleSearch = () => {
+	if (filtros.search.trim() === '') {
+		ventaStore.listar(filtros.fecha);
 	} else {
-		ventaStore.buscar(search.value);
+		ventaStore.buscar(filtros.search, filtros.fecha);
 	}
-};
-const progresoBadgeClass = (progreso) => {
-	const map = {
-		'cotización': 'border-warning text-warning',
-		'venta': 'border-primary text-primary',
-		'facturada': 'border-info text-info',
-		'en seguimiento': 'border-secondary text-secondary',
-		'finalizado': 'border-success text-success',
-	};
-	return map[progreso?.toLowerCase()] || 'border-secondary text-secondary';
 };
 const estadoBadgePago = (estado) => {
 	const map = {
@@ -69,32 +69,11 @@ const estadoBadgePago = (estado) => {
 		'pagado': 'border-success text-success',
 		'pendiente': 'border-warning text-warning',
 		'con adelantar': 'border-warning text-warning',
+		'adelantado': 'border-warning text-warning',
 		'cancelado': 'border-danger text-danger',
 		'anulado': 'border-danger text-danger',
 	};
 	return map[estado?.toLowerCase()] || 'border-secondary text-secondary';
-};
-
-
-// Extrae los tipos únicos de items y los formatea como "ida" o "ida y vuelta"
-const formatoServicio = (items) => {
-	if (!items || !items.length) return '-';
-
-	const tipos = items.map(i => i.tipo?.toLowerCase()).filter(Boolean);
-	const unicos = [...new Set(tipos)];
-
-	if (unicos.length === 0) return '-';
-
-	// Contar ocurrencias de cada tipo
-	const conteo = {};
-	tipos.forEach(t => { conteo[t] = (conteo[t] || 0) + 1; });
-
-	// Construir resultado
-	const partes = unicos.map(tipo => {
-		return conteo[tipo] >= 2 ? `${capitalize(tipo)} ida y vuelta` : capitalize(tipo);
-	});
-
-	return partes.join(', ');
 };
 
 const formatoConcepto = (items) => {
@@ -147,30 +126,42 @@ const eliminarVenta = async (id, concepto) => {
 
 	<div class="row">
 		<div class="col-md-12">
-			<div class="card">
+			<div class="card mb-3">
 				<div class="card-body">
-					<label><i class="bi bi-funnel"></i> Búsqueda</label>
-					<div class="row">
-						<div class="col-12 col-md-auto my-1">
-							<div class="input-group">
-								<input type="text" class="form-control" placeholder="RUC, Razón social, Ciudad" v-model="search">
-								<button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button>
-							</div>
+					<div class="row g-2">
+						<div class="col-md-2">
+							<label class="form-label small">Fecha</label>
+							<input type="date" class="form-control form-control-sm" v-model="filtros.fecha">
 						</div>
-						<div class="col-12 col-md-3 my-1">
-							<select class="form-select" v-model="tipoFilter">
-								<option value="todos">Todas las categorías</option>
-								<option value="venta">Ventas</option>
-								<option value="cotización">Cotizaciones</option>
+						<div class="col-md-2">
+							<label class="form-label small">Estado pago</label>
+							<select class="form-select form-select-sm" v-model="filtros.estadoPago">
+								<option value="todos">Todos</option>
+								<option value="pendiente">Pendiente</option>
+								<option value="adelantado">Adelantado</option>
+								<option value="pagado">Pagado</option>
+								<option value="anulado">Anulado</option>
 							</select>
 						</div>
-						<div class="col-12 col-md-2 my-1">
-							<input type="date" class="form-control" v-model="fechaFilter">
+						<div class="col-md-4">
+							<label class="form-label small">Buscar</label>
+							<input
+								type="text"
+								class="form-control form-control-sm"
+								v-model="filtros.search"
+								placeholder="RUC, Razón social, Ciudad..."
+								@keyup.enter="handleSearch"
+							>
 						</div>
-						<div class="col-12 col-md-auto d-flex justify-content-end justify-content-md-center">
-							<div>
-								<router-link to="/venta/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nueva venta</router-link>
-							</div>
+						<div class="col-md-2 d-flex align-items-end">
+							<button class="btn btn-sm btn-primary w-100" @click="handleSearch">
+								<i class="bi bi-search"></i> Buscar
+							</button>
+						</div>
+						<div class="col-md-2 d-flex align-items-end justify-content-end">
+							<router-link to="/venta/nueva" class="btn btn-sm btn-outline-primary w-100">
+								<i class="bi bi-star"></i> Nueva venta
+							</router-link>
 						</div>
 					</div>
 				</div>
@@ -179,54 +170,42 @@ const eliminarVenta = async (id, concepto) => {
 	</div>
 	<div class="row mt-3">
 		<div class="col table-responsive">
-			<p class="mb-0">Últimos registrados</p>
+			<p class="mb-3">Listado de las ventas</p>
 			<div class="table-responsive">
-				<table class="table table-hover align-middle">
-				<thead>
+				<table class="table table-bordered table-hover align-middle mb-0">
+				<thead class="table-light">
 					<tr>
 						<th>#</th>
-						<th>Progreso</th>
 						<th>Fecha de registro</th>
-						<th>Categorías</th>
-						<th>N° Personas</th>
 						<th>Departamento - Ciudad</th>
-						<th>Concepto</th>
 						<th>Cliente</th>
+						<th>Adultos</th>
+						<th>Niños</th>
 						<th>Monto</th>
-						<th>Estado de pago</th>
+						<th>Pago</th>
 						<th>Acciones</th>
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(venta, index) in filteredVentas" :key="venta.id">
+					<tr v-for="(venta, index) in filteredVentas" :key="venta.id" class="clickable-row" @click="irADetalle(venta.id)">
 						<td>{{ index + 1 }}</td>
-						<td>
-							<span class="badge border" :class="progresoBadgeClass(venta.progreso || 'cotización')">
-								{{ capitalize(venta.progreso || 'cotización') }}
-							</span>
-						</td>
-						<td class="tdLargo">
-							<router-link :to="{ name: 'detalleVenta', params: { id: venta.id } }">
-							{{ fechaLatamSimple(venta.fecha) }}
-							</router-link>
-						</td>
-						<td>{{ formatoServicio(venta.items) }}</td>
-						<td>{{ venta.cuantas_personas || 0 }}</td>
+						<td class="tdLargo">{{ fechaLatamSimple(venta.fecha) }}</td>
 						<td>{{ venta.departamento?.departamento }} {{ venta.ciudad ? ' - '+venta.ciudad : '' }}</td>
-						<td>{{ capitalize(formatoConcepto(venta.items)) }}</td>
-						<td class="nowrap-cell">
+						<td class="nowrap-cell" @click.stop>
 							<router-link v-if="venta.cliente_id" :to="{ name: 'perfilCliente', params: { id: venta.cliente_id } }">
 								{{ venta.cliente?.razon_social || venta.cliente?.apellidos + ' ' + venta.cliente?.nombres || 'Sin cliente' }}
 							</router-link>
 							<span v-else>-</span>
 						</td>
+						<td>{{ venta.adults || 0 }}</td>
+						<td>{{ venta.kids || 0 }}</td>
 						<td class="nowrap-cell">{{ formatMoneda(venta.precio) }}</td>
 						<td>
 							<span class="badge border text-capitalize" :class="estadoBadgePago(venta.estado_pago)">
 								{{ venta.estado_pago || '-' }}
 							</span>
 						</td>
-						<td>
+						<td @click.stop>
 							<div class="d-flex gap-2" v-if="venta.estado != 'anulado'">
 								<button class="btn btn-sm btn-outline-danger" @click="anularVenta(venta.id, `${capitalize(formatoConcepto(venta.items))} ${venta.cliente ? ' de ' + (venta.cliente.razon_social || venta.cliente.nombres) : ''}`)" title="Anular servicio">
 									<i class="bi bi-x-lg"></i>
@@ -239,7 +218,7 @@ const eliminarVenta = async (id, concepto) => {
 						</td>
 					</tr>
 					<tr v-if="ventaStore.ventas.length === 0">
-						<td colspan="11" class="text-muted">No hay ventas registradas</td>
+						<td colspan="9" class="text-muted">No hay ventas registradas</td>
 					</tr>
 				</tbody>
 			</table>
@@ -251,5 +230,8 @@ const eliminarVenta = async (id, concepto) => {
 <style scoped>
 .nowrap-cell {
 	white-space: nowrap;
+}
+.clickable-row {
+	cursor: pointer;
 }
 </style>

@@ -9,14 +9,22 @@ export const useVentasStore = defineStore('ventas', {
 	}),
 
 	actions: {
-		async listar() {
-			const response = await api.get('/ventas');
+		async listar(fecha = null) {
+			let url = '/ventas';
+			if (fecha) {
+				url += '?fecha=' + fecha;
+			}
+			const response = await api.get(url);
 			this.ventas = response.data;
 			return response.data;
 		},
 
-		async buscar(termino) {
-			const response = await api.get('/ventas?buscar=' + termino);
+		async buscar(termino, fecha = null) {
+			let url = '/ventas?buscar=' + termino;
+			if (fecha) {
+				url += '&fecha=' + fecha;
+			}
+			const response = await api.get(url);
 			this.ventas = response.data;
 			return response.data;
 		},

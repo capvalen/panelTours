@@ -14,10 +14,11 @@ export const useCotizacionStore = defineStore('cotizacion', {
 			return response.data;
 		},
 
-		async listarConFiltros(fecha = '', search = '') {
+		async listarConFiltros(fecha = '', search = '', estado = '') {
 			const params = {};
 			if (fecha) params.fecha = fecha;
 			if (search) params.search = search;
+			if (estado) params.estado = estado;
 			params.limit = 50;
 			const response = await api.get('/cotizacion', { params });
 			this.cotizaciones = response.data;

@@ -101,7 +101,7 @@ watch(
 	() => form.value.monto,
 	() => {
 		form.value.saldoPendiente = saldoPendienteCalculado.value;
-		form.value.estadoPago = saldoPendienteCalculado.value === 0 ? 'completo' : 'adelanto';
+		form.value.estadoPago = saldoPendienteCalculado.value === 0 ? 'pagado' : 'adelanto';
 	},
 	{ immediate: true }
 );
@@ -149,7 +149,7 @@ watch(
               <select class="form-select" id="estadoPago" v-model="form.estadoPago" required>
                 <option value="pendiente">Pendiente</option>
                 <option value="adelanto">Adelanto</option>
-                <option value="completo">Completo</option>
+                <option value="pagado">Pagado</option>
                 <option value="confirmado">Confirmado</option>
                 <option value="rechazado">Rechazado</option>
                 <option value="reembolsado">Reembolsado</option>

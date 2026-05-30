@@ -8,8 +8,8 @@
 			</ol>
 		</nav>
 
-		<h2 class="mb-3">Nueva Cotización</h2>
-
+		<h2 >Nueva Cotización</h2>
+		<p class="mb-3 text-muted"><small>Armado de presupuestos</small></p>
 		<!-- Filtro de cliente -->
 		<div class="card">
 			<div class="card-body">

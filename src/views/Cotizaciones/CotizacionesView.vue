@@ -1,24 +1,27 @@
 <template>
 	<div class="container-fluid">
-		<div class="d-flex justify-content-between align-items-center mb-3">
-			<div>
-				<h2>Cotizaciones</h2>
-				<p class="text-muted mb-0">Panel de cotizaciones.</p>
-			</div>
-			<router-link to="/cotizacion/nueva" class="btn btn-primary">
-				<i class="bi bi-plus-lg"></i> Crear cotización
-			</router-link>
+		<div class="mb-3">
+			<h2>Cotizaciones</h2>
+			<p class="text-muted mb-0">Panel de cotizaciones.</p>
 		</div>
 
 		<!-- Filtros -->
 		<div class="card mb-3">
 			<div class="card-body">
 				<div class="row g-2">
-					<div class="col-md-3">
+					<div class="col-md-2">
 						<label class="form-label small">Fecha</label>
 						<input type="date" class="form-control form-control-sm" v-model="filtros.fecha">
 					</div>
-					<div class="col-md-5">
+					<div class="col-md-2">
+						<label class="form-label small">Estado</label>
+						<select class="form-select form-select-sm" v-model="filtros.estado">
+							<option value="">Todos</option>
+							<option value="activo">Activo</option>
+							<option value="convertido">Convertido</option>
+						</select>
+					</div>
+					<div class="col-md-4">
 						<label class="form-label small">Buscar</label>
 						<input
 							type="text"
@@ -32,6 +35,11 @@
 						<button class="btn btn-sm btn-primary w-100" @click="handleSearch">
 							<i class="bi bi-search"></i> Buscar
 						</button>
+					</div>
+					<div class="col-md-2 d-flex align-items-end justify-content-end">
+						<router-link to="/cotizacion/nueva" class="btn btn-sm btn-outline-primary w-100">
+							<i class="bi bi-star"></i> Nueva cotización
+						</router-link>
 					</div>
 				</div>
 			</div>
@@ -113,6 +121,7 @@ const obtenerFechaLocal = () => {
 const filtros = reactive({
 	fecha: obtenerFechaLocal(),
 	search: '',
+	estado: '',
 });
 
 const capitalize = (str) => {
@@ -129,7 +138,7 @@ const formatPrecio = (val) => {
 const cargarCotizaciones = async () => {
 	cargando.value = true;
 	try {
-		const data = await cotizacionStore.listarConFiltros(filtros.fecha, filtros.search);
+		const data = await cotizacionStore.listarConFiltros(filtros.fecha, filtros.search, filtros.estado);
 		cotizaciones.value = data;
 	} catch (error) {
 		console.error('Error al cargar cotizaciones:', error);
