@@ -301,6 +301,18 @@
 						<div class="text-muted small mb-3" v-if="filtros.departamento">
 							<i class="bi bi-geo-alt"></i> {{ filtros.departamento }}
 						</div>
+						<!-- Filtros -->
+						<div class="row g-2 mb-3" v-if="toursWeb.length > 0">
+							<div class="col-md-6">
+								<input type="text" class="form-control form-control-sm" v-model="filtroTexto" placeholder="Buscar por nombre...">
+							</div>
+							<div class="col-md-6">
+								<select class="form-select form-select-sm" v-model="filtroCiudad">
+									<option value="">Todas las ciudades</option>
+									<option v-for="ciudad in ciudadesDisponibles" :key="ciudad" :value="ciudad">{{ ciudad }}</option>
+								</select>
+							</div>
+						</div>
 						<!-- Loading -->
 						<div v-if="cargandoTours" class="text-center py-4">
 							<div class="spinner-border text-primary" role="status">
@@ -318,9 +330,13 @@
 							<p class="mt-2">Selecciona un departamento y haz clic en "Buscar tours"</p>
 						</div>
 						<!-- Lista de tours -->
+						<div v-else-if="toursFiltrados.length === 0" class="text-center py-4 text-muted">
+							<i class="bi bi-filter" style="font-size: 2rem;"></i>
+							<p class="mt-2">No hay tours que coincidan con los filtros.</p>
+						</div>
 						<div v-else class="list-group">
 							<button
-								v-for="tour in toursWeb"
+								v-for="tour in toursFiltrados"
 								:key="tour.id"									class="list-group-item list-group-item-action text-start"
 									data-bs-dismiss="modal"
 									@click="agregarTourWeb(tour)"
@@ -549,6 +565,33 @@ const formatPrecio = (val) => {
 const toursWeb = ref([]);
 const cargandoTours = ref(false);
 const errorTours = ref('');
+const filtroTexto = ref('');
+const filtroCiudad = ref('');
+
+const ciudadesDisponibles = computed(() => {
+	const ciudades = new Set();
+	toursWeb.value.forEach(tour => {
+		const dest = tour.contenido?.destino;
+		if (dest) ciudades.add(dest);
+	});
+	return [...ciudades].sort();
+});
+
+const toursFiltrados = computed(() => {
+	let resultado = toursWeb.value;
+	const texto = filtroTexto.value.trim().toLowerCase();
+	if (texto) {
+		resultado = resultado.filter(tour =>
+			(tour.contenido?.nombre || '').toLowerCase().includes(texto)
+		);
+	}
+	if (filtroCiudad.value) {
+		resultado = resultado.filter(tour =>
+			tour.contenido?.destino === filtroCiudad.value
+		);
+	}
+	return resultado;
+});
 
 const buscarToursWeb = async () => {
 	if (!filtros.departamento) return;
@@ -612,6 +655,7 @@ const agregarTourWeb = (tour) => {
 
 	servicios.value.push({
 		tipo: 'web',
+		idTour: tour.id,
 		destino: filtros.departamento,
 		descuento: 0,
 		motivo_descuento: '',
@@ -725,6 +769,7 @@ const guardarCotizacion = async () => {
 			precio_kids: Number(s.precio_kids || 0),
 			descuento: Number(s.descuento || 0),
 			motivo_descuento: s.motivo_descuento || '',
+			id_tour: s.idTour || null,
 			precio: calcularSubtotal(s),
 		}));
 
