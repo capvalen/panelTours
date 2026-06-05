@@ -16,6 +16,8 @@ const nuevo = reactive({
 	celular: '',
 	cuenta_bancaria: '',
 	numero_cuenta: '',
+	aplicativo: '',
+	propietario_aplicativo: '',
 	categoria: 'local',
 	departamento_id: ''
 })
@@ -146,6 +148,14 @@ onMounted(() => {
 						<div class="col-md-6">
 							<label for="cuentaBanacaria" class="form-label">Número de cuenta</label>
 							<input type="text" class="form-control" id="cuentaBanacaria" v-model="nuevo.numero_cuenta">
+						</div>
+						<div class="col-md-6">
+							<label for="aplicativo" class="form-label">Aplicativo</label>
+							<input type="text" class="form-control" id="aplicativo" v-model="nuevo.aplicativo">
+						</div>
+						<div class="col-md-6">
+							<label for="propietarioAplicativo" class="form-label">Propietario del aplicativo</label>
+							<input type="text" class="form-control" id="propietarioAplicativo" v-model="nuevo.propietario_aplicativo">
 						</div>
 						<div class="col-md-6 my-3">
 							<label for="cuentaBanacaria" class="form-label">Datos extras:</label>

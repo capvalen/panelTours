@@ -93,23 +93,19 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(hospedaje, index ) in hospedajeStore.hospedajes">
+					<tr v-for="(hospedaje, index ) in hospedajeStore.hospedajes" @click="$router.push({ name: 'perfilHospedaje', params: { id: hospedaje.id } })" style="cursor: pointer;">
 						<td>{{ index + 1 }}</td>
-						<td>
-							<router-link :to="{ name: 'perfilHospedaje', params: { id: hospedaje.id } }">
-								{{ hospedaje.ruc ?? 'Sin documento' }}
-							</router-link>
-						</td>
+						<td>{{ hospedaje.ruc ?? 'Sin documento' }}</td>
 						<td>{{ hospedaje.hospedaje }}</td>
 						<td>{{ hospedaje.departamento?.departamento }}</td>
 						<td>{{ hospedaje.contacto }}</td>
 						<td>{{ hospedaje.celular }}</td>
 						<td>{{ hospedaje.correo }}</td>
-						<td class="d-flex gap-2" v-if="hospedaje.id !== 1">
+						<td class="d-flex gap-2" v-if="hospedaje.id !== 1" @click.stop>
 							<router-link :to="{ name: 'editarHospedaje', params: { id: hospedaje.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarHospedaje(hospedaje.id, hospedaje.hospedaje)"><i class="bi bi-x-lg"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click.stop="eliminarHospedaje(hospedaje.id, hospedaje.hospedaje)"><i class="bi bi-x-lg"></i></button>
 						</td>
-						<td v-else></td>
+						<td v-else @click.stop></td>
 					</tr>
 				</tbody>
 			</table>

@@ -98,23 +98,19 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(vehiculo, index ) in vehiculoStore.vehiculos">
+					<tr v-for="(vehiculo, index ) in vehiculoStore.vehiculos" @click="$router.push({ name: 'perfilVehiculo', params: { id: vehiculo.id } })" style="cursor: pointer;">
 						<td>{{ index + 1 }}</td>
 						<td class="text-capitalize">{{ vehiculo.tipo_vehiculo }}</td>
-						<td>
-							<router-link :to="{ name: 'perfilVehiculo', params: { id: vehiculo.id } }">
-								{{ vehiculo.placa }}
-							</router-link>
-						</td>
+						<td>{{ vehiculo.placa }}</td>
 						<td>{{ vehiculo.nombre_conductor }}</td>
 						<td>{{ vehiculo.licencia_conductor }}</td>
 						<td class="text-capitalize">{{ vehiculo.tipo_combustible }}</td>
 						<td>{{ vehiculo.departamento?.departamento }}</td>
-						<td class="d-flex gap-2" v-if="vehiculo.id !== 1">
+						<td class="d-flex gap-2" v-if="vehiculo.id !== 1" @click.stop>
 							<router-link :to="{ name: 'editarVehiculo', params: { id: vehiculo.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarVehiculo(vehiculo.id, vehiculo.placa, vehiculo.nombre_conductor)"><i class="bi bi-x-lg"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click.stop="eliminarVehiculo(vehiculo.id, vehiculo.placa, vehiculo.nombre_conductor)"><i class="bi bi-x-lg"></i></button>
 						</td>
-						<td v-else></td>
+						<td v-else @click.stop></td>
 					</tr>
 				</tbody>
 			</table>

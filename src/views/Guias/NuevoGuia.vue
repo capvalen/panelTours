@@ -12,6 +12,10 @@ const nuevo = reactive({
 	nombre: '',
 	celular: '',
 	contacto_emergencia: '',
+	banco: '',
+	numero_cuenta: '',
+	aplicativo: '',
+	propietario_aplicativo: '',
 	especialidad: '',
 	idiomas: '',
 	departamento_id: '',
@@ -110,6 +114,36 @@ onMounted(async () => {
 						<div class="col-md-6">
 							<label for="idiomas" class="form-label">Idiomas</label>
 							<input type="text" class="form-control" id="idiomas" v-model="nuevo.idiomas">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row my-2">
+		<div class="col-8 mx-auto">
+			<div class="card">
+				<div class="card-body">
+					<h5 class="mb-4"><strong>Datos bancarios y aplicativo</strong></h5>
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="banco" class="form-label">Banco</label>
+							<input type="text" class="form-control" id="banco" v-model="nuevo.banco">
+						</div>
+						<div class="col-md-6">
+							<label for="numeroCuenta" class="form-label">Número de cuenta</label>
+							<input type="text" class="form-control" id="numeroCuenta" v-model="nuevo.numero_cuenta">
+						</div>
+					</div>
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="aplicativo" class="form-label">Aplicativo</label>
+							<input type="text" class="form-control" id="aplicativo" v-model="nuevo.aplicativo">
+						</div>
+						<div class="col-md-6">
+							<label for="propietarioAplicativo" class="form-label">Propietario del aplicativo</label>
+							<input type="text" class="form-control" id="propietarioAplicativo" v-model="nuevo.propietario_aplicativo">
 						</div>
 					</div>
 				</div>

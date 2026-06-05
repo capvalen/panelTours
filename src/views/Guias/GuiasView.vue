@@ -80,23 +80,19 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(guia, index ) in guiaStore.guias">
+					<tr v-for="(guia, index ) in guiaStore.guias" @click="$router.push({ name: 'perfilGuia', params: { id: guia.id } })" style="cursor: pointer;">
 						<td>{{ index + 1 }}</td>
-						<td>
-							<router-link :to="{ name: 'perfilGuia', params: { id: guia.id } }">
-								{{ guia.dni ?? 'Sin documento' }}
-							</router-link>
-						</td>
+						<td>{{ guia.dni ?? 'Sin documento' }}</td>
 						<td>{{ guia.nombre }}</td>
 						<td>{{ guia.departamento?.departamento }}</td>
 						<td>{{ guia.celular }}</td>
 						<td>{{ capitalize(guia.especialidad )}}</td>
 						<td class="text-capitalize">{{ guia.idiomas }}</td>
-						<td class="d-flex gap-2" v-if="guia.id !== 1">
+						<td class="d-flex gap-2" v-if="guia.id !== 1" @click.stop>
 							<router-link :to="{ name: 'editarGuia', params: { id: guia.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarGuia(guia.id, guia.nombre)"><i class="bi bi-x-lg"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click.stop="eliminarGuia(guia.id, guia.nombre)"><i class="bi bi-x-lg"></i></button>
 						</td>
-						<td v-else></td>
+						<td v-else @click.stop></td>
 					</tr>
 				</tbody>
 			</table>

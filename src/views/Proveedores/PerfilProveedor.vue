@@ -117,8 +117,10 @@ watch(
 			<div class="card mb-3">
 				<div class="card-body">
 					<p><strong>🏦 Datos bancarios</strong></p>
-					<p><strong>Cuenta bancaria:</strong> {{ proveedorActual?.banco || 'Ninguno' }}</p>
+					<p><strong>Banco:</strong> {{ proveedorActual?.banco || 'Ninguno' }}</p>
 					<p><strong># de Cuenta:</strong> {{ proveedorActual?.numero_cuenta }}</p>
+					<p><strong>Aplicativo:</strong> {{ proveedorActual?.aplicativo || '-' }}</p>
+					<p><strong>Propietario del aplicativo:</strong> {{ proveedorActual?.propietario_aplicativo || '-' }}</p>
 					<p><strong>Observaciones:</strong> {{ proveedorActual?.observaciones || '-' }}</p>
 				</div>
 			</div>

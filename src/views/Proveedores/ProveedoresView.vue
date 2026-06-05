@@ -99,21 +99,17 @@ onMounted(() => {
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="(proveedor, index ) in proveedorStore.proveedores">
+						<tr v-for="(proveedor, index ) in proveedorStore.proveedores" @click="$router.push({ name: 'perfilProveedor', params: { id: proveedor.id } })" style="cursor: pointer;">
 							<td>{{ index + 1 }}</td>
-							<td>
-								<router-link :to="{ name: 'perfilProveedor', params: { id: proveedor.id } }">
-									{{ proveedor.ruc }}
-								</router-link>
-							</td>
+							<td>{{ proveedor.ruc }}</td>
 							<td>{{ proveedor.razon_social }}</td>
 							<td>{{ proveedor.contacto }}</td>
 							<td>{{ proveedor.celular }}</td>
 							<td class="text-capitalize">{{ proveedor.categoria }}</td>
 							<td>{{ nombreDepartamento(proveedor.departamento_id) }}</td>
-							<td class="d-flex gap-2" v-if="proveedor.id != 1">
+							<td class="d-flex gap-2" v-if="proveedor.id != 1" @click.stop>
 								<router-link :to="{ name: 'editarProveedor', params: { id: proveedor.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-								<button class="btn btn-sm btn-outline-danger" @click="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-x-lg"></i></button>
+								<button class="btn btn-sm btn-outline-danger" @click.stop="eliminarProveedor(proveedor.id, proveedor.razon_social, proveedor.apellidos)"><i class="bi bi-x-lg"></i></button>
 							</td>
 						</tr>
 					</tbody>

@@ -68,6 +68,9 @@
 						<router-link to="/hospedajes" class="menuSubItem">
 							<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
 						</router-link>
+						<router-link to="/proveedores" class="menuSubItem">
+							<div class="menuFila menuFila-sub"><i class="bi bi-box-seam"></i> Proveedores</div>
+						</router-link>
 						<router-link to="/recordatorios" class="menuSubItem">
 							<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
 						</router-link>
@@ -133,6 +136,9 @@
 						</router-link>
 						<router-link to="/hospedajes" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-building"></i> Hospedajes
+						</router-link>
+						<router-link to="/proveedores" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-box-seam"></i> Proveedores
 						</router-link>
 						<router-link to="/recordatorios" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-stars"></i> Recordatorios

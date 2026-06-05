@@ -72,6 +72,15 @@ watch(
 					<p><strong>Idiomas:</strong> {{ guiaActual?.idiomas || '-' }}</p>
 				</div>
 			</div>
+			<div class="card mb-3">
+				<div class="card-body">
+					<p><strong>🏦 Datos bancarios y aplicativo</strong></p>
+					<p><strong>Banco:</strong> {{ guiaActual?.banco || '-' }}</p>
+					<p><strong>Número de cuenta:</strong> {{ guiaActual?.numero_cuenta || '-' }}</p>
+					<p><strong>Aplicativo:</strong> {{ guiaActual?.aplicativo || '-' }}</p>
+					<p><strong>Propietario del aplicativo:</strong> {{ guiaActual?.propietario_aplicativo || '-' }}</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>

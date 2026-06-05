@@ -75,6 +75,16 @@ watch(
 			</div>
 
 			<div class="card mb-3">
+				<div class="card-body">
+					<p><strong>🏦 Datos bancarios y aplicativo</strong></p>
+					<p><strong>Banco:</strong> {{ vehiculoActual?.banco || '-' }}</p>
+					<p><strong>Número de cuenta:</strong> {{ vehiculoActual?.numero_cuenta || '-' }}</p>
+					<p><strong>Aplicativo:</strong> {{ vehiculoActual?.aplicativo || '-' }}</p>
+					<p><strong>Propietario del aplicativo:</strong> {{ vehiculoActual?.propietario_aplicativo || '-' }}</p>
+				</div>
+			</div>
+
+			<div class="card mb-3">
 				<div class="card-header bg-dark text-white">
 					<strong>📎 Archivos adjuntos ({{ vehiculoActual?.archivos?.length }})</strong>
 				</div>

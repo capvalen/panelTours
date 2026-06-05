@@ -325,7 +325,7 @@
 											</td>
 											<td>{{ persona.dni || '-' }}</td>
 											<td>{{ capitalize(persona.parentesco || '-') }}</td>
-											<td>{{ persona.fecha_nacimiento ?? '-' }}</td>
+											<td>{{ formatFechaNacimiento(persona.fecha_nacimiento) }}</td>
 											<td>
 												<span v-if="persona.enfermedades === 'si'" class="text-danger">Sí</span>
 												<span v-else class="text-muted">No</span>
@@ -694,6 +694,28 @@ const formatFechaSimple = (fecha) => {
 	return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
 };
 
+
+const calcularEdad = (fecha) => {
+	if (!fecha) return null;
+	const d = new Date(fecha.slice(0, 10));
+	if (isNaN(d.getTime())) return null;
+	const hoy = new Date();
+	let edad = hoy.getFullYear() - d.getFullYear();
+	const mes = hoy.getMonth() - d.getMonth();
+	if (mes < 0 || (mes === 0 && hoy.getDate() < d.getDate())) edad--;
+	return edad;
+};
+
+const formatFechaNacimiento = (fecha) => {
+	if (!fecha) return '-';
+	const d = new Date(fecha.slice(0, 10));
+	if (isNaN(d.getTime())) return fecha;
+	const dia = String(d.getDate()).padStart(2, '0');
+	const mes = String(d.getMonth() + 1).padStart(2, '0');
+	const anio = d.getFullYear();
+	const edad = calcularEdad(fecha);
+	return `${dia}/${mes}/${anio} (${edad} años)`;
+};
 
 const formatFechaDestino = (fecha) => {
 	if (!fecha) return '-';

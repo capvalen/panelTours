@@ -136,6 +136,7 @@
 									<th class="text-center" style="width: 40px;">N°</th>
 									<th>Nombre</th>
 									<th>DNI</th>
+									<th>Edad</th>
 									<th class="text-end">Saldo a cobrar</th>
 								</tr>
 							</thead>
@@ -148,6 +149,7 @@
 											<span v-if="persona.es_titular" class="badge bg-primary ms-1">Titular</span>
 										</td>
 										<td>{{ persona.dni || '-' }}</td>
+										<td>{{ calcularEdad(persona.fecha_nacimiento) !== null ? calcularEdad(persona.fecha_nacimiento) + ' años' : '-' }}</td>
 										<td class="text-end fw-semibold">
 											<span v-if="pIdx === 0" :class="saldoColor(venta)">{{ formatSaldo(venta) }}</span>
 										</td>
@@ -476,6 +478,17 @@ const formatSaldo = (venta) => {
 	const saldo = Number(venta.precio || 0) - Number(venta.adelanto || 0);
 	if (saldo <= 0) return '100% Pagado';
 	return `S/ ${formatNum(saldo)}`;
+};
+
+const calcularEdad = (fecha) => {
+	if (!fecha) return null;
+	const d = new Date(fecha.slice(0, 10));
+	if (isNaN(d.getTime())) return null;
+	const hoy = new Date();
+	let edad = hoy.getFullYear() - d.getFullYear();
+	const mes = hoy.getMonth() - d.getMonth();
+	if (mes < 0 || (mes === 0 && hoy.getDate() < d.getDate())) edad--;
+	return edad;
 };
 
 const formatNum = (val) => {

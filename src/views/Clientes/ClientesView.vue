@@ -77,13 +77,11 @@ onMounted(() => {
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(cliente, index ) in clienteStore.clientes" :key="cliente.id">
+					<tr v-for="(cliente, index ) in clienteStore.clientes" :key="cliente.id" @click="$router.push({ name: 'perfilCliente', params: { id: cliente.id } })" style="cursor: pointer;">
 						<td>{{index+1}}</td>
 						<td>
-							<router-link :to="{ name: 'perfilCliente', params: { id: cliente.id } }">
-								<span v-if="cliente.razon_social">{{ cliente.razon_social }}</span>
-								<span v-else>{{ cliente.apellidos }} {{ cliente.nombres }}</span>
-							</router-link>
+							<span v-if="cliente.razon_social">{{ cliente.razon_social }}</span>
+							<span v-else>{{ cliente.apellidos }} {{ cliente.nombres }}</span>
 						</td>
 						<td>
 							<span v-if="cliente.ruc">{{ cliente.ruc }}</span>
@@ -92,9 +90,9 @@ onMounted(() => {
 						<td>{{cliente.celular}}</td>
 						<td>{{cliente.telefono}}</td>
 						<td class="text-capitalize">{{cliente.nacionalidad}} <span v-if="cliente.pais_origen">({{ cliente.pais_origen }})</span></td>
-						<td class="d-flex gap-2" v-if="cliente.id>1">
+						<td class="d-flex gap-2" v-if="cliente.id>1" @click.stop>
 							<router-link :to="{ name: 'editarCliente', params: { id: cliente.id } }" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></router-link>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarCliente(cliente.id, cliente.razon_social, cliente.apellidos)"><i class="bi bi-x-lg"></i></button>
+							<button class="btn btn-sm btn-outline-danger" @click.stop="eliminarCliente(cliente.id, cliente.razon_social, cliente.apellidos)"><i class="bi bi-x-lg"></i></button>
 						</td>
 					</tr>
 				</tbody>
