@@ -103,6 +103,12 @@
 							<option v-for="dep in departamentosLista" :key="dep" :value="dep">{{ dep }}</option>
 						</select>
 					</div>
+					<div class="col-md-9">
+						<label class="form-label">Ruta</label>
+						<textarea class="form-control" v-model="rutaTexto" rows="2" placeholder="Describir la ruta del viaje..."></textarea>
+					</div>
+				</div>
+				<div class="row g-3 mt-2">
 					<div class="col-md-3">
 						<label class="form-label">Fecha inicio</label>
 						<input type="date" class="form-control" v-model="filtros.fechaInicio">
@@ -222,12 +228,53 @@
 					</tbody>
 				</table>
 			</div>
+			<div class="row g-3 mt-3">
+				<div class="col-md-4">
+					<label class="form-label fw-semibold">Servicios</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" v-model="inputServicio" placeholder="Agregar servicio..." @keyup.enter="agregarServicioArr">
+						<button class="btn btn-outline-primary" @click="agregarServicioArr">+</button>
+					</div>
+					<ul class="list-group" v-if="serviciosArr.length">
+						<li class="list-group-item d-flex justify-content-between align-items-center py-1" v-for="(item, index) in serviciosArr" :key="'srv-'+index">
+							{{ item }}
+							<button class="btn btn-sm btn-outline-danger border-0 rounded-circle px-2" @click="eliminarServicioArr(index)"><i class="bi bi-x"></i></button>
+						</li>
+					</ul>
+				</div>
+				<div class="col-md-4">
+					<label class="form-label fw-semibold">Incluye</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" v-model="inputIncluye" placeholder="Agregar..." @keyup.enter="agregarIncluye">
+						<button class="btn btn-outline-success" @click="agregarIncluye">+</button>
+					</div>
+					<ul class="list-group" v-if="incluyeArr.length">
+						<li class="list-group-item d-flex justify-content-between align-items-center py-1" v-for="(item, index) in incluyeArr" :key="'inc-'+index">
+							{{ item }}
+							<button class="btn btn-sm btn-outline-danger border-0 rounded-circle px-2" @click="eliminarIncluye(index)"><i class="bi bi-x"></i></button>
+						</li>
+					</ul>
+				</div>
+				<div class="col-md-4">
+					<label class="form-label fw-semibold">No incluye</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" v-model="inputNoIncluye" placeholder="Agregar..." @keyup.enter="agregarNoIncluye">
+						<button class="btn btn-outline-danger" @click="agregarNoIncluye">+</button>
+					</div>
+					<ul class="list-group" v-if="noIncluyeArr.length">
+						<li class="list-group-item d-flex justify-content-between align-items-center py-1" v-for="(item, index) in noIncluyeArr" :key="'noinc-'+index">
+							{{ item }}
+							<button class="btn btn-sm btn-outline-danger border-0 rounded-circle px-2" @click="eliminarNoIncluye(index)"><i class="bi bi-x"></i></button>
+						</li>
+					</ul>
+				</div>
+			</div>
 			<div class="d-flex justify-content-end mt-3">
 				<div class="bg-light p-3 rounded border">
 					<strong class="fs-5">Total a cobrar: <span class="text-primary">S/ {{ formatPrecio(totalAPagar) }}</span></strong>
 				</div>
 			</div>
-			<div class="d-flex justify-content-end mt-3">
+			<div class="d-flex justify-content-end mt-3 mb-4">
 				<button
 					class="btn btn-lg btn-success"
 					@click="guardarCotizacion"
@@ -434,6 +481,46 @@ const agregarServicio = (tipo) => {
 
 const eliminarServicio = (index) => {
 	servicios.value.splice(index, 1);
+};
+
+// ── Ruta, Servicios, Incluye, No incluye ──
+const rutaTexto = ref('');
+const serviciosArr = ref([]);
+const incluyeArr = ref([]);
+const noIncluyeArr = ref([]);
+const inputServicio = ref('');
+const inputIncluye = ref('');
+const inputNoIncluye = ref('');
+
+const agregarServicioArr = () => {
+	const val = inputServicio.value.trim();
+	if (val) {
+		serviciosArr.value.push(val);
+		inputServicio.value = '';
+	}
+};
+const eliminarServicioArr = (index) => {
+	serviciosArr.value.splice(index, 1);
+};
+const agregarIncluye = () => {
+	const val = inputIncluye.value.trim();
+	if (val) {
+		incluyeArr.value.push(val);
+		inputIncluye.value = '';
+	}
+};
+const eliminarIncluye = (index) => {
+	incluyeArr.value.splice(index, 1);
+};
+const agregarNoIncluye = () => {
+	const val = inputNoIncluye.value.trim();
+	if (val) {
+		noIncluyeArr.value.push(val);
+		inputNoIncluye.value = '';
+	}
+};
+const eliminarNoIncluye = (index) => {
+	noIncluyeArr.value.splice(index, 1);
 };
 
 const calcularSubtotal = (servicio) => {
@@ -656,6 +743,10 @@ const guardarCotizacion = async () => {
 				precio_kids: totalKids,
 				precio: totalGlobal,
 				nacionalidad: esPeruano.value ? 'peruana' : 'extranjera',
+				ruta: rutaTexto.value,
+				servicios: serviciosArr.value,
+				incluye: incluyeArr.value,
+				no_incluye: noIncluyeArr.value,
 				estado: 'activo',
 			},
 			canasta,

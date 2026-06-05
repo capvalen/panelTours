@@ -58,7 +58,7 @@
 						<small class="fs-6" style="color:#64748b;">S/</small>
 						{{ formatMoneda(dashboard.gastosHoy).replace('S/ ', '') }}
 					</h3>
-					<p class="mb-0 mt-1 text-muted"><small>Gastos</small></p>
+					<p class="mb-0 mt-1 text-muted"><small>Egresos de caja</small></p>
 				</div>
 			</div>
 		</div>

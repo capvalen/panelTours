@@ -29,5 +29,6 @@ coverage
 
 *.tsbuildinfo
 .claude/settings.json
-.env.production 
+.env
 .env.development
+.env.production 

@@ -41,7 +41,7 @@
 
 			<div class="row g-3">
 				<!-- Datos del cliente -->
-				<div class="col-md-6">
+				<div class="col-md-4">
 					<div class="card h-100">
 						<div class="card-body">
 							<h6 class="card-title"><i class="bi bi-person"></i> Datos del cliente</h6>
@@ -63,49 +63,114 @@
 									<td>{{ capitalize(venta.nacionalidad || 'peruana') }}</td>
 								</tr>
 							</table>
+							<button class="btn btn-sm btn-outline-primary mt-2" @click="abrirModalCambiarCliente">
+								<i class="bi bi-arrow-repeat"></i> Cambiar cliente
+							</button>
 						</div>
 					</div>
 				</div>
 
 				<!-- Datos del viaje -->
-				<div class="col-md-6">
+				<div class="col-md-8">
 					<div class="card h-100">
 						<div class="card-body">
 							<h6 class="card-title"><i class="bi bi-geo-alt"></i> Datos del viaje</h6>
-							<table class="table table-sm table-borderless mb-0">
-								<tr>
-									<td class="text-muted small" style="width: 100px;">Destino</td>
-									<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
-								</tr>
-								<tr v-if="venta.fecha_inicio">
-									<td class="text-muted small">Fecha inicio</td>
-									<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
-								</tr>
-								<tr v-if="venta.fecha_fin">
-									<td class="text-muted small">Fecha fin</td>
-									<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Adultos</td>
-									<td>{{ venta.adults || 0 }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Niños</td>
-									<td>{{ venta.kids || 0 }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Total personas</td>
-									<td>{{ venta.cuantas_personas || (venta.adults + venta.kids) || 0 }}</td>
-								</tr>
-								<tr v-if="venta.ciudad">
-									<td class="text-muted small">Ciudad</td>
-									<td>{{ venta.ciudad }}</td>
-								</tr>
-								
-						</table>
+							<div class="row row-cols-3">
+								<div class="col-md">
+									<table class="table table-sm table-borderless mb-0">
+										<tr>
+											<td class="text-muted small" style="width: 100px;">Destino</td>
+											<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
+										</tr>
+										<tr v-if="venta.fecha_inicio">
+											<td class="text-muted small">Fecha inicio</td>
+											<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
+										</tr>
+										<tr v-if="venta.fecha_fin">
+											<td class="text-muted small">Fecha fin</td>
+											<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">Adultos</td>
+											<td>{{ venta.adults || 0 }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">Niños</td>
+											<td>{{ venta.kids || 0 }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">Total personas</td>
+											<td>{{ venta.cuantas_personas || (venta.adults + venta.kids) || 0 }}</td>
+										</tr>
+										<tr v-if="venta.ciudad">
+											<td class="text-muted small">Ciudad</td>
+											<td>{{ venta.ciudad }}</td>
+										</tr>
+									</table>
+								</div>
+								<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Ruta</strong>
+										<span v-if="!editandoRuta">
+											<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<textarea class="form-control form-control-sm" v-model="rutaEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese la ruta..."></textarea>
+											<button class="btn btn-sm btn-success" @click="guardarRuta" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
+									</div>
+									<div class="mb-2">
+										<strong class="text-muted small">Servicios</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.servicios || []" :key="'srv-'+index" class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarServicio(index)" title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Incluye</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarIncluye"
+											title="Agregar">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.incluye || []" :key="'inc-' + index"
+												class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarIncluye(index)"
+													title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<strong class="text-muted small">No incluye</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarNoIncluye"
+											title="Agregar">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.no_incluye || []" :key="'noinc-' + index"
+												class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarNoIncluye(index)"
+													title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
 
 	<!-- Servicios -->
 	<div class="col-12">
@@ -292,18 +357,11 @@
 
 				<!-- Acciones -->
 				<div class="col-12 mb-4">
-					<div class="d-flex justify-content-between">
-						<div>
-							<router-link to="/ventas" class="btn btn-outline-secondary">
-								<i class="bi bi-arrow-left"></i> Volver
-							</router-link>
-						</div>
-						<div class="d-flex gap-2">
-							<button class="btn btn-success" @click="enviarLogistica">
-								<i class="bi bi-truck"></i>
-								Enviar a logística
-							</button>
-						</div>
+					<div class="d-flex justify-content-end">
+						<button class="btn btn-success" @click="enviarLogistica">
+							<i class="bi bi-truck"></i>
+							Enviar a logística
+						</button>
 					</div>
 				</div>
 			</div>
@@ -498,6 +556,43 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal Cambiar Cliente -->
+	<div class="modal fade" id="modalCambiarCliente" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-sm modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Cambiar cliente</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<label class="form-label">Buscar cliente</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" v-model="terminoBusquedaCliente" placeholder="Nombre, DNI o celular..." @keyup.enter="buscarClientes">
+						<button class="btn btn-primary" @click="buscarClientes" :disabled="buscandoClientes">
+							<i v-if="buscandoClientes" class="bi bi-arrow-repeat spinner"></i>
+							<i v-else class="bi bi-search"></i>
+						</button>
+					</div>
+					<div v-if="resultadosClientes.length > 0" class="list-group mt-2">
+						<button
+							v-for="cliente in resultadosClientes"
+							:key="cliente.id"
+							class="list-group-item list-group-item-action text-start"
+							@click="seleccionarCliente(cliente)"
+						>
+							<strong>{{ cliente.razon_social || [cliente.apellidos, cliente.nombres].filter(Boolean).join(' ') }}</strong>
+							<br>
+							<small class="text-muted">{{ cliente.dni || cliente.ruc || 'Sin DNI/RUC' }} {{ cliente.celular ? '| ' + cliente.celular : '' }}</small>
+						</button>
+					</div>
+					<div v-else-if="sinResultadosClientes" class="alert alert-warning mt-2 py-2 small">
+						<i class="bi bi-exclamation-triangle"></i> No se encontraron clientes.
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script setup>
@@ -509,6 +604,7 @@ import { useVentasStore } from '@/stores/ventaStore';
 import { usePagosStore } from '@/stores/pagoStore';
 import { useLogisticaStore } from '@/stores/logisticaStore';
 import { useCajaStore } from '@/stores/cajaStore';
+import { useClienteStore } from '@/stores/clienteStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -520,6 +616,7 @@ const ventaStore = useVentasStore();
 const pagosStore = usePagosStore();
 const logisticaStore = useLogisticaStore();
 const cajaStore = useCajaStore();
+const clienteStore = useClienteStore();
 const { encodeForUrl, formatMoneda, fechaLatamSimple, capitalize } = useFormat();
 
 const venta = ref(null);
@@ -963,6 +1060,150 @@ const eliminarPersona = async (persona) => {
 		console.error('Error al eliminar persona:', err);
 		Swal.fire('Error', 'No se pudo eliminar la persona', 'error');
 	}
+};
+
+// ── Cambiar cliente ──
+const terminoBusquedaCliente = ref('');
+const resultadosClientes = ref([]);
+const sinResultadosClientes = ref(false);
+const buscandoClientes = ref(false);
+let modalCambiarClienteInstance = null;
+
+const abrirModalCambiarCliente = () => {
+	terminoBusquedaCliente.value = '';
+	resultadosClientes.value = [];
+	sinResultadosClientes.value = false;
+	if (!modalCambiarClienteInstance) {
+		modalCambiarClienteInstance = new Modal(document.getElementById('modalCambiarCliente'));
+	}
+	modalCambiarClienteInstance.show();
+};
+
+const buscarClientes = async () => {
+	const termino = terminoBusquedaCliente.value.trim();
+	if (!termino) return;
+	buscandoClientes.value = true;
+	sinResultadosClientes.value = false;
+	resultadosClientes.value = [];
+	try {
+		await clienteStore.buscarClientes(termino);
+		resultadosClientes.value = clienteStore.clientes;
+		sinResultadosClientes.value = resultadosClientes.value.length === 0;
+	} catch (err) {
+		console.error('Error al buscar clientes:', err);
+		sinResultadosClientes.value = true;
+	} finally {
+		buscandoClientes.value = false;
+	}
+};
+
+const seleccionarCliente = async (cliente) => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { cliente_id: cliente.id } });
+		venta.value.cliente = cliente;
+		modalCambiarClienteInstance?.hide();
+		Swal.fire({ title: 'Cliente actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar cliente:', err);
+		Swal.fire('Error', 'No se pudo cambiar el cliente', 'error');
+	}
+};
+
+// ── Edición de Ruta, Servicios, Incluye, No incluye ──
+const editandoRuta = ref(false);
+const rutaEdit = ref('');
+
+const iniciarEdicionRuta = () => {
+	rutaEdit.value = venta.value?.ruta || '';
+	editandoRuta.value = true;
+};
+
+const guardarRuta = async () => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { ruta: rutaEdit.value } });
+		venta.value.ruta = rutaEdit.value;
+		editandoRuta.value = false;
+	} catch (err) {
+		console.error('Error al guardar ruta:', err);
+		Swal.fire('Error', 'No se pudo guardar la ruta', 'error');
+	}
+};
+
+const cancelarEdicionRuta = () => {
+	editandoRuta.value = false;
+};
+
+const guardarArrays = async (campo, valor) => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { [campo]: valor } });
+		venta.value[campo] = [...valor];
+	} catch (err) {
+		console.error(`Error al guardar ${campo}:`, err);
+		Swal.fire('Error', `No se pudo guardar ${campo}`, 'error');
+	}
+};
+
+const agregarServicio = async () => {
+	const { value: val } = await Swal.fire({
+		title: 'Agregar servicio',
+		input: 'text',
+		inputPlaceholder: 'Nombre del servicio...',
+		showCancelButton: true,
+		confirmButtonText: 'Agregar',
+		cancelButtonText: 'Cancelar',
+	});
+	if (!val || !val.trim()) return;
+	const arr = [...(venta.value.servicios || [])];
+	arr.push(val.trim());
+	guardarArrays('servicios', arr);
+};
+
+const eliminarServicio = (index) => {
+	const arr = [...(venta.value.servicios || [])];
+	arr.splice(index, 1);
+	guardarArrays('servicios', arr);
+};
+
+const agregarIncluye = async () => {
+	const { value: val } = await Swal.fire({
+		title: 'Agregar incluido',
+		input: 'text',
+		inputPlaceholder: 'Qué incluye...',
+		showCancelButton: true,
+		confirmButtonText: 'Agregar',
+		cancelButtonText: 'Cancelar',
+	});
+	if (!val || !val.trim()) return;
+	const arr = [...(venta.value.incluye || [])];
+	arr.push(val.trim());
+	guardarArrays('incluye', arr);
+};
+
+const eliminarIncluye = (index) => {
+	const arr = [...(venta.value.incluye || [])];
+	arr.splice(index, 1);
+	guardarArrays('incluye', arr);
+};
+
+const agregarNoIncluye = async () => {
+	const { value: val } = await Swal.fire({
+		title: 'Agregar no incluido',
+		input: 'text',
+		inputPlaceholder: 'Qué no incluye...',
+		showCancelButton: true,
+		confirmButtonText: 'Agregar',
+		cancelButtonText: 'Cancelar',
+	});
+	if (!val || !val.trim()) return;
+	const arr = [...(venta.value.no_incluye || [])];
+	arr.push(val.trim());
+	guardarArrays('no_incluye', arr);
+};
+
+const eliminarNoIncluye = (index) => {
+	const arr = [...(venta.value.no_incluye || [])];
+	arr.splice(index, 1);
+	guardarArrays('no_incluye', arr);
 };
 
 onMounted(async () => {
