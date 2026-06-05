@@ -110,6 +110,21 @@
 								</div>
 								<div class="col-md">
 									<div class="mb-2">
+										<strong class="text-muted small">Punto de Recojo</strong>
+										<span v-if="!editandoPuntoRecojo">
+											<span class="ms-1" v-if="venta.punto_recojo">{{ venta.punto_recojo }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
+											<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
+									</div>
+									<div class="mb-2">
 										<strong class="text-muted small">Ruta</strong>
 										<span v-if="!editandoRuta">
 											<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
@@ -1134,7 +1149,30 @@ const seleccionarCliente = async (cliente) => {
 	}
 };
 
-// ── Edición de Ruta, Servicios, Incluye, No incluye ──
+// ── Edición de Punto de Recojo, Ruta, Servicios, Incluye, No incluye ──
+const editandoPuntoRecojo = ref(false);
+const puntoRecojoEdit = ref('');
+
+const iniciarEdicionPuntoRecojo = () => {
+	puntoRecojoEdit.value = venta.value?.punto_recojo || '';
+	editandoPuntoRecojo.value = true;
+};
+
+const guardarPuntoRecojo = async () => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { punto_recojo: puntoRecojoEdit.value } });
+		venta.value.punto_recojo = puntoRecojoEdit.value;
+		editandoPuntoRecojo.value = false;
+	} catch (err) {
+		console.error('Error al guardar punto de recojo:', err);
+		Swal.fire('Error', 'No se pudo guardar el punto de recojo', 'error');
+	}
+};
+
+const cancelarEdicionPuntoRecojo = () => {
+	editandoPuntoRecojo.value = false;
+};
+
 const editandoRuta = ref(false);
 const rutaEdit = ref('');
 

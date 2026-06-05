@@ -13,9 +13,14 @@
 		<div class="card mb-3">
 			<div class="card-body">
 				<div class="row g-2">
-					<div class="col-md-3">
+					<div class="col-md-4">
 						<label class="form-label small">Fecha</label>
-						<input type="date" class="form-control form-control-sm" v-model="filtros.fecha">
+						<div class="d-flex gap-1">
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(-1)">Ayer</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(0)">Hoy</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(1)">Mañana</button>
+							<input type="date" class="form-control form-control-sm" v-model="filtros.fecha" style="width: auto; min-width: 140px;">
+						</div>
 					</div>
 					<div class="col-md-4">
 						<label class="form-label small">Buscar</label>
@@ -90,6 +95,15 @@ const filtros = reactive({
 	fecha: '',
 	cliente: '',
 });
+
+const setFecha = (offset) => {
+	const d = new Date();
+	d.setDate(d.getDate() + offset);
+	const año = d.getFullYear();
+	const mes = String(d.getMonth() + 1).padStart(2, '0');
+	const dia = String(d.getDate()).padStart(2, '0');
+	filtros.fecha = `${año}-${mes}-${dia}`;
+};
 
 const formatFechaDestino = (fecha) => {
 	if (!fecha) return '-';

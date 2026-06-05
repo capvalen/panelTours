@@ -144,6 +144,9 @@
 								</tr>
 							</thead>
 							<tbody>
+								<tr class="table-secondary">
+									<td colspan="8"><strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }} · <strong>Punto de recojo:</strong> {{ logistica.ventas?.[0]?.punto_recojo || '-' }}</td>
+								</tr>
 								<template v-for="venta in logistica.ventas" :key="venta.id">
 									<tr v-for="(persona, pIdx) in venta.personas" :key="persona.id">
 										<td class="text-center text-muted">{{ indexGlobal(venta, pIdx) }}</td>
@@ -491,7 +494,7 @@ const saldoColor = (venta) => {
 const formatSaldo = (venta) => {
 	const saldo = Number(venta.precio || 0) - Number(venta.adelanto || 0);
 	if (saldo <= 0) return '100% Pagado';
-	return `S/ ${formatNum(saldo)}`;
+	return `Debe S/ ${formatNum(saldo)}`;
 };
 
 const calcularEdad = (fecha) => {
