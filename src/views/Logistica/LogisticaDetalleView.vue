@@ -137,6 +137,9 @@
 									<th>Nombre</th>
 									<th>DNI</th>
 									<th>Edad</th>
+									<th>Enfermedades</th>
+									<th>Alergias</th>
+									<th>Pedido especial</th>
 									<th class="text-end">Saldo a cobrar</th>
 								</tr>
 							</thead>
@@ -150,6 +153,17 @@
 										</td>
 										<td>{{ persona.dni || '-' }}</td>
 										<td>{{ calcularEdad(persona.fecha_nacimiento) !== null ? calcularEdad(persona.fecha_nacimiento) + ' años' : '-' }}</td>
+										<td>
+											<span v-if="persona.enfermedades === 'si'" class="text-danger">Sí</span>
+											<span v-else class="text-muted">No</span>
+											<span v-if="persona.enfermedades === 'si' && persona.detalle_enfermedades" class="small text-muted ms-1">({{ persona.detalle_enfermedades }})</span>
+										</td>
+										<td>
+											<span v-if="persona.alergia === 'si'" class="text-danger">Sí</span>
+											<span v-else class="text-muted">No</span>
+											<span v-if="persona.alergia === 'si' && persona.detalle_alergia" class="small text-muted ms-1">({{ persona.detalle_alergia }})</span>
+										</td>
+										<td>{{ persona.pedido_especial || '-' }}</td>
 										<td class="text-end fw-semibold">
 											<span v-if="pIdx === 0" :class="saldoColor(venta)">{{ formatSaldo(venta) }}</span>
 										</td>

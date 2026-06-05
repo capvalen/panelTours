@@ -311,8 +311,9 @@
 											<th>Parentesco</th>
 											<th>Fecha nac.</th>
 											<th>Enfermedades</th>
+											<th>Alergias</th>
+											<th>Pedido especial</th>
 											<th v-if="tieneVuelo">Pasaporte</th>
-											<th>Vacunas</th>
 											<th class="text-center" style="width: 100px;">Acciones</th>
 										</tr>
 									</thead>
@@ -331,11 +332,13 @@
 												<span v-else class="text-muted">No</span>
 												<span v-if="persona.enfermedades === 'si' && persona.detalle_enfermedades" class="small text-muted ms-1">({{ persona.detalle_enfermedades }})</span>
 											</td>
-											<td v-if="tieneVuelo">{{ persona.pasaporte || '-' }}</td>
 											<td>
-												<span v-if="persona.vacunas === 'si'" class="text-success">Sí</span>
+												<span v-if="persona.alergia === 'si'" class="text-danger">Sí</span>
 												<span v-else class="text-muted">No</span>
+												<span v-if="persona.alergia === 'si' && persona.detalle_alergia" class="small text-muted ms-1">({{ persona.detalle_alergia }})</span>
 											</td>
+											<td>{{ persona.pedido_especial || '-' }}</td>
+											<td v-if="tieneVuelo">{{ persona.pasaporte || '-' }}</td>
 											<td class="text-center">
 												<button class="btn btn-sm btn-outline-primary me-1" title="Editar" @click="abrirModalEditarPersona(persona)">
 													<i class="bi bi-pencil-square"></i>
