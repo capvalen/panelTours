@@ -18,7 +18,7 @@ const nuevo = reactive({
 	propietario_aplicativo: '',
 	especialidad: '',
 	idiomas: '',
-	departamento_id: '',
+	departamento_id: null,
 })
 
 function guardar() {
@@ -26,11 +26,6 @@ function guardar() {
 		Swal.fire('Error', 'Por favor complete el campo de nombre', 'error')
 		return
 	}
-	if (nuevo.departamento_id == '') {
-		Swal.fire('Error', 'Por favor seleccione un departamento', 'error')
-		return
-	}
-
 	guiaStore.guardar(nuevo)
 		.then(resp => {
 			if (parseInt(resp.id) > 0)
@@ -87,7 +82,7 @@ onMounted(async () => {
 							<input type="text" class="form-control" id="contactoEmergencia" v-model="nuevo.contacto_emergencia">
 						</div>
 						<div class="col-md-6">
-							<label for="departamento" class="form-label">Departamento <span class="text-danger">*</span></label>
+							<label for="departamento" class="form-label">Departamento</label>
 							<select class="form-select" id="departamento" v-model="nuevo.departamento_id">
 								<option value="">Seleccionar...</option>
 								<option v-for="depto in departamentos" :key="depto.id" :value="depto.id">

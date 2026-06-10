@@ -154,7 +154,7 @@ const logisticasFiltradas = computed(() => {
 		});
 	}
 
-	resultados.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+	resultados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
 	return resultados;
 });

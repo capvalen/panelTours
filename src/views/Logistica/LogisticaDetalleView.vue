@@ -50,6 +50,7 @@
 								</span>
 							</p>
 							<p class="mb-0"><strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }}</p>
+							<p class="mb-0"><strong>Recaudación total:</strong> S/ {{ formatNum(recaudacionTotal) }}</p>
 						</div>
 						<div class="d-flex align-items-center gap-2">
 							<span class="d-inline-block rounded-circle" :style="{ width: '14px', height: '14px', backgroundColor: colorEstado(logistica.estado) }"></span>
@@ -74,7 +75,7 @@
 								<div><span class="fw-semibold">Nombre:</span> {{ logistica.guia.nombre || '-' }}</div>
 								<div><span class="fw-semibold">Celular:</span> {{ logistica.guia.celular || '-' }}</div>
 								<div><span class="fw-semibold">Especialidad:</span> {{ logistica.guia.especialidad || '-' }}</div>
-								<div class="mt-1 d-flex gap-1">
+								<div class="mt-1 d-flex gap-1" v-if="logistica.estado !== 'finalizado'">
 									<button v-if="logistica.guia?.celular" class="btn btn-sm btn-outline-success" @click="compartirGuia">
 										<i class="bi bi-whatsapp"></i> Compartir link
 									</button>
@@ -83,7 +84,7 @@
 									</button>
 								</div>
 							</div>
-							<button v-else class="btn btn-sm btn-outline-secondary mt-1 align-self-start" @click="abrirModalGuia">
+							<button v-else-if="logistica.estado !== 'finalizado'" class="btn btn-sm btn-outline-secondary mt-1 align-self-start" @click="abrirModalGuia">
 								<i class="bi bi-person-plus"></i> Asignar guía
 							</button>
 						</div>
@@ -97,13 +98,13 @@
 								<div><span class="fw-semibold">Conductor:</span> {{ logistica.vehiculo.nombre_conductor || '-' }}</div>
 								<div><span class="fw-semibold">DNI conductor:</span> {{ logistica.vehiculo.dni_conductor || '-' }}</div>
 								<div><span class="fw-semibold">Celular:</span> {{ logistica.vehiculo.celular || '-' }}</div>
-								<div class="mt-1">
+								<div class="mt-1" v-if="logistica.estado !== 'finalizado'">
 									<button class="btn btn-sm btn-outline-danger" @click="quitarVehiculo">
 										<i class="bi bi-arrow-bar-left"></i> Retirar
 									</button>
 								</div>
 							</div>
-							<button v-else class="btn btn-sm btn-outline-secondary mt-1 align-self-start" @click="abrirModalVehiculo">
+							<button v-else-if="logistica.estado !== 'finalizado'" class="btn btn-sm btn-outline-secondary mt-1 align-self-start" @click="abrirModalVehiculo">
 								<i class="bi bi-truck"></i> Asignar vehículo
 							</button>
 						</div>
@@ -454,7 +455,12 @@ const colorEstado = (estado) => {
 
 const cambiarEstado = async (nuevoEstado) => {
 	try {
-		await api.put(`/logistica/${route.params.id}`, { estado: nuevoEstado });
+		const payload = { estado: nuevoEstado };
+		if (nuevoEstado === 'finalizado') {
+			const sumaPrecios = (logistica.value.ventas || []).reduce((sum, v) => sum + Number(v.precio || 0), 0);
+			payload.monto = sumaPrecios;
+		}
+		await api.put(`/logistica/${route.params.id}`, payload);
 		logistica.value.estado = nuevoEstado;
 		Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
 	} catch (err) {
@@ -473,6 +479,10 @@ const totalPasajeros = computed(() => {
 
 const totalPersonas = computed(() => {
 	return (logistica.value?.ventas || []).reduce((sum, v) => sum + Number(v.cuantas_personas || 0), 0);
+});
+
+const recaudacionTotal = computed(() => {
+	return (logistica.value?.ventas || []).reduce((sum, v) => sum + Number(v.precio || 0), 0);
 });
 
 const faltanCheckin = computed(() => {

@@ -32,15 +32,19 @@ onMounted(async () => {
 })
 
 function guardar() {
-	if (nuevo.placa == '' || nuevo.nombre_conductor == '') {
-		Swal.fire('Error', 'Por favor complete los campos obligatorios (placa y nombre del conductor)', 'error')
+	if (nuevo.tipo_vehiculo == '' || nuevo.nombre_conductor == '') {
+		Swal.fire('Error', 'Por favor complete los campos obligatorios (tipo de vehículo y nombre del conductor)', 'error')
 		return
 	}
 
-	vehiculoStore.guardar(nuevo)
+	const datos = { ...nuevo }
+	if (datos.placa === '') datos.placa = null
+	if (datos.departamento_id === '') datos.departamento_id = null
+
+	vehiculoStore.guardar(datos)
 		.then(resp => {
 			if (parseInt(resp.id) > 0)
-				Swal.fire('Vehículo creado', `El vehículo con placa ${nuevo.placa} ha sido creado`, 'success')
+				Swal.fire('Vehículo creado', `El vehículo "${nuevo.nombre_conductor}" ha sido creado`, 'success')
 					.then(() => {
 						window.location.href = '/vehiculo/perfil/' + resp.id
 					})
@@ -75,7 +79,7 @@ function guardar() {
 							<input type="text" class="form-control" id="tipoVehiculo" v-model="nuevo.tipo_vehiculo">
 						</div>
 						<div class="col-md-6">
-							<label for="placa" class="form-label">Placa <span class="text-danger">*</span></label>
+							<label for="placa" class="form-label">Placa</label>
 							<input type="text" class="form-control" id="placa" v-model="nuevo.placa">
 						</div>
 					</div>

@@ -234,6 +234,17 @@ const router = createRouter({
 					component: () => import('../views/Finanzas/FinanzasView.vue'),
 				},
 				{
+					path: '/comisiones',
+					name: 'Comisiones',
+					component: () => import('../views/Comisiones/ComisionesView.vue'),
+				},
+				{
+					path: '/comision/:id',
+					name: 'detalleComision',
+					component: () => import('../views/Comisiones/DetalleComision.vue'),
+					props: true,
+				},
+				{
 					path: '/configuraciones',
 					name: 'configuraciones',
 					component: () => import('../views/Configuracion/ConfiguracionView.vue'),
