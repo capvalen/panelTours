@@ -1,22 +1,23 @@
 <script setup>
 import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue'
-import ModalAddPago from './ModalAddPago.vue';
-import { onMounted, watch, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { onMounted, watch, computed, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useFormat } from '@/composables/formatos';
 import { useProveedoresStore } from '@/stores/proveedorStore'
+import { useComisionesStore } from '@/stores/comisionStore'
 import { useDepartamentosStore } from '@/stores/departamentoStore';
-import { useDeudasStore } from '@/stores/deudasStore';
 import { storeToRefs } from 'pinia'
+import { Modal } from 'bootstrap';
 import Swal from 'sweetalert2'
 
-const route = useRoute() //instancia hacia la ruta
-const { fechaLatamSimple, rutaArchivo } = useFormat()
+const route = useRoute()
+const router = useRouter()
+const { fechaLatamSimple, rutaArchivo, formatMoneda } = useFormat()
 const proveedorStore = useProveedoresStore()
+const comisionStore = useComisionesStore()
 const departamentosStore = useDepartamentosStore();
-const deudasStore = useDeudasStore()
-//const proveedorActual = computed(() => proveedorStore.proveedorActual)
 const {proveedorActual} = storeToRefs(proveedorStore)
+const comisiones = ref([])
 const nombreDepartamento = computed(() => {
 	const depto = departamentosStore.departamentos.find(d => Number(d.id) === Number(proveedorActual.value?.departamento_id));
 	return depto ? depto.departamento : '-';
@@ -26,48 +27,73 @@ const cargarDatos = async ()=>{
 	await proveedorStore.obtenerPorId(route.params.id)
 }
 
-const eliminarDeuda = async (id, index)=>{
-	Swal.fire({
-		title: '¿Eliminar deuda?',
-		text: '¿Está seguro de eliminar esta deuda pendiente?',
-		icon: 'warning',
-		showCancelButton: true,
-		confirmButtonText: 'Sí, eliminar',
-		cancelButtonText: 'Cancelar'
-	}).then((result) => {
-		if (result.isConfirmed) {
-			deudasStore.eliminar(id)
-				.then(() => {
-					proveedorStore.proveedorActual.deudas.splice(index, 1);
-					Swal.fire('Deuda eliminada', 'La deuda pendiente ha sido eliminada', 'success');
-				})
-				.catch(error => {
-					console.error(error);
-					Swal.fire('Error', 'Error al eliminar la deuda', 'error');
-				});
-		}
-	});
+const cargarComisiones = async () => {
+	try {
+		await comisionStore.listar({ tipo: 'proveedor', comisionable_id: route.params.id });
+		comisiones.value = comisionStore.comisiones || [];
+	} catch (error) {
+		console.error('Error al cargar comisiones:', error);
+	}
 }
 
-onMounted(()=>{ //al cargar la pagina
+const comisionForm = ref({
+	fecha: new Date().toISOString().slice(0, 10),
+	monto: '',
+	cant_personas: 1,
+	observaciones: '',
+});
+let modalComisionInstance = null;
+
+const abrirModalComision = () => {
+	comisionForm.value = {
+		fecha: new Date().toISOString().slice(0, 10),
+		monto: '',
+		cant_personas: 1,
+		observaciones: '',
+	};
+	if (!modalComisionInstance) {
+		modalComisionInstance = new Modal(document.getElementById('modalNuevaComision'));
+	}
+	modalComisionInstance.show();
+};
+
+const guardarComision = async () => {
+	if (!comisionForm.value.monto || Number(comisionForm.value.monto) <= 0) {
+		Swal.fire('Validación', 'El monto debe ser mayor a 0', 'warning');
+		return;
+	}
+	try {
+		await comisionStore.guardar({
+			fecha: comisionForm.value.fecha,
+			monto: Number(comisionForm.value.monto),
+			cant_personas: Number(comisionForm.value.cant_personas),
+			observaciones: comisionForm.value.observaciones,
+			comisionable_id: Number(route.params.id),
+			comisionable_type: 'App\\Models\\Proveedor',
+			estado_pago: 'pendiente',
+			logistica_id: null,
+		});
+		modalComisionInstance?.hide();
+		await cargarComisiones();
+		Swal.fire('Comisión registrada', '', 'success');
+	} catch (error) {
+		console.error('Error al guardar comisión:', error);
+		Swal.fire('Error', 'No se pudo guardar la comisión', 'error');
+	}
+}
+
+onMounted(()=>{
 	departamentosStore.listar();
 	cargarDatos()
+	cargarComisiones()
 })
 
 watch(
 	route.params.id, (newId) => {
 		cargarDatos()
+		cargarComisiones()
 	}
 , { immediate: true })
-
-
-/* const eliminarAdjunto = async (index)=>{
-	if (proveedorActual?.archivos){
-		proveedorActual.archivos.splice(index, 1)
-		//crear eliminar archivo
-		proveedorStore.actualizar(proveedorActual.id, proveedorActual)
-	}
-} */
 
 </script>
 <template>
@@ -149,63 +175,92 @@ watch(
 			</div>
 		</div>
 	</div>
-	<div class="row mt-3">
-		<div class="col">
-			<div class="d-flex justify-content-between align-items-center mb-2">
-				<p class=""><strong>Pagos al proveedor</strong></p>
-				<button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoPago"><i class="bi bi-wallet2"></i> Agregar pago pendiente</button>
-
-			</div>
-			<div class="table-responsive">
-				<table class="table table-hover">
-				<thead>
-					<tr>
-						<th>#</th>
-						<th>N° Comprobante</th>
-						<th>Registrado</th>
-						<th>Límite de Pago</th>
-						<th>Monto (S/)</th>
-						<th>Estado</th>
-						<th>Método de Pago</th>
-						<th>Contacto</th>
-						<th>Información</th>
-						<th>Acciones</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr v-for="(deuda, index) in proveedorActual?.deudas" :key="index">
-						<td>{{ index+1 }}</td>
-						<td>{{ deuda.codigo_referencia }}</td>
-						<td>{{ fechaLatamSimple(deuda.created_at)}}</td>
-						<td>{{ fechaLatamSimple(deuda.fecha_pago)}}</td>
-						<td>{{ deuda.monto }}</td>
-						<td>
-							<div class="badge rounded-pill text-capitalize"
-							:class="{
-								'text-bg-warning': deuda.estado_pago=='pendiente',
-								'text-bg-success': deuda.estado_pago=='completado',
-								'text-bg-danger': deuda.estado_pago=='fallido',
-								'text-bg-secondary': deuda.estado_pago=='condonado',
-							}"
-							>{{ deuda.estado_pago }}</div>
-						</td>
-						<td class="text-capitalize">{{ deuda.medio_pago }}</td>
-						<td>{{ deuda.contacto_pagar }}</td>
-						<td>
-							<p class="mb-0">{{deuda.informacion}}</p>
-						</td>
-						<td>
-							<button class="btn btn-sm btn-outline-danger" @click="eliminarDeuda(deuda.id, index)"><i class="bi bi-x-lg"></i></button>
-						</td>
-					</tr>
-					<tr v-if="proveedorActual?.deudas.length == 0">
-						<td>No hay deudas registrados</td>
-					</tr>
-				</tbody>
-			</table>
+	<div class="row mt-3 mb-5">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h6 class="mb-0 fw-bold"><i class="bi bi-cash-stack"></i> Comisiones</h6>
+					<button class="btn btn-sm btn-outline-primary" @click="abrirModalComision"><i class="bi bi-plus-lg"></i> Agregar comisión</button>
+				</div>
+				<div class="card-body p-0">
+					<div class="table-responsive">
+						<table class="table table-bordered align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>#</th>
+									<th>Fecha</th>
+									<th>Paquete</th>
+									<th>Personas</th>
+									<th>Monto</th>
+									<th>Estado</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/comision/' + item.id)">
+									<td class="text-muted">{{ index + 1 }}</td>
+									<td>{{ fechaLatamSimple(item.fecha) }}</td>
+									<td>{{ item.observaciones || '-' }}</td>
+									<td>{{ item.cant_personas }}</td>
+									<td>{{ formatMoneda(item.monto) }}</td>
+									<td>
+										<span class="badge border text-capitalize" :class="{
+											'border-success text-success': item.estado_pago === 'pagado',
+											'border-warning text-warning': item.estado_pago === 'adelantado',
+											'border-secondary text-secondary': item.estado_pago === 'pendiente',
+											'border-danger text-danger': item.estado_pago === 'anulado',
+										}">
+											{{ item.estado_pago === 'adelantado' ? 'Con adelanto' : item.estado_pago === 'pendiente' ? 'Pendiente de pagar' : item.estado_pago === 'pagado' ? 'Pagado' : item.estado_pago === 'anulado' ? 'Anulado' : item.estado_pago || '-' }}
+										</span>
+									</td>
+									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver comisión" @click="router.push('/comision/' + item.id)"><i class="bi bi-eye"></i></button></td>
+								</tr>
+								<tr v-if="comisiones.length === 0">
+									<td colspan="7" class="text-muted text-center">No hay comisiones registradas</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal Nueva Comisión -->
+	<div class="modal fade" id="modalNuevaComision" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-sm modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Nueva comisión</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<div class="row g-3">
+						<div class="col-12">
+							<label class="form-label">Fecha</label>
+							<input type="date" class="form-control" v-model="comisionForm.fecha">
+						</div>
+						<div class="col-12">
+							<label class="form-label">Monto (S/) <span class="text-danger">*</span></label>
+							<input type="number" class="form-control" v-model="comisionForm.monto" step="0.01" min="0">
+						</div>
+						<div class="col-12">
+							<label class="form-label">Personas</label>
+							<input type="number" class="form-control" v-model="comisionForm.cant_personas" min="1">
+						</div>
+						<div class="col-12">
+							<label class="form-label">Paquete / Observaciones</label>
+							<textarea class="form-control" rows="2" v-model="comisionForm.observaciones"></textarea>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" @click="guardarComision">Guardar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<ModalSubirArchivo :modelo="'proveedor'"></ModalSubirArchivo>
-	<ModalAddPago></ModalAddPago>
 </template>

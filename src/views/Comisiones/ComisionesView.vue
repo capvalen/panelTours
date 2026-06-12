@@ -4,12 +4,14 @@ import { useRouter } from 'vue-router';
 import { useComisionesStore } from '@/stores/comisionStore';
 import { useGuiasStore } from '@/stores/guiaStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
+import { useProveedoresStore } from '@/stores/proveedorStore';
 import { useFormat } from '@/composables/formatos';
 
 const router = useRouter();
 const comisionStore = useComisionesStore();
 const guiaStore = useGuiasStore();
 const vehiculoStore = useVehiculosStore();
+const proveedorStore = useProveedoresStore();
 const { fechaLatamSimple, formatMoneda, capitalize } = useFormat();
 
 const obtenerFechaLocal = () => {
@@ -32,6 +34,8 @@ const cargarPersonajes = async () => {
 		if (guiaStore.guias.length === 0) await guiaStore.listar();
 	} else if (filtros.tipo === 'vehiculo') {
 		if (vehiculoStore.vehiculos.length === 0) await vehiculoStore.listar();
+	} else if (filtros.tipo === 'proveedor') {
+		if (proveedorStore.proveedores.length === 0) await proveedorStore.listar();
 	}
 };
 
@@ -70,13 +74,18 @@ const filteredComisiones = computed(() => {
 
 const tipoComisionable = (item) => {
 	if (!item.comisionable_type) return '-';
-	return item.comisionable_type.includes('Guia') ? 'Guía' : 'Vehículo';
+	if (item.comisionable_type.includes('Guia')) return 'Guía';
+	if (item.comisionable_type.includes('Proveedor')) return 'Proveedor';
+	return 'Vehículo';
 };
 
 const nombreComisionable = (item) => {
 	if (!item.comisionable) return '-';
 	if (item.comisionable_type?.includes('Guia')) {
 		return item.comisionable.nombre || '-';
+	}
+	if (item.comisionable_type?.includes('Proveedor')) {
+		return item.comisionable.razon_social || '-';
 	}
 	return item.comisionable.nombre_conductor || item.comisionable.placa || '-';
 };
@@ -85,6 +94,9 @@ const detalleComisionable = (item) => {
 	if (!item.comisionable) return '';
 	if (item.comisionable_type?.includes('Guia')) {
 		return item.comisionable.especialidad || '';
+	}
+	if (item.comisionable_type?.includes('Proveedor')) {
+		return item.comisionable.categoria || '';
 	}
 	return item.comisionable.tipo_vehiculo || item.comisionable.placa || '';
 };
@@ -158,11 +170,12 @@ onMounted(() => {
 								<option value="todos">Todos</option>
 								<option value="guia">Guía</option>
 								<option value="vehiculo">Vehículo</option>
+								<option value="proveedor">Proveedor</option>
 							</select>
 						</div>
 						<div class="col-md-3">
 							<label class="form-label small">
-								{{ filtros.tipo === 'guia' ? 'Guía' : filtros.tipo === 'vehiculo' ? 'Vehículo' : 'Personaje' }}
+								{{ filtros.tipo === 'guia' ? 'Guía' : filtros.tipo === 'vehiculo' ? 'Vehículo' : filtros.tipo === 'proveedor' ? 'Proveedor' : 'Colaborador/entidad' }}
 							</label>
 							<select class="form-select form-select-sm" v-model="filtros.comisionable_id" :disabled="filtros.tipo === 'todos'">
 								<option value="">Todos</option>
@@ -171,6 +184,9 @@ onMounted(() => {
 								</template>
 								<template v-else-if="filtros.tipo === 'vehiculo'">
 									<option v-for="v in vehiculoStore.vehiculos" :key="v.id" :value="v.id">{{ v.nombre_conductor }} - {{ v.placa }}</option>
+								</template>
+								<template v-else-if="filtros.tipo === 'proveedor'">
+									<option v-for="p in proveedorStore.proveedores" :key="p.id" :value="p.id">{{ p.razon_social }}</option>
 								</template>
 							</select>
 						</div>

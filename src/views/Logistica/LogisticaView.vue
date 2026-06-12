@@ -13,12 +13,12 @@
 		<div class="card mb-3">
 			<div class="card-body">
 				<div class="row g-2">
-					<div class="col-md-4">
+					<div class="col-md-5">
 						<label class="form-label small">Fecha</label>
 						<div class="d-flex gap-1">
-							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(-1)">Ayer</button>
-							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(0)">Hoy</button>
-							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(1)">Mañana</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(-1)"><i class="bi bi-arrow-left"></i> Ayer</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(0)"><i class="bi bi-calendar-event"></i> Hoy</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="setFecha(1)">Mañana <i class="bi bi-arrow-right"></i></button>
 							<input type="date" class="form-control form-control-sm" v-model="filtros.fecha" style="width: auto; min-width: 140px;">
 						</div>
 					</div>

@@ -1,13 +1,14 @@
 <script setup>
 import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue'
 import { onMounted, watch, computed } from 'vue';
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useClienteStore } from '@/stores/clienteStore';
 import { useVentasStore } from '@/stores/ventaStore';
 import { useFormat } from '@/composables/formatos';
 import { storeToRefs } from 'pinia';
 import Swal from 'sweetalert2'
 const route = useRoute() //instancia hacia la ruta
+const router = useRouter()
 const { fechaLatamSimple, rutaArchivo, formatMoneda, capitalize } = useFormat()
 
 const clienteStore = useClienteStore()
@@ -60,6 +61,10 @@ const anularVenta = async (id, concepto) => {
 		await cargarDatos();
 	}
 };
+
+const irADetalleVenta = (id) => {
+	router.push(`/venta/detalle/${id}`)
+}
 
 onMounted(()=>{ //al cargar la pagina
 	cargarDatos()
@@ -226,7 +231,7 @@ watch(
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="(compra, index) in compras" :key="compra.id">
+					<tr v-for="(compra, index) in compras" :key="compra.id" @click="irADetalleVenta(compra.id)" style="cursor: pointer;">
 						<td>{{ index + 1 }}</td>
 						<td><span class="badge bg-info text-white">Venta</span></td>
 						<td>{{ capitalize(compra.progreso || 'cotización') }}</td>
@@ -243,7 +248,7 @@ watch(
 						</td>
 						<td class="text-capitalize">{{ capitalize(compra.metodo_pago || '-') }}</td>
 						<td class="text-capitalize">{{ compra.items?.map(i => i.tipo).filter(Boolean).join(', ') || '-' }}</td>
-						<td>
+						<td @click.stop>
 							<div class="d-flex gap-2" v-if="compra.estado != 'anulado'">
 								<router-link :to="`/venta/detalle/${compra.id}`" class="btn btn-sm btn-outline-primary me-1">
 									<i class="bi bi-eye"></i>

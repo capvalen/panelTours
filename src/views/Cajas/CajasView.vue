@@ -8,13 +8,24 @@ const router = useRouter()
 
 const cajaStore = useCajaStore()
 const dia = ref(formatHoy())
+const cargando = ref(false)
 
-const cambiarDias = () => {
-	cajaStore.obtenerCajasPorDia(dia.value)
+const cambiarDias = async () => {
+	cargando.value = true
+	try {
+		await cajaStore.obtenerCajasPorDia(dia.value)
+	} finally {
+		cargando.value = false
+	}
 }
 
-onMounted(() => {
-	cajaStore.obtenerCajas()
+onMounted(async () => {
+	cargando.value = true
+	try {
+		await cajaStore.obtenerCajas()
+	} finally {
+		cargando.value = false
+	}
 });
 </script>
 <template>
@@ -53,7 +64,19 @@ onMounted(() => {
 	<div class="row mt-3">
 		<div class="col">
 			<p>Últimos registrados</p>
-			<div class="table-responsive">
+
+			<div v-if="cargando" class="text-center py-5">
+				<div class="spinner-border text-primary" role="status">
+					<span class="visually-hidden">Cargando...</span>
+				</div>
+			</div>
+
+			<div v-else-if="cajaStore.cajas.length === 0" class="text-muted text-center py-5">
+				<i class="bi bi-inbox" style="font-size: 2rem;"></i>
+				<p class="mt-2">No hay cajas registradas</p>
+			</div>
+
+			<div v-else class="table-responsive">
 				<table class="table-hover table">
 				<thead>
 					<tr>

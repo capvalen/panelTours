@@ -16,13 +16,11 @@
 			<!-- Sidebar desktop -->
 			<div class="d-none d-md-block p-0 sidebar-wrapper" :style="{ width: collapsed ? '60px' : '250px' }">
 				<div id="rowMenu" :class="{ collapsed: collapsed }">
-				<div id="logo" class="my-4 mx-auto" :class="collapsed ? 'w-75' : 'w-75'">
-					<img src="@/assets/logo.webp" class="w-75 mx-auto d-block">
-				</div>
-
-				<div class="menuFila d-flex align-items-center gap-2" @click="collapsed = !collapsed" :title="collapsed ? 'Expandir menú' : 'Colapsar menú'" style="font-size:0.75rem; color:#64748b;">
-					<i :class="collapsed ? 'bi bi-arrow-right' : 'bi bi-arrow-left'"></i>
-					<span v-show="!collapsed" class="small">Ocultar panel</span>
+				<div class="position-relative">
+					<div id="logo" class="my-4 mx-auto" :class="collapsed ? 'w-75' : 'w-75'" style="cursor:pointer;" @click="collapsed = !collapsed">
+						<img src="@/assets/logo.webp" class="w-75 mx-auto d-block">
+					</div>
+					<i class="toggle-collapse bi" :class="collapsed ? 'bi-arrow-right' : 'bi-arrow-left'" @click="collapsed = !collapsed" :title="collapsed ? 'Expandir menú' : 'Colapsar menú'"></i>
 				</div>
 
 				<!-- SECCIÓN: Inicio -->
@@ -68,7 +66,7 @@
 						<router-link to="/vehiculos" class="menuSubItem">
 							<div class="menuFila menuFila-sub"><i class="bi bi-truck"></i> Vehículos</div>
 						</router-link>
-						<router-link to="/hospedajes" class="menuSubItem">
+						<router-link to="/hospedajes" class="menuSubItem d-none">
 							<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
 						</router-link>
 						<router-link to="/proveedores" class="menuSubItem">
@@ -140,7 +138,7 @@
 						<router-link to="/vehiculos" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-truck"></i> Vehículos
 						</router-link>
-						<router-link to="/hospedajes" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/hospedajes" class="menuFila-mobile menuSubItem-mobile d-none" @click="closeOffcanvas">
 							<i class="bi bi-building"></i> Hospedajes
 						</router-link>
 						<router-link to="/proveedores" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
@@ -212,12 +210,26 @@ onMounted(async () => {
 	height: 100vh;
 	position: sticky;
 	top: 0;
-	border-radius: 0 20px 20px 0;
+	border-radius: 0 8px 8px 0;
 	color: #1e293b;
 	overflow-y: auto;
 	overflow-x: hidden;
 	scrollbar-color: #3b82f6 #bfdbfe;
 	width: 100%;
+}
+
+.toggle-collapse {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	font-size: 1rem;
+	color: #1e40af;
+	cursor: pointer;
+	transition: color 0.2s;
+	z-index: 1;
+}
+.toggle-collapse:hover {
+	color: #64748b;
 }
 
 #rowMenu.collapsed {
@@ -348,7 +360,11 @@ a {
 .menuFila-sub {
 	padding-left: 55px !important;
 	font-size: 0.95rem !important;
-	color: #64748b !important;
+	color: #334155 !important;
+}
+
+.router-link-exact-active>.menuFila-sub, .active>.menuFila-sub {
+	color: white !important;
 }
 
 .menuFila-sub i {

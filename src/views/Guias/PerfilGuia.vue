@@ -1,15 +1,28 @@
 <script setup>
 import { reactive, onMounted, watch, ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useFormat } from '@/composables/formatos';
 import { useGuiasStore } from '@/stores/guiaStore'
+import { useComisionesStore } from '@/stores/comisionStore'
 import { storeToRefs } from 'pinia'
 
 const route = useRoute()
-const { listaDepartamentos } = useFormat()
+const router = useRouter()
+const { listaDepartamentos, formatMoneda, fechaLatamSimple } = useFormat()
 const guiaStore = useGuiasStore()
+const comisionStore = useComisionesStore()
 const { guiaActual } = storeToRefs(guiaStore)
 const departamentos = ref([])
+const comisiones = ref([])
+
+const cargarComisiones = async () => {
+	try {
+		await comisionStore.listar({ tipo: 'guia', comisionable_id: route.params.id });
+		comisiones.value = comisionStore.comisiones || [];
+	} catch (error) {
+		console.error('Error al cargar comisiones:', error);
+	}
+}
 
 const nombreDepartamento = computed(() => {
 	const depto = departamentos.value.find(d => d.id === guiaActual.value?.departamento_id)
@@ -23,11 +36,13 @@ const cargarDatos = async () => {
 onMounted(async () => {
 	cargarDatos()
 	departamentos.value = await listaDepartamentos()
+	cargarComisiones()
 })
 
 watch(
 	route.params.id, (newId) => {
 		cargarDatos()
+		cargarComisiones()
 	},
 	{ immediate: true }
 )
@@ -79,6 +94,56 @@ watch(
 					<p><strong>Número de cuenta:</strong> {{ guiaActual?.numero_cuenta || '-' }}</p>
 					<p><strong>Aplicativo:</strong> {{ guiaActual?.aplicativo || '-' }}</p>
 					<p><strong>Propietario del aplicativo:</strong> {{ guiaActual?.propietario_aplicativo || '-' }}</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row mt-3 mb-5">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header">
+					<h6 class="mb-0 fw-bold"><i class="bi bi-cash-stack"></i> Comisiones</h6>
+				</div>
+				<div class="card-body p-0">
+					<div class="table-responsive">
+						<table class="table table-bordered align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>#</th>
+									<th>Fecha</th>
+									<th>Paquete</th>
+									<th>Personas</th>
+									<th>Monto</th>
+									<th>Estado</th>
+									<th></th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/comision/' + item.id)">
+									<td class="text-muted">{{ index + 1 }}</td>
+									<td>{{ fechaLatamSimple(item.fecha) }}</td>
+									<td>{{ item.observaciones || '-' }}</td>
+									<td>{{ item.cant_personas }}</td>
+									<td>{{ formatMoneda(item.monto) }}</td>
+									<td>
+										<span class="badge border text-capitalize" :class="{
+											'border-success text-success': item.estado_pago === 'pagado',
+											'border-warning text-warning': item.estado_pago === 'adelantado',
+											'border-secondary text-secondary': item.estado_pago === 'pendiente',
+											'border-danger text-danger': item.estado_pago === 'anulado',
+										}">
+											{{ item.estado_pago === 'adelantado' ? 'Con adelanto' : item.estado_pago === 'pendiente' ? 'Pendiente de pagar' : item.estado_pago === 'pagado' ? 'Pagado' : item.estado_pago === 'anulado' ? 'Anulado' : item.estado_pago || '-' }}
+										</span>
+									</td>
+									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver comisión" @click="router.push('/comision/' + item.id)"><i class="bi bi-eye"></i></button></td>
+								</tr>
+								<tr v-if="comisiones.length === 0">
+									<td colspan="7" class="text-muted text-center">No hay comisiones registradas</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 			</div>
 		</div>
