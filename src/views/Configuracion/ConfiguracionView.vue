@@ -49,7 +49,7 @@ const openCreateUserModal = () => {
 	userForm.value = {
 		nombre: '',
 		user: '',
-		perfil: 'agente',
+		perfil: 'counter',
 		activo: true,
 		password: ''
 	};
@@ -61,7 +61,7 @@ const openEditUserModal = (user) => {
 	userForm.value = {
 		nombre: user.nombre,
 		user: user.user,
-		perfil: user.perfil || 'agente',
+		perfil: user.perfil || 'counter',
 		activo: user.activo ?? true,
 		password: ''
 	};
@@ -283,8 +283,9 @@ onMounted(() => {
 					<label for="userRole">Rol</label>
 					<select id="userRole" v-model="userForm.perfil">
 						<option value="administrador">Administrador</option>
-						<option value="agente">Agente</option>
-						<option value="contador">Contador</option>
+					<option value="counter">Counter</option>
+					<option value="logística">Logística</option>
+					<option value="caja">Caja</option>
 					</select>
 				</div>
 				<div class="form-group">

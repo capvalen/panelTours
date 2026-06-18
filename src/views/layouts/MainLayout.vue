@@ -39,8 +39,8 @@
 				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-piggy-bank"></i> <span v-show="!collapsed">Caja</span></div>
 				</router-link>
-				<router-link to="/comisiones" :class="{ active: $route.path.startsWith('/comision') }">
-					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-cash-stack"></i> <span v-show="!collapsed">Comisiones</span></div>
+				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
+					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-cash-stack"></i> <span v-show="!collapsed">Pagos</span></div>
 				</router-link>
 				
 				<!-- Tarifario -->
@@ -116,8 +116,8 @@
 					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-piggy-bank"></i> Caja
 					</router-link>
-					<router-link to="/comisiones" :class="{ active: $route.path.startsWith('/comision') }" class="menuFila-mobile" @click="closeOffcanvas">
-						<i class="bi bi-cash-stack"></i> Comisiones
+					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
+						<i class="bi bi-cash-stack"></i> Pagos
 					</router-link>
 
 					<!-- SECCIÓN: Configuraciones (desplegable) -->

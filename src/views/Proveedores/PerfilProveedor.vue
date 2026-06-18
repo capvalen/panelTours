@@ -75,7 +75,7 @@ const guardarComision = async () => {
 		});
 		modalComisionInstance?.hide();
 		await cargarComisiones();
-		Swal.fire('Comisión registrada', '', 'success');
+		Swal.fire('Pago registrado', '', 'success');
 	} catch (error) {
 		console.error('Error al guardar comisión:', error);
 		Swal.fire('Error', 'No se pudo guardar la comisión', 'error');
@@ -197,7 +197,7 @@ watch(
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/comision/' + item.id)">
+								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/pago/' + item.id)">
 									<td class="text-muted">{{ index + 1 }}</td>
 									<td>{{ fechaLatamSimple(item.fecha) }}</td>
 									<td>{{ item.observaciones || '-' }}</td>
@@ -213,7 +213,7 @@ watch(
 											{{ item.estado_pago === 'adelantado' ? 'Con adelanto' : item.estado_pago === 'pendiente' ? 'Pendiente de pagar' : item.estado_pago === 'pagado' ? 'Pagado' : item.estado_pago === 'anulado' ? 'Anulado' : item.estado_pago || '-' }}
 										</span>
 									</td>
-									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver comisión" @click="router.push('/comision/' + item.id)"><i class="bi bi-eye"></i></button></td>
+									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver pago" @click="router.push('/pago/' + item.id)"><i class="bi bi-eye"></i></button></td>
 								</tr>
 								<tr v-if="comisiones.length === 0">
 									<td colspan="7" class="text-muted text-center">No hay comisiones registradas</td>

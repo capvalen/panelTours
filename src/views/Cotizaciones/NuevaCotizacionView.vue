@@ -611,13 +611,14 @@ const buscarToursWeb = async () => {
 		formData.append('idDia', '-1');
 		formData.append('idHospedaje', '-1');
 		formData.append('idPrecio', '-1');
+		formData.append('bloque', '100');
 
 		const response = await fetch(`${API_URL}buscarFiltroTienda.php`, {
 			method: 'POST',
 			body: formData,
 		});
 		const data = await response.json();
-		const rawData = Array.isArray(data) ? data : (data.tours || data.datos || []);
+		const rawData = Array.isArray(data) ? data : (data.data || []);
 		toursWeb.value = rawData.map(item => ({
 			id: item.id,
 			contenido: JSON.parse(item.contenido),

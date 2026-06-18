@@ -234,14 +234,14 @@ const router = createRouter({
 					component: () => import('../views/Finanzas/FinanzasView.vue'),
 				},
 				{
-					path: '/comisiones',
-					name: 'Comisiones',
-					component: () => import('../views/Comisiones/ComisionesView.vue'),
+					path: '/pagos',
+					name: 'Pagos',
+					component: () => import('../views/Pagos/PagosView.vue'),
 				},
 				{
-					path: '/comision/:id',
-					name: 'detalleComision',
-					component: () => import('../views/Comisiones/DetalleComision.vue'),
+					path: '/pago/:id',
+					name: 'detallePago',
+					component: () => import('../views/Pagos/DetallePago.vue'),
 					props: true,
 				},
 				{

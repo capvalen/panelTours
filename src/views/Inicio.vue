@@ -81,21 +81,21 @@
 		<router-link to="/cliente/nuevo" class="btn btn-outline-primary" style="border-color:#3b82f6;color:#3b82f6;"><i class="bi bi-wechat"></i> Nuevo Cliente</router-link>
 	</div>
 
-	<!-- comisiones pendientes -->
+	<!-- pagos pendientes -->
 	<div class="mt-4">
 		<div class="d-flex justify-content-between align-items-center mb-3">
-			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-cash" style="color:#f59e0b;"></i> Comisiones por pagar</h5>
-			<router-link to="/comisiones" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
+			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-cash" style="color:#f59e0b;"></i> Pagos por pagar</h5>
+			<router-link to="/pagos" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
 		</div>
 		<div v-if="comisionesPendientes.length === 0" class="text-muted py-3 text-center">
-			<small>No hay comisiones pendientes</small>
+			<small>No hay pagos pendientes</small>
 		</div>
 		<div v-else class="d-flex flex-column gap-2">
 			<div v-for="item in comisionesPendientes.slice(0, 6)" :key="item.id">
 				<div class="card border-0 shadow-sm recordatorio-card" style="border-left-color:#f59e0b;">
 					<div class="card-body py-2 px-3">
 						<div class="d-flex align-items-center gap-2">
-							<i class="bi" :class="item.comisionable_type?.includes('Guia') ? 'bi-person-badge' : item.comisionable_type?.includes('Proveedor') ? 'bi-building' : 'bi-truck'" style="color:#94a3b8;"></i>
+							<i class="bi" :class="item.comisionable_type?.includes('Guia') ? 'bi-person-walking' : item.comisionable_type?.includes('Proveedor') ? 'bi-building' : 'bi-truck'" style="color:#94a3b8;"></i>
 							<h6 class="mb-0 text-muted small">{{ nombreComisionable(item) }}</h6>
 							<span class="small" style="color:#f59e0b;">{{ formatMoneda(item.monto) }}</span>
 						</div>
@@ -111,7 +111,7 @@
 			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-people" style="color:#10b981;"></i> Check-in pendientes</h5>
 			<router-link to="/ventas" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver ventas</router-link>
 		</div>
-		<div v-if="ventasCheckin.length === 0" class="text-muted py-3 text-center">
+		<div v-if="ventasCheckin.length === 0" class="text-muted py-3 text-center">			
 			<small>No hay ventas con check-in pendiente hoy</small>
 		</div>
 		<div v-else class="d-flex flex-column gap-2">

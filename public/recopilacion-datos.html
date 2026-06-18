@@ -69,9 +69,9 @@
 			.gradient-bg {
 				background: linear-gradient(
 					135deg,
-					#1e3a8a 0%,
-					#3b82f6 50%,
-					#1d4ed8 100%
+					#3b82f6 0%,
+					#60a5fa 50%,
+					#93c5fd 100%
 				);
 			}
 			.section-card {
@@ -79,7 +79,7 @@
 			}
 			.section-card:hover {
 				transform: translateY(-2px);
-				box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.2);
+				box-shadow: 0 4px 12px -4px rgba(59, 130, 246, 0.15);
 			}
 		</style>
 	<base target="_blank">
@@ -88,7 +88,7 @@
 		<div id="app">
 			<!-- Header -->
 			<div
-				class="gradient-bg text-white py-8 px-4 shadow-lg relative overflow-hidden"
+				class="gradient-bg text-white py-8 px-4 shadow relative overflow-hidden"
 			>
 				<div class="absolute inset-0 opacity-10">
 					<svg width="100%" height="100%">
@@ -109,11 +109,11 @@
 					</svg>
 				</div>
 				<div class="max-w-6xl mx-auto relative z-10">
-					<div class="flex items-center gap-4 mb-2">
+					<a href="https://grupoeuroandino.com" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-4 mb-2 hover:opacity-90 transition-opacity">
 						<div
-							class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm"
+							class="w-12 h-12 rounded-xl flex items-center justify-center bg-white/90"
 						>
-							<i class="fas fa-plane-departure text-2xl"></i>
+							<img src="https://grupoeuroandino.com/wp-content/uploads/2020/09/Grupo-Euro-Andino.png" alt="Grupo Euro Andino" class="h-10 w-auto" />
 						</div>
 						<div>
 							<h1 class="text-3xl font-bold tracking-tight">
@@ -123,7 +123,7 @@
 								Sistema de Registro de Pasajeros
 							</p>
 							</div>
-						</div>
+						</a>
 					</div>
 			</div>
 
@@ -131,10 +131,10 @@
 				<form @submit.prevent="generarJSON" class="space-y-6">
 					<!-- Información del Servicio -->
 					<div
-						class="section-card bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+						class="section-card bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden"
 					>
 						<div
-							class="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 text-white flex items-center gap-3"
+							class="bg-gradient-to-r from-primary-400 to-primary-300 px-6 py-4 text-white flex items-center gap-3"
 						>
 							<i class="fas fa-ticket-alt text-xl"></i>
 							<h2 class="text-lg font-semibold">
@@ -183,10 +183,10 @@
 
 					<!-- Datos del Titular -->
 					<div
-						class="section-card bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden slide-in"
+						class="section-card bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden slide-in"
 					>
 						<div
-							class="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 text-white flex items-center gap-3"
+							class="bg-gradient-to-r from-primary-400 to-primary-300 px-6 py-4 text-white flex items-center gap-3"
 						>
 							<i class="fas fa-user-tie text-xl"></i>
 							<h2 class="text-lg font-semibold">Datos del Contacto</h2>
@@ -251,10 +251,10 @@
 
 					<!-- Datos de Pasajeros -->
 					<div
-						class="section-card bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+						class="section-card bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden"
 					>
 						<div
-							class="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 text-white flex items-center gap-3 justify-between"
+							class="bg-gradient-to-r from-primary-400 to-primary-300 px-6 py-4 text-white flex items-center gap-3 justify-between"
 						>
 							<div class="flex items-center gap-3">
 								<i class="fas fa-users text-xl"></i>
@@ -565,15 +565,12 @@
 						</div>
 					</div>
 
-
-					</div>
-
 					<!-- Autorización de Imagen -->
 					<div
-						class="section-card bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+						class="section-card bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden"
 					>
 						<div
-							class="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 text-white flex items-center gap-3"
+							class="bg-gradient-to-r from-primary-400 to-primary-300 px-6 py-4 text-white flex items-center gap-3"
 						>
 							<i class="fas fa-camera text-xl"></i>
 							<h2 class="text-lg font-semibold">
@@ -665,10 +662,10 @@
 
 					<!-- Términos y Condiciones -->
 					<div
-						class="section-card bg-white rounded-2xl shadow-lg border border-blue-100 overflow-hidden"
+						class="section-card bg-white rounded-2xl shadow-sm border border-blue-100 overflow-hidden"
 					>
 						<div
-							class="bg-gradient-to-r from-primary-600 to-primary-500 px-6 py-4 text-white flex items-center gap-3"
+							class="bg-gradient-to-r from-primary-400 to-primary-300 px-6 py-4 text-white flex items-center gap-3"
 						>
 							<i class="fas fa-file-contract text-xl"></i>
 							<h2 class="text-lg font-semibold">
@@ -826,7 +823,7 @@
 						<button
 							type="submit"
 							:disabled="guardadoExitoso"
-							class="group relative px-12 py-4 bg-gradient-to-r from-primary-600 to-primary-500 text-white font-bold text-lg rounded-2xl shadow-xl shadow-primary-500/30 hover:shadow-primary-500/50 hover:scale-105 active:scale-95 transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+							class="group relative px-12 py-4 bg-gradient-to-r from-primary-400 to-primary-300 text-white font-bold text-lg rounded-2xl shadow-md shadow-primary-400/20 hover:shadow-primary-400/30 hover:scale-105 active:scale-95 transition-all overflow-hidden disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
 						>
 							<div
 								class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"
@@ -846,7 +843,7 @@
 					v-if="mostrarModalExito"
 					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
 				>
-					<div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center">
+					<div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 text-center">
 						<div class="w-14 h-14 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
 							<i class="fas fa-check text-2xl"></i>
 						</div>
@@ -873,10 +870,14 @@
 				return JSON.parse(originalStr);
 			}
 
+			const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+				? 'http://127.0.0.1:8000/api/'
+				: 'https://apipanel.grupoeuroandino.com/api/';
+
 			createApp({
 				data() {
 					return {
-						baseUrl: "http://127.0.0.1:8000/api/",
+						baseUrl: API_BASE,
 						servicio: { nombre: "", tipo: "" },
 						numClientes: 0,
 						titular: {

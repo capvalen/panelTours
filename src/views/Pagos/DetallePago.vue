@@ -40,7 +40,7 @@ let modalPagoInstance = null;
 const abrirModalPago = () => {
 	pagoForm.value = { tipo: 'adelanto', monto: saldoPendiente.value };
 	if (!modalPagoInstance) {
-		modalPagoInstance = new Modal(document.getElementById('modalPagoComision'));
+		modalPagoInstance = new Modal(document.getElementById('modalPago'));
 	}
 	modalPagoInstance.show();
 };
@@ -67,9 +67,9 @@ const confirmarPago = async () => {
 			await api.post('/caja_detalles', {
 				caja_id: caja.id,
 				tipo: 'egreso',
-				categoria: 'pago de comisión',
+				categoria: 'pago',
 				monto,
-				concepto: `Comisión ${String(item.value.id).padStart(3, '0')} - ${nombreComisionable(item.value)}`,
+				concepto: `Pago ${String(item.value.id).padStart(3, '0')} - ${nombreComisionable(item.value)}`,
 				fecha: hoy,
 				proveedor_id: 1,
 				observaciones: item.value.observaciones || '',
@@ -126,12 +126,12 @@ const rutaComisionable = (i) => {
 
 <template>
 	<div v-if="item">
-		<h1>Comisión COM-{{ String(item.id).padStart(3, '0') }}</h1>
+		<h1>Pago PAG-{{ String(item.id).padStart(3, '0') }}</h1>
 		<nav aria-label="breadcrumb">
 			<ol class="breadcrumb">
 				<li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
-				<li class="breadcrumb-item"><router-link to="/comisiones">Comisiones</router-link></li>
-				<li class="breadcrumb-item active">COM-{{ String(item.id).padStart(3, '0') }}</li>
+				<li class="breadcrumb-item"><router-link to="/pagos">Pagos</router-link></li>
+				<li class="breadcrumb-item active">PAG-{{ String(item.id).padStart(3, '0') }}</li>
 			</ol>
 		</nav>
 
@@ -152,7 +152,7 @@ const rutaComisionable = (i) => {
 					<dt class="col-sm-3">Tipo</dt>
 					<dd class="col-sm-9">{{ tipoComisionable(item) }}</dd>
 
-					<dt class="col-sm-3">Comisionista</dt>
+					<dt class="col-sm-3">Beneficiario</dt>
 					<dd class="col-sm-9">
 						<router-link v-if="rutaComisionable(item)" :to="rutaComisionable(item)">
 							{{ nombreComisionable(item) }}
@@ -170,12 +170,12 @@ const rutaComisionable = (i) => {
 			<div class="col-md-6">
 				<div class="card h-100">
 					<div class="card-body">
-						<h6 class="fw-bold mb-2">Comisión</h6>
+						<h6 class="fw-bold mb-2">Pago</h6>
 						<table class="table table-bordered align-middle mb-0 text-center">
 							<thead class="table-light">
 								<tr>
 									<th class="text-center">N° de personas</th>
-									<th class="text-center">Monto comisionado</th>
+									<th class="text-center">Monto</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -237,7 +237,7 @@ const rutaComisionable = (i) => {
 		</div>
 	</div>
 
-	<div class="modal fade" id="modalPagoComision" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+	<div class="modal fade" id="modalPago" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
 		<div class="modal-dialog modal-sm">
 			<div class="modal-content">
 				<div class="modal-header">
