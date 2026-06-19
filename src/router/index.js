@@ -17,6 +17,11 @@ const router = createRouter({
 			meta: { requiresGuest: true } // Solo accesible si no está autenticado
 		},
 		{
+			path: '/no-autorizado',
+			name: 'noAutorizado',
+			component: () => import('@/views/NoAutorizado.vue'),
+		},
+		{
 			path: '/',
 			component: () => import('@/views/layouts/MainLayout.vue'),
 			meta: { requiresAuth: true }, // Requiere autenticación
@@ -255,6 +260,46 @@ const router = createRouter({
 	],
 })
 
+// ─────────────────────────────────────────────
+// Mapa de accesos por perfil
+// ─────────────────────────────────────────────
+const roleAccess = {
+	'/dashboard': ['administrador', 'counter', 'logística', 'caja'],
+	'/clientes': ['administrador', 'counter'],
+	'/cliente/': ['administrador', 'counter'],
+	'/cotizacion': ['administrador', 'counter'],
+	'/venta': ['administrador', 'counter'],
+	'/tarifario': ['administrador', 'counter'],
+	'/rutas-de-servicio': ['administrador', 'counter'],
+	'/guias': ['administrador', 'logística'],
+	'/guia/': ['administrador', 'logística'],
+	'/vehiculo': ['administrador', 'logística'],
+	'/proveedor': ['administrador', 'logística'],
+	'/logistica': ['administrador', 'logística'],
+	'/caja': ['administrador', 'caja'],
+	'/pago': ['administrador', 'caja'],
+	'/finanzas': ['administrador', 'caja'],
+	'/comision': ['administrador'],
+	'/configuraciones': ['administrador', 'counter', 'logística', 'caja'],
+	'/recordatorios': ['administrador'],
+	'/operaciones': ['administrador'],
+	'/hospedaje': ['administrador'],
+	'/vuelo': ['administrador'],
+}
+
+function tieneAcceso(perfil, path) {
+	// Administrador tiene acceso a todo
+	if (perfil === 'administrador') return true
+
+	for (const [prefix, perfiles] of Object.entries(roleAccess)) {
+		if (path.startsWith(prefix)) {
+			return perfiles.includes(perfil)
+		}
+	}
+	// Por defecto, permitir (rutas sin restricción explícita)
+	return true
+}
+
 // Guardia de navegación global
 router.beforeEach((to, from, next) => {
 	const authStore = useAuthStore()
@@ -263,14 +308,23 @@ router.beforeEach((to, from, next) => {
 	// Si la ruta requiere autenticación y el usuario no está autenticado
 	if (to.meta.requiresAuth && !isAuthenticated) {
 		next('/login')
+		return
 	}
 	// Si la ruta es solo para invitados y el usuario está autenticado
-	else if (to.meta.requiresGuest && isAuthenticated) {
+	if (to.meta.requiresGuest && isAuthenticated) {
 		next('/dashboard')
+		return
 	}
-	else {
-		next()
+
+	// Verificar acceso por perfil
+	if (isAuthenticated && authStore.user?.perfil) {
+		if (!tieneAcceso(authStore.user.perfil, to.path)) {
+			next('/no-autorizado')
+			return
+		}
 	}
+
+	next()
 })
 
 export default router

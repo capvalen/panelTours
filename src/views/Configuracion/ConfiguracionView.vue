@@ -1,9 +1,12 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import api from '@/services/axios';
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
 
 const title = ref('Configuraciones');
-const activeTab = ref('usuarios');
+const activeTab = ref('password');
 
 // Form data for password change
 const passwordForm = ref({
@@ -34,14 +37,26 @@ const externalPasswordForm = ref({
 });
 
 // Handle password change
-const changePassword = () => {
+const changePassword = async () => {
 	if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
 		alert('Las contraseñas no coinciden');
 		return;
 	}
-	console.log('Changing password:', passwordForm.value);
-	// Here you would typically call an API to change the password
-	alert('Contraseña cambiada correctamente');
+	if (passwordForm.value.newPassword.length < 8) {
+		alert('La contraseña debe tener al menos 8 caracteres');
+		return;
+	}
+	try {
+		await api.put('/cambiar-password', {
+			currentPassword: passwordForm.value.currentPassword,
+			newPassword: passwordForm.value.newPassword
+		});
+		alert('Contraseña cambiada correctamente');
+		passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' };
+	} catch (error) {
+		const msg = error.response?.data?.message || 'No se pudo cambiar la contraseña';
+		alert(msg);
+	}
 };
 
 const openCreateUserModal = () => {
@@ -185,7 +200,9 @@ const deleteUserAction = async (user) => {
 };
 
 onMounted(() => {
-	listarUsuarios();
+	if (authStore.user?.perfil === 'administrador') {
+		listarUsuarios();
+	}
 });
 </script>
 
@@ -193,7 +210,7 @@ onMounted(() => {
 	<h1>{{ title }}</h1>
 	<div class="config-panel">
 		<div class="tabs-header">
-			<button class="tab-btn" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'">
+			<button class="tab-btn" v-if="authStore.user?.perfil === 'administrador'" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'">
 				Usuarios
 			</button>
 			<button class="tab-btn" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">
@@ -201,7 +218,7 @@ onMounted(() => {
 			</button>
 		</div>
 
-		<div class="config-section" v-if="activeTab === 'usuarios'">
+		<div class="config-section" v-if="activeTab === 'usuarios' && authStore.user?.perfil === 'administrador'">
 			<div class="section-header">
 				<h2>Usuarios</h2>
 				<button class="btn btn-outline-primary" @click="openCreateUserModal">Nuevo usuario</button>

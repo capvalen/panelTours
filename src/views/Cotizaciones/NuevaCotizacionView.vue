@@ -691,31 +691,18 @@ onMounted(async () => {
 // ── Guardar cotización ──
 const guardando = ref(false);
 
+const departamentoIdMap = {
+	'Amazonas': 1, 'Ancash': 2, 'Apurímac': 3, 'Arequipa': 4,
+	'Ayacucho': 5, 'Cajamarca': 6, 'El Callao': 7, 'Cusco': 8,
+	'Huancavelica': 9, 'Huánuco': 10, 'Ica': 11, 'Junín': 12,
+	'La Libertad': 13, 'Lambayeque': 14, 'Lima': 15, 'Loreto': 16,
+	'Madre de Dios': 17, 'Moquegua': 18, 'Pasco': 19, 'Piura': 20,
+	'Puno': 21, 'San Martín': 22, 'Tacna': 23, 'Tumbes': 24, 'Ucayali': 25,
+};
+
 const obtenerDepartamentoId = (nombreDepartamento) => {
 	if (!nombreDepartamento) return null;
-	// Mapeo manual para sub-regiones que no existen en la tabla departamentos
-	const departamentoIdMap = {
-		'Chanchamayo': 12, 'Chupaca': 12, 'Concepción': 12, 'Huancayo': 12,
-		'Jauja': 12, 'Satipo': 12, 'Tarma': 12, 'Yauli': 12,
-		'El Callao': 7,
-	};
-	if (departamentoIdMap[nombreDepartamento]) return departamentoIdMap[nombreDepartamento];
-
-	// Normalizar: quitar acentos para comparación
-	const normalizar = (str) => str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-	const nombreNorm = normalizar(nombreDepartamento);
-
-	// Primero buscar match exacto (normalizado)
-	const exacto = departamentoStore.departamentos.find(d =>
-		normalizar(d.departamento) === nombreNorm
-	);
-	if (exacto) return exacto.id;
-
-	// Fallback: buscar por inclusión (de la BD hacia el input, no al revés)
-	const porInclusion = departamentoStore.departamentos.find(d =>
-		normalizar(nombreDepartamento).includes(normalizar(d.departamento))
-	);
-	return porInclusion?.id || null;
+	return departamentoIdMap[nombreDepartamento] || null;
 };
 
 const generarFechaHoy = () => {

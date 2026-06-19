@@ -27,24 +27,24 @@
 				<router-link to="/dashboard">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-house"></i> <span v-show="!collapsed">Inicio</span></div>
 				</router-link>
-				<router-link to="/cotizaciones" :class="{ active: $route.path.startsWith('/cotizacion') }">
+				<router-link to="/cotizaciones" v-if="puedeVer('counter')" :class="{ active: $route.path.startsWith('/cotizacion') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-file-text"></i> <span v-show="!collapsed">Cotizaciones</span></div>
 				</router-link>
-				<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }">
+				<router-link to="/ventas" v-if="puedeVer('counter')" :class="{ active: $route.path.startsWith('/venta') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-cart"></i> <span v-show="!collapsed">Ventas</span></div>
 				</router-link>
-				<router-link to="/logistica" :class="{ active: $route.path.startsWith('/logistica') }">
+				<router-link to="/logistica" v-if="puedeVer('logística')" :class="{ active: $route.path.startsWith('/logistica') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-truck"></i> <span v-show="!collapsed">Logística</span></div>
 				</router-link>
-				<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }">
+				<router-link to="/cajas" v-if="puedeVer('caja')" :class="{ active: $route.path.startsWith('/caja') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-piggy-bank"></i> <span v-show="!collapsed">Caja</span></div>
 				</router-link>
-				<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }">
+				<router-link to="/pagos" v-if="puedeVer('caja')" :class="{ active: $route.path.startsWith('/pago') }">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-cash-stack"></i> <span v-show="!collapsed">Pagos</span></div>
 				</router-link>
 				
 				<!-- Tarifario -->
-				<router-link to="/tarifario">
+				<router-link to="/tarifario" v-if="puedeVer('counter')">
 					<div class="menuFila" :class="{ collapsed: collapsed }"><i class="bi bi-tag"></i> <span v-show="!collapsed">Tarifario</span></div>
 				</router-link>
 
@@ -54,25 +54,25 @@
 				</div>
 				<transition name="slide">
 					<div v-if="configOpen && !collapsed">
-						<router-link to="/configuraciones" class="menuSubItem">
+						<router-link to="/configuraciones" class="menuSubItem" v-if="puedeVer('administrador')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-gear"></i> Usuarios</div>
 						</router-link>
-						<router-link to="/clientes" class="menuSubItem">
+						<router-link to="/clientes" class="menuSubItem" v-if="puedeVer('counter')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-wechat"></i> Clientes</div>
 						</router-link>
-						<router-link to="/guias" class="menuSubItem">
+						<router-link to="/guias" class="menuSubItem" v-if="puedeVer('logística')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-people"></i> Guías</div>
 						</router-link>
-						<router-link to="/vehiculos" class="menuSubItem">
+						<router-link to="/vehiculos" class="menuSubItem" v-if="puedeVer('logística')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-truck"></i> Vehículos</div>
 						</router-link>
 						<router-link to="/hospedajes" class="menuSubItem d-none">
 							<div class="menuFila menuFila-sub"><i class="bi bi-building"></i> Hospedajes</div>
 						</router-link>
-						<router-link to="/proveedores" class="menuSubItem">
+						<router-link to="/proveedores" class="menuSubItem" v-if="puedeVer('logística')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-box-seam"></i> Proveedores</div>
 						</router-link>
-						<router-link to="/recordatorios" class="menuSubItem">
+						<router-link to="/recordatorios" class="menuSubItem" v-if="puedeVer('administrador')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
 						</router-link>
 					</div>
@@ -97,26 +97,26 @@
 						<i class="bi bi-house"></i> Inicio
 					</router-link>
 
-					<router-link to="/cotizaciones" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/cotizaciones" v-if="puedeVer('counter')" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-file-text"></i> Cotizaciones
 					</router-link>
-					<router-link to="/ventas" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/ventas" v-if="puedeVer('counter')" :class="{ active: $route.path.startsWith('/venta') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-cart"></i> Ventas
 					</router-link>
-					<router-link to="/logistica" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/logistica" v-if="puedeVer('logística')" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-truck"></i> Logística
 					</router-link>
 
 					<!-- Tarifario -->
-					<router-link to="/tarifario" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/tarifario" v-if="puedeVer('counter')" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-tag"></i> Tarifario
 					</router-link>
 
 					<!-- SECCIÓN: Caja -->
-					<router-link to="/cajas" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/cajas" v-if="puedeVer('caja')" :class="{ active: $route.path.startsWith('/caja') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-piggy-bank"></i> Caja
 					</router-link>
-					<router-link to="/pagos" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
+					<router-link to="/pagos" v-if="puedeVer('caja')" :class="{ active: $route.path.startsWith('/pago') }" class="menuFila-mobile" @click="closeOffcanvas">
 						<i class="bi bi-cash-stack"></i> Pagos
 					</router-link>
 
@@ -126,25 +126,25 @@
 					</div>
 					<transition name="slide">
 						<div v-if="configOpen">
-							<router-link to="/configuraciones" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<router-link to="/configuraciones" v-if="puedeVer('administrador')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 								<i class="bi bi-gear"></i> Configuraciones
 							</router-link>
-						<router-link to="/clientes" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/clientes" v-if="puedeVer('counter')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-wechat"></i> Clientes
 						</router-link>
-						<router-link to="/guias" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/guias" v-if="puedeVer('logística')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-people"></i> Guías
 						</router-link>
-						<router-link to="/vehiculos" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/vehiculos" v-if="puedeVer('logística')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-truck"></i> Vehículos
 						</router-link>
 						<router-link to="/hospedajes" class="menuFila-mobile menuSubItem-mobile d-none" @click="closeOffcanvas">
 							<i class="bi bi-building"></i> Hospedajes
 						</router-link>
-						<router-link to="/proveedores" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/proveedores" v-if="puedeVer('logística')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-box-seam"></i> Proveedores
 						</router-link>
-						<router-link to="/recordatorios" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+						<router-link to="/recordatorios" v-if="puedeVer('administrador')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-stars"></i> Recordatorios
 						</router-link>
 						</div>
@@ -179,6 +179,11 @@ const authStore = useAuthStore()
 
 const configOpen = ref(false)
 const collapsed = ref(false)
+
+function puedeVer(...perfiles) {
+	return perfiles.includes(authStore.user?.perfil) || authStore.user?.perfil === 'administrador'
+}
+
 function toggleConfig() {
 	configOpen.value = !configOpen.value
 }
