@@ -1329,18 +1329,37 @@ const copiarLinkCheckin = () => {
 	const baseUrl = import.meta.env.MODE === 'production' ? 'https://panel.grupoeuroandino.com/' : 'http://localhost:5173/';
 	const url = baseUrl + 'recopilacion-datos.html?p=' + parametro;
 	navigator.clipboard.writeText(url);
+
+	const celularCliente = venta.value?.cliente?.celular;
+	if (!celularCliente) {
+		Swal.fire({
+			title: 'Sin celular',
+			text: 'El cliente no tiene celular agregado',
+			icon: 'warning',
+		});
+		return;
+	}
+
 	Swal.fire({
 		title: 'Link copiado',
 		text: 'Link copiado al portapapeles',
 		icon: 'success',
 		timer: 5000,
 		timerProgressBar: true,
+		showDenyButton: true,
 		showCancelButton: true,
 		confirmButtonText: 'Abrir link',
+		denyButtonText: '💬 Enviar por WhatsApp',
+		denyButtonColor: '#25D366',
 		cancelButtonText: 'Cerrar',
 	}).then(result => {
 		if (result.isConfirmed) {
 			window.open(url, '_blank');
+		} else if (result.isDenied) {
+			const mensaje = `Le envío mi pdf ${url}`;
+			const codificado = encodeURIComponent(mensaje);
+			const wame = `https://wa.me/${celularCliente}?text=${codificado}`;
+			window.open(wame, '_blank');
 		}
 	});
 };

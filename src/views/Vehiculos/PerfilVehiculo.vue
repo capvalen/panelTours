@@ -86,6 +86,7 @@ watch(
 					<p><strong>Nombre:</strong> {{ vehiculoActual?.nombre_conductor }}</p>
 					<p><strong>Licencia:</strong> {{ vehiculoActual?.licencia_conductor }}</p>
 					<p><strong>Edad:</strong> {{ vehiculoActual?.edad_conductor }}</p>
+					<p><strong>Celular:</strong> {{ vehiculoActual?.celular || '-' }}</p>
 				</div>
 			</div>
 

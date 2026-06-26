@@ -14,6 +14,7 @@ const nuevo = reactive({
 	nombre_conductor: '',
 	licencia_conductor: '',
 	edad_conductor: '',
+	celular: '',
 	tipo_combustible: 'gasolina',
 	incluye_seguro: false,
 	seguro: '',
@@ -128,22 +129,26 @@ function guardar() {
 					<h5 class="mb-4"><strong>Datos del conductor</strong></h5>
 					<div class="row mb-3">
 						<div class="col-md-4">
-							<label for="dniConductor" class="form-label">DNI conductor</label>
+							<label for="dniConductor" class="form-label">DNI</label>
 							<input type="text" class="form-control" id="dniConductor" v-model="nuevo.dni_conductor">
 						</div>
 						<div class="col-md-4">
-							<label for="nombreConductor" class="form-label">Nombre del conductor <span class="text-danger">*</span></label>
+							<label for="nombreConductor" class="form-label">Nombre <span class="text-danger">*</span></label>
 							<input type="text" class="form-control" id="nombreConductor" v-model="nuevo.nombre_conductor">
 						</div>
 						<div class="col-md-4">
-							<label for="licenciaConductor" class="form-label">Licencia conductor</label>
+							<label for="licenciaConductor" class="form-label">Licencia</label>
 							<input type="text" class="form-control" id="licenciaConductor" v-model="nuevo.licencia_conductor">
 						</div>
 					</div>
 					<div class="row mb-3">
 						<div class="col-md-4">
-							<label for="edadConductor" class="form-label">Edad del conductor</label>
+							<label for="edadConductor" class="form-label">Edad</label>
 							<input type="number" class="form-control" id="edadConductor" v-model="nuevo.edad_conductor">
+						</div>
+						<div class="col-md-4">
+							<label for="celularConductor" class="form-label">Celular</label>
+							<input type="tel" class="form-control" id="celularConductor" v-model="nuevo.celular">
 						</div>
 					</div>
 				</div>

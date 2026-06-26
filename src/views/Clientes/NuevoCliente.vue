@@ -57,6 +57,27 @@ const cambioVisado = () => {
   // Si es 'si', no modificamos tipo_visado
 };
 
+async function buscarReniec() {
+  if (!nuevo.dni || nuevo.dni.length !== 8) {
+    Swal.fire('DNI inválido', 'El DNI debe tener 8 dígitos', 'error');
+    return;
+  }
+  try {
+    const token = import.meta.env.VITE_API_TOKEN;
+    const response = await fetch(`https://dnis.infocat.workers.dev/api/dni/${nuevo.dni}/${token}`);
+    const data = await response.json();
+    if (data.error) {
+      Swal.fire('Error', data.error, 'error');
+      return;
+    }
+    nuevo.apellidos = data.apellido;
+    nuevo.nombres = data.nombre;
+    nuevo.dni = data.dni;
+  } catch (error) {
+    Swal.fire('Error', 'No se pudo conectar con RENIEC', 'error');
+  }
+}
+
 </script>
 <template>
 	<h1>Nuevo Cliente</h1>
@@ -87,7 +108,12 @@ const cambioVisado = () => {
 					<div class="row mb-3">
 						<div class="col-md-6">
 							<label for="dni" class="form-label">DNI</label>
-							<input type="text" class="form-control" id="dni" v-model="nuevo.dni">
+							<div class="input-group">
+								<input type="text" class="form-control" id="dni" v-model="nuevo.dni">
+								<button class="btn btn-outline-secondary" type="button" @click="buscarReniec()">
+									<img src="/images/reniec.png" alt="RENIEC" style="height: 20px; width: auto;">
+								</button>
+							</div>
 						</div>
 						<div class="col-md-6">
 							<label for="celular" class="form-label">Celular</label>
