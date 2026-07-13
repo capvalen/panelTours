@@ -98,7 +98,10 @@
 								<div><span class="fw-semibold">Conductor:</span> {{ logistica.vehiculo.nombre_conductor || '-' }}</div>
 								<div><span class="fw-semibold">DNI conductor:</span> {{ logistica.vehiculo.dni_conductor || '-' }}</div>
 								<div><span class="fw-semibold">Celular:</span> {{ logistica.vehiculo.celular || '-' }}</div>
-								<div class="mt-1" v-if="logistica.estado !== 'finalizado'">
+								<div class="mt-1 d-flex gap-1" v-if="logistica.estado !== 'finalizado'">
+									<button v-if="logistica.vehiculo?.celular" class="btn btn-sm btn-outline-success" @click="compartirVehiculo">
+										<i class="bi bi-whatsapp"></i> Compartir link
+									</button>
 									<button class="btn btn-sm btn-outline-danger" @click="quitarVehiculo">
 										<i class="bi bi-arrow-bar-left"></i> Retirar
 									</button>
@@ -111,7 +114,10 @@
 						<div class="col-md-4 d-flex flex-column">
 							<strong class="small">Compartir</strong>
 							<button class="btn btn-sm btn-outline-primary mt-1 align-self-start" @click="copiarLinkManifiesto">
-								<i class="bi bi-share"></i> Compartir link de Manifiesto
+								<i class="bi bi-share"></i> Compartir Manifiesto Completo
+							</button>
+							<button class="btn btn-sm btn-outline-secondary mt-1 align-self-start" @click="copiarLinkManifiestoPasajeros">
+								<i class="bi bi-person-lines-fill"></i> Compartir Manifiesto Pasajeros
 							</button>
 						</div>
 					</div>
@@ -153,7 +159,29 @@
 										<td class="text-center text-muted">{{ indexGlobal(venta, pIdx) }}</td>
 										<td>
 											{{ persona.nombre }}
-											<span v-if="persona.es_titular" class="badge bg-primary ms-1">Titular</span>
+											<span v-if="persona.es_titular" class="badge bg-primary ms-1">Titular</span>										<button
+											v-if="persona?.celular && (logistica.estado === 'pendiente' || logistica.estado === 'en curso')"
+											class="btn btn-sm btn-link text-success p-0 ms-1"
+											title="Enviar confirmación"
+											@click.stop="enviarWhatsAppPasajero(persona, venta)"
+										>
+											<i class="bi bi-whatsapp"></i>
+										</button>
+										<button
+											v-if="persona?.celular && (logistica.estado === 'finalizado' || logistica.estado === 'anulado')"
+											class="btn btn-sm btn-link text-info p-0 ms-1"
+											title="Cuestionario de servicio"
+											@click.stop="enviarCuestionarioServicio(persona, venta)"
+										>
+											<i class="bi bi-whatsapp"></i>
+										</button>
+										<router-link
+											:to="{ name: 'detalleVenta', params: { id: venta.id } }"
+											class="btn btn-sm btn-link text-primary p-0 ms-1"
+											title="Ver venta"
+										>
+											<i class="bi bi-box-arrow-up-right"></i>
+										</router-link>
 										</td>
 										<td>{{ persona.dni || '-' }}</td>
 										<td>{{ calcularEdad(persona.fecha_nacimiento) !== null ? calcularEdad(persona.fecha_nacimiento) + ' años' : '-' }}</td>
@@ -414,6 +442,12 @@ const obtenerUrlManifiesto = () => {
 	return `${apiBaseUrl}/manifiesto-pdf/${encoded}`;
 };
 
+const compartirVehiculo = () => {
+	const url = obtenerUrlManifiestoPasajeros();
+	const mensaje = `Te comparto el manifiesto de pasajeros del ${logistica.value.titulo}, ingresa a este link: ${url}`;
+	window.open(`https://api.whatsapp.com/send/?phone=${logistica.value.vehiculo.celular}&text=${encodeURIComponent(mensaje)}`, '_blank');
+};
+
 const compartirGuia = () => {
 	const url = obtenerUrlManifiesto();
 	const mensaje = `Te comparto el manifiesto del ${logistica.value.titulo}, ingresa a este link: ${url}`;
@@ -426,6 +460,31 @@ const copiarLinkManifiesto = () => {
 	Swal.fire({
 		title: 'Link copiado',
 		text: 'Link del manifiesto PDF copiado al portapapeles',
+		icon: 'success',
+		showCancelButton: true,
+		confirmButtonText: 'Abrir link',
+		cancelButtonText: 'Cerrar',
+	}).then(result => {
+		if (result.isConfirmed) {
+			window.open(url, '_blank');
+		}
+	});
+};
+
+const obtenerUrlManifiestoPasajeros = () => {
+	const apiBaseUrl = import.meta.env.MODE === 'production'
+		? 'https://apipanel.grupoeuroandino.com/api'
+		: 'http://127.0.0.1:8000/api';
+	const encoded = encodeForUrl({ id: Number(route.params.id) });
+	return `${apiBaseUrl}/manifiesto-pasajeros-pdf/${encoded}`;
+};
+
+const copiarLinkManifiestoPasajeros = () => {
+	const url = obtenerUrlManifiestoPasajeros();
+	navigator.clipboard.writeText(url);
+	Swal.fire({
+		title: 'Link copiado',
+		text: 'Link del manifiesto de pasajeros copiado al portapapeles',
 		icon: 'success',
 		showCancelButton: true,
 		confirmButtonText: 'Abrir link',
@@ -520,6 +579,63 @@ const calcularEdad = (fecha) => {
 
 const formatNum = (val) => {
 	return Number(val || 0).toFixed(2);
+};
+
+const enviarCuestionarioServicio = (persona, venta) => {
+	const telefono = persona?.celular;
+	if (!telefono) return;
+
+	const nombre = persona.nombre;
+	const lugar = logistica.value?.lugar || 'Huancayo';
+
+	const mensaje = `¡Hola, ${nombre}! 👋 Esperamos que hayas tenido un excelente y seguro viaje de regreso a casa.
+
+En nombre de toda la familia de Grupo Euro Andino, queremos agradecerte de corazón por habernos elegido y permitirnos ser parte de tu aventura. Nos llena de alegría haber compartido contigo nuestros paisajes y nuestra cultura.
+
+Nuestro mayor compromiso siempre ha sido, y será, brindarte un servicio con la más alta responsabilidad, seguridad y calidad humana. Para nosotros, no eres solo un pasajero, sino un amigo viajero. 🏔️
+
+Para seguir mejorando y asegurarnos de ofrecer siempre experiencias memorables, nos ayudaría muchísimo conocer tu opinión. ¿Nos regalarías un par de minutos para responder esta breve encuesta sobre tu experiencia? 📝
+
+👉 [Insertar Enlace del Cuestionario de Servicio aquí]
+
+🎁 ¡Queremos volver a verte pronto!
+Como muestra de nuestro agradecimiento por tu confianza, queremos otorgarte un [Ejemplo: 10% de descuento / un recuerdo especial / un servicio de cortesía] en tu próximo tour con nosotros. Este beneficio también es válido si se lo quieres regalar a un amigo o familiar que nos visite. ¡Solo tienen que mencionar este mensaje al momento de cotizar!
+
+Te enviamos un abrazo muy cálido desde ${lugar} y esperamos que los buenos viajes nunca se detengan. ✨
+
+Atentamente,
+El equipo de Grupo Euro Andino`;
+
+	const wame = `https://api.whatsapp.com/send?phone=51${String(telefono).replace(/\D/g, '').replace(/^51/, '')}&text=${encodeURIComponent(mensaje)}`;
+	window.open(wame, '_blank');
+};
+
+const enviarWhatsAppPasajero = (persona, venta) => {
+	const telefono = persona?.celular;
+	if (!telefono) return;
+
+	const nombre = persona.nombre;
+	const titulo = logistica.value?.titulo || 'Tour';
+	const lugar = logistica.value?.lugar || 'Por confirmar';
+
+	const mensaje = `¡Hola ${nombre}! 👋 Te saluda el equipo de Grupo Euro Andino. 🇵🇪 Queremos que mañana tengas un excelente día. ☀️
+
+Le escribimos para reconfirmar su reserva para el tour: ${titulo} 🚐 para el día de mañana.
+
+📍 Punto de encuentro: ${lugar}
+
+Favor de presentarse de 10 a 15 minutos antes.
+
+🎒 Recomendaciones para tu viaje:
+🧥 Llevar ropa abrigadora en capas.
+🧴 Usar bloqueador solar y lentes de sol.
+💧 Traer agua y algunos snacks.
+📸 Cámara o celular cargados para las fotos.
+
+Cualquier consulta estamos para ayudarles. ¡Nos vemos mañana! 😊✨`;
+
+	const wame = `https://api.whatsapp.com/send?phone=51${String(telefono).replace(/\D/g, '').replace(/^51/, '')}&text=${encodeURIComponent(mensaje)}`;
+	window.open(wame, '_blank');
 };
 
 const indexGlobal = (currentVenta, pIdx) => {

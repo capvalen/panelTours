@@ -46,26 +46,33 @@
 						<div class="card-body">
 							<h6 class="card-title"><i class="bi bi-person"></i> Datos del cliente</h6>
 							<table class="table table-sm table-borderless mb-0">
-								<tr>
-									<td class="text-muted small" style="width: 100px;">Nombre</td>
-									<td class="fw-semibold">{{ clienteNombre }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">DNI / RUC</td>
-									<td>{{ venta.cliente?.dni || venta.cliente?.ruc || '-' }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Celular</td>
-									<td>{{ venta.cliente?.celular || '-' }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Nacionalidad</td>
-									<td>{{ capitalize(venta.nacionalidad || 'peruana') }}</td>
-								</tr>
+								<tbody>
+									<tr>
+										<td class="text-muted small" style="width: 100px;">Nombre</td>
+										<td class="fw-semibold">{{ clienteNombre }}</td>
+									</tr>
+									<tr>
+										<td class="text-muted small">DNI / RUC</td>
+										<td>{{ venta.cliente?.dni || venta.cliente?.ruc || '-' }}</td>
+									</tr>
+									<tr>
+										<td class="text-muted small">Celular</td>
+										<td>{{ venta.cliente?.celular || '-' }}</td>
+									</tr>
+									<tr>
+										<td class="text-muted small">Nacionalidad</td>
+										<td>{{ capitalize(venta.nacionalidad || 'peruana') }}</td>
+									</tr>
+								</tbody>
 							</table>
-							<button class="btn btn-sm btn-outline-primary mt-2" @click="abrirModalCambiarCliente">
-								<i class="bi bi-arrow-repeat"></i> Cambiar cliente
-							</button>
+							<div class="d-flex gap-1 mt-2">
+								<button class="btn btn-sm btn-outline-primary" @click="abrirModalCambiarCliente">
+									<i class="bi bi-arrow-repeat"></i> Cambiar cliente
+								</button>
+								<button v-if="venta.cliente?.celular" class="btn btn-sm btn-success" @click="enviarConfirmacion">
+									<i class="bi bi-whatsapp"></i> Enviar confirmación
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -78,34 +85,36 @@
 							<div class="row row-cols-3">
 								<div class="col-md">
 									<table class="table table-sm table-borderless mb-0">
-										<tr>
-											<td class="text-muted small" style="width: 100px;">Destino</td>
-											<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
-										</tr>
-										<tr v-if="venta.fecha_inicio">
-											<td class="text-muted small">Fecha inicio</td>
-											<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
-										</tr>
-										<tr v-if="venta.fecha_fin">
-											<td class="text-muted small">Fecha fin</td>
-											<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Adultos</td>
-											<td>{{ venta.adults || 0 }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Niños</td>
-											<td>{{ venta.kids || 0 }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Total personas</td>
-											<td>{{ venta.cuantas_personas || (venta.adults + venta.kids) || 0 }}</td>
-										</tr>
-										<tr v-if="venta.ciudad">
-											<td class="text-muted small">Ciudad</td>
-											<td>{{ venta.ciudad }}</td>
-										</tr>
+										<tbody>
+											<tr>
+												<td class="text-muted small" style="width: 100px;">Destino</td>
+												<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
+											</tr>
+											<tr v-if="venta.fecha_inicio">
+												<td class="text-muted small">Fecha inicio</td>
+												<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
+											</tr>
+											<tr v-if="venta.fecha_fin">
+												<td class="text-muted small">Fecha fin</td>
+												<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Adultos</td>
+												<td>{{ venta.adults || 0 }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Niños</td>
+												<td>{{ venta.kids || 0 }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Total personas</td>
+												<td>{{ venta.cuantas_personas || (venta.adults + venta.kids) || 0 }}</td>
+											</tr>
+											<tr v-if="venta.ciudad">
+												<td class="text-muted small">Ciudad</td>
+												<td>{{ venta.ciudad }}</td>
+											</tr>
+										</tbody>
 									</table>
 								</div>
 								<div class="col-md">
@@ -308,7 +317,7 @@
 							<h6 class="mb-0 fw-bold"><i class="bi bi-people"></i> Manifiesto de personas ({{ personas.length }} / {{ totalPersonas }}) <span class="text-danger fw-normal small">(Faltan checkin: {{ faltanCheckin }})</span></h6>
 							<div class="d-flex gap-2">
 								<button class="btn btn-sm btn-outline-secondary" @click="copiarLinkCheckin">
-									<i class="bi bi-send"></i> Enviar link check-in automático
+									<i class="bi bi-send"></i> Enviar link check-in
 								</button>
 								<button v-if="personas.length < totalPersonas" class="btn btn-sm btn-primary" @click="abrirModalNuevaPersona">
 									<i class="bi bi-plus-lg"></i> Agregar persona
@@ -1141,6 +1150,7 @@ const seleccionarCliente = async (cliente) => {
 	try {
 		await ventaStore.actualizar(route.params.id, { venta: { cliente_id: cliente.id } });
 		venta.value.cliente = cliente;
+		await cargarPersonas();
 		modalCambiarClienteInstance?.hide();
 		Swal.fire({ title: 'Cliente actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
 	} catch (err) {
@@ -1324,6 +1334,76 @@ const confirmarEnvioLogistica = async () => {
 	}
 };
 
+const enviarConfirmacion = () => {
+	const cliente = venta.value?.cliente;
+	if (!cliente?.celular) return;
+
+	const nombre = clienteNombre.value;
+	const codigo = ventaIdFormateado.value;
+	const servicio = venta.value?.items?.[0]?.descripcion || 'Tour';
+
+	// Calcular duración en días
+	let dias = 1;
+	if (venta.value?.fecha_inicio && venta.value?.fecha_fin) {
+		const d1 = new Date(venta.value.fecha_inicio.slice(0, 10));
+		const d2 = new Date(venta.value.fecha_fin.slice(0, 10));
+		dias = Math.max(1, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1);
+	}
+
+	const fechaViaje = formatFecha(venta.value?.fecha_inicio);
+	const totalPersonasVal = totalPersonas.value;
+	const puntoRecojo = venta.value?.punto_recojo || 'Por confirmar';
+
+	// Incluye
+	const incluye = (venta.value?.incluye || []).map(i => '✅ ' + i).join('\n') || 'No especificado';
+
+	// Suma de adelantos
+	const adelantoSum = pagos.value
+		.filter(p => p.estado_pago?.toLowerCase() === 'adelantado')
+		.reduce((sum, p) => sum + Number(p.monto_abonado || 0), 0);
+
+	const pendiente = saldoPendiente.value;
+
+	// Link check-in
+	const parametro = encodeForUrl({ id: route.params.id });
+	const baseUrl = import.meta.env.MODE === 'production' ? 'https://panel.grupoeuroandino.com/' : 'http://localhost:5173/';
+	const checkinUrl = baseUrl + 'recopilacion-datos.html?p=' + parametro;
+
+	const mensaje = `👋 ¡Hola, ${nombre}! Grupo Euro Andino le agradece su preferencia. Su reserva ha sido confirmada con éxito. 🎉
+
+	📌 DETALLES DE TU VIAJE
+	* Número de Reserva: ${codigo}
+	* Tour: ${servicio}
+	* Duración: ${dias} día(s)
+	* Fecha del Viaje: ${fechaViaje}
+	* Nro. de Viajeros: ${totalPersonasVal}
+	* Punto de Partida: ${puntoRecojo}
+	⚠️ Favor de presentarse 10 minutos antes de la partida.
+
+	✅ INCLUYE:
+	${incluye}
+
+	💰 ESTADO DE PAGO
+	* Adelanto Pagado: S/ ${formatPrecio(adelantoSum)}
+	* Pendiente de Pago: S/ ${formatPrecio(pendiente)}
+
+	📋 REGISTRO DE PASAJEROS (Obligatorio)
+	Para finalizar, por favor complete el manifiesto aquí: 👉 ${checkinUrl}
+
+	⚠️ CONDICIONES Y RESTRICCIONES:
+	1. Tolerancia: Máximo 10 min. de espera; luego es No Show sin derecho a reclamo.
+	2. Cancelaciones: No hay devoluciones. Reprogramaciones con 48h de anticipación.
+	3. Fuerza Mayor: No nos responsabilizamos por climas, paros o factores externos.
+	4. Objetos: El cuidado de pertenencias es responsabilidad del pasajero.
+	5. Documento: Obligatorio portar DNI o Pasaporte original.
+
+	¡Estamos felices de viajar con ustedes! 🚐✨`;
+
+		const telefono = String(cliente.celular).replace(/\D/g, '').replace(/^51/, '');
+		const wame = `https://api.whatsapp.com/send?phone=51${telefono}&text=${encodeURIComponent(mensaje)}`;
+		window.open(wame, '_blank');
+	};
+
 const copiarLinkCheckin = () => {
 	const parametro = encodeForUrl({ id: route.params.id });
 	const baseUrl = import.meta.env.MODE === 'production' ? 'https://panel.grupoeuroandino.com/' : 'http://localhost:5173/';
@@ -1331,14 +1411,6 @@ const copiarLinkCheckin = () => {
 	navigator.clipboard.writeText(url);
 
 	const celularCliente = venta.value?.cliente?.celular;
-	if (!celularCliente) {
-		Swal.fire({
-			title: 'Sin celular',
-			text: 'El cliente no tiene celular agregado',
-			icon: 'warning',
-		});
-		return;
-	}
 
 	Swal.fire({
 		title: 'Link copiado',
@@ -1346,7 +1418,7 @@ const copiarLinkCheckin = () => {
 		icon: 'success',
 		timer: 5000,
 		timerProgressBar: true,
-		showDenyButton: true,
+		showDenyButton: !!celularCliente,
 		showCancelButton: true,
 		confirmButtonText: 'Abrir link',
 		denyButtonText: '💬 Enviar por WhatsApp',
@@ -1355,7 +1427,7 @@ const copiarLinkCheckin = () => {
 	}).then(result => {
 		if (result.isConfirmed) {
 			window.open(url, '_blank');
-		} else if (result.isDenied) {
+		} else if (result.isDenied && celularCliente) {
 			const mensaje = `Le envío mi pdf ${url}`;
 			const codificado = encodeURIComponent(mensaje);
 			const wame = `https://wa.me/${celularCliente}?text=${codificado}`;
