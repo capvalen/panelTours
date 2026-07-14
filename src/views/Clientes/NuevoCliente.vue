@@ -42,8 +42,20 @@ function agregarSeguro() {
 	nuevo.seguros.push({ seguro: '', fecha: null })
 }
 async function  guardarCliente() {
-	if (!nuevo.apellidos && !nuevo.razon_social) {
-		Swal.fire('Faltan datos', 'Debe ingresar Apellidos o Razón social', 'error');
+	if (!nuevo.dni) {
+		Swal.fire('Faltan datos', 'El campo DNI es obligatorio', 'error');
+		return;
+	}
+	if (!nuevo.nombres) {
+		Swal.fire('Faltan datos', 'El campo Nombres es obligatorio', 'error');
+		return;
+	}
+	if (!nuevo.celular) {
+		Swal.fire('Faltan datos', 'El campo Celular es obligatorio', 'error');
+		return;
+	}
+	if (!nuevo.nacionalidad) {
+		Swal.fire('Faltan datos', 'El campo Nacionalidad es obligatorio', 'error');
 		return;
 	}
 	const resp = await clienteStore.guardarCliente(nuevo)
@@ -77,7 +89,7 @@ const cambioVisado = () => {
 					<div class="row mb-3">
 						<div class="col-md-6">
 							<label for="nacionalidad" class="form-label">Nacionalidad</label>
-							<select class="form-select" id="nacionalidad" v-model="nuevo.nacionalidad">
+							<select class="form-select" id="nacionalidad" v-model="nuevo.nacionalidad" required>
 								<option value="peruano">Peruano</option>
 								<option value="extranjero">Extranjero</option>
 							</select>
@@ -87,7 +99,7 @@ const cambioVisado = () => {
 					<div class="row mb-3">
 						<div class="col-md-6">
 							<label for="dni" class="form-label">DNI</label>
-							<input type="text" class="form-control" id="dni" v-model="nuevo.dni">
+							<input type="text" class="form-control" id="dni" v-model="nuevo.dni" required>
 						</div>
 						<div class="col-md-6">
 							<label for="celular" class="form-label">Celular</label>
