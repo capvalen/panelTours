@@ -242,20 +242,22 @@
 								<i class="bi bi-arrow-left"></i> Volver
 							</router-link>
 						</div>
-						<div class="d-flex gap-2" v-if="cotizacion.estado !== 'convertido'">
-									<button class="btn btn-success" @click="generarPDF">
-								<i class="bi bi-file-pdf"></i>
-								Generar PDF para el viajero
-							</button>
+						<button class="btn btn-success" @click="generarPDF">
+							<i class="bi bi-file-pdf"></i>
+							Generar PDF del viajero
+						</button>
+						<template v-if="cotizacion.estado !== 'convertido'">
 							<button class="btn btn-primary" @click="convertirReserva" :disabled="convirtiendo">
 								<i class="bi bi-arrow-right-circle"></i>
 								{{ convirtiendo ? 'Convirtiendo...' : 'Convertir en reserva' }}
 							</button>
-						</div>
-						<div v-else class="d-flex align-items-center">
-							<i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
-							<span class="fw-semibold text-success">Cotización convertida</span>
-						</div>
+						</template>
+						<template v-else>
+							<div class="d-flex align-items-center">
+								<i class="bi bi-check-circle-fill text-success fs-4 me-2"></i>
+								<span class="fw-semibold text-success">Cotización convertida</span>
+							</div>
+						</template>
 					</div>
 				</div>
 			</div>
