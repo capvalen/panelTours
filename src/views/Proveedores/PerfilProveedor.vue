@@ -37,6 +37,7 @@ const cargarComisiones = async () => {
 }
 
 const comisionForm = ref({
+	descripcion: '',
 	fecha: new Date().toISOString().slice(0, 10),
 	monto: '',
 	cant_personas: 1,
@@ -46,6 +47,7 @@ let modalComisionInstance = null;
 
 const abrirModalComision = () => {
 	comisionForm.value = {
+		descripcion: '',
 		fecha: new Date().toISOString().slice(0, 10),
 		monto: '',
 		cant_personas: 1,
@@ -64,6 +66,7 @@ const guardarComision = async () => {
 	}
 	try {
 		await comisionStore.guardar({
+			descripcion: comisionForm.value.descripcion,
 			fecha: comisionForm.value.fecha,
 			monto: Number(comisionForm.value.monto),
 			cant_personas: Number(comisionForm.value.cant_personas),
@@ -179,8 +182,8 @@ watch(
 		<div class="col-12">
 			<div class="card">
 				<div class="card-header d-flex justify-content-between align-items-center">
-					<h6 class="mb-0 fw-bold"><i class="bi bi-cash-stack"></i> Comisiones</h6>
-					<button class="btn btn-sm btn-outline-primary" @click="abrirModalComision"><i class="bi bi-plus-lg"></i> Agregar comisión</button>
+					<h6 class="mb-0 fw-bold"><i class="bi bi-cash-stack"></i> Servicios</h6>
+					<button class="btn btn-sm btn-outline-primary" @click="abrirModalComision"><i class="bi bi-plus-lg"></i> Agregar servicio</button>
 				</div>
 				<div class="card-body p-0">
 					<div class="table-responsive">
@@ -189,7 +192,7 @@ watch(
 								<tr>
 									<th>#</th>
 									<th>Fecha</th>
-									<th>Paquete</th>
+									<th>Descripción</th>
 									<th>Personas</th>
 									<th>Monto</th>
 									<th>Estado</th>
@@ -200,7 +203,7 @@ watch(
 								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/pago/' + item.id)">
 									<td class="text-muted">{{ index + 1 }}</td>
 									<td>{{ fechaLatamSimple(item.fecha) }}</td>
-									<td>{{ item.observaciones || '-' }}</td>
+									<td>{{ item.descripcion || '-' }}</td>
 									<td>{{ item.cant_personas }}</td>
 									<td>{{ formatMoneda(item.monto) }}</td>
 									<td>
@@ -226,16 +229,20 @@ watch(
 		</div>
 	</div>
 
-	<!-- Modal Nueva Comisión -->
+	<!-- Modal Nuevo servicio -->
 	<div class="modal fade" id="modalNuevaComision" tabindex="-1" aria-hidden="true">
 		<div class="modal-dialog modal-sm modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Nueva comisión</h5>
+					<h5 class="modal-title">Nuevo servicio</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 					<div class="row g-3">
+						<div class="col-12">
+							<label class="form-label">Servicio</label>
+							<input type="text" class="form-control" v-model="comisionForm.descripcion">
+						</div>
 						<div class="col-12">
 							<label class="form-label">Fecha</label>
 							<input type="date" class="form-control" v-model="comisionForm.fecha">

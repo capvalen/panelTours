@@ -3,6 +3,7 @@ import { onMounted, ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { Modal } from 'bootstrap';
 import api from '@/services/axios';
+import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue';
 import { useComisionesStore } from '@/stores/comisionStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
@@ -11,7 +12,7 @@ const props = defineProps({ id: String });
 const route = useRoute();
 const router = useRouter();
 const comisionStore = useComisionesStore();
-const { fechaLatamSimple, formatMoneda } = useFormat();
+const { fechaLatamSimple, formatMoneda, rutaArchivo } = useFormat();
 
 const item = ref(null);
 const montoEdit = ref(0);
@@ -67,10 +68,11 @@ const confirmarPago = async () => {
 			await api.post('/caja_detalles', {
 				caja_id: caja.id,
 				tipo: 'egreso',
-				categoria: 'pago',
+				categoria: 'pago de comisión',
 				monto,
 				concepto: `Pago ${String(item.value.id).padStart(3, '0')} - ${nombreComisionable(item.value)}`,
 				fecha: hoy,
+				comprobante_pago: 'interno',
 				proveedor_id: 1,
 				observaciones: item.value.observaciones || '',
 			});
@@ -113,6 +115,16 @@ const nombreComisionable = (i) => {
 		return i.comisionable.nombre || '-';
 	}
 	return i.comisionable.nombre_conductor || i.comisionable.placa || '-';
+};
+
+const tipoPago = (pago) => {
+	let acumulado = 0;
+	for (const p of item.value?.pagos || []) {
+		if (p.id === pago.id) break;
+		acumulado += Number(p.monto || 0);
+	}
+	const saldoAntes = Number(item.value?.monto || 0) - acumulado;
+	return Number(pago.monto) >= saldoAntes ? 'Pago total' : 'Adelanto';
 };
 
 const rutaComisionable = (i) => {
@@ -175,7 +187,7 @@ const rutaComisionable = (i) => {
 							<thead class="table-light">
 								<tr>
 									<th class="text-center">N° de personas</th>
-									<th class="text-center">Monto</th>
+									<th class="text-center">Pago Total</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -215,6 +227,7 @@ const rutaComisionable = (i) => {
 							<th style="width:50px">N°</th>
 							<th>Fecha</th>
 							<th>Monto</th>
+							<th>Tipo</th>
 							<th>Observaciones</th>
 						</tr>
 					</thead>
@@ -223,10 +236,36 @@ const rutaComisionable = (i) => {
 							<td>{{ idx + 1 }}</td>
 							<td>{{ fechaLatamSimple(pago.fecha) }}</td>
 							<td>{{ formatMoneda(pago.monto) }}</td>
+							<td>
+								<span :class="tipoPago(pago) === 'Pago total' ? 'badge text-bg-success' : 'badge text-bg-warning'">
+									{{ tipoPago(pago) }}
+								</span>
+							</td>
 							<td>{{ pago.observaciones || '-' }}</td>
 						</tr>
 					</tbody>
 				</table>
+			</div>
+		</div>
+
+		<div class="card mt-3">
+			<div class="card-header d-flex justify-content-between align-items-center">
+				<h6 class="mb-0 fw-bold"><i class="bi bi-paperclip"></i> Archivos adjuntos ({{ item.archivos?.length || 0 }})</h6>
+				<button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
+					<i class="bi bi-file-earmark-plus"></i> Adjuntar
+				</button>
+			</div>
+			<div class="card-body">
+				<ul class="list-group list-group-flush" v-if="item.archivos?.length">
+					<li class="list-group-item d-flex justify-content-between align-items-center" v-for="(archivo, index) in item.archivos" :key="index">
+						<span>
+							📁 {{ index + 1 }}.
+							<a :href="rutaArchivo(archivo?.link)" target="_blank">{{ archivo?.nombre || 'Archivo sin nombre' }}</a>
+						</span>
+						<small class="text-muted">{{ archivo?.fecha || '' }}</small>
+					</li>
+				</ul>
+				<p v-else class="text-muted mb-0">No hay archivos adjuntos</p>
 			</div>
 		</div>
 	</div>
@@ -269,4 +308,6 @@ const rutaComisionable = (i) => {
 			</div>
 		</div>
 	</div>
+
+	<ModalSubirArchivo :modelo="'pago'" />
 </template>

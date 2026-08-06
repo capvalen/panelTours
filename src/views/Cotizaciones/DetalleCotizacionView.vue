@@ -101,13 +101,25 @@
 											<td class="text-muted small">Ciudad</td>
 											<td>{{ cotizacion.ciudad }}</td>
 										</tr>
+										<tr>
+											<td class="text-muted small">Modalidad</td>
+											<td class="text-capitalize">{{ cotizacion.compartido || 'compartido' }}</td>
+										</tr>
 									</table>
 								</div>
+							</div>
+
+						</div>
+						
+					</div>
+				</div>
+					<div class="col-12">
+						<div class="row row-cols-3 mt-3">
 								<div class="col-md">
 									<div class="mb-2">
 										<strong class="text-muted small">Ruta</strong>
 										<span v-if="!editandoRuta">
-											<span class="ms-1" v-if="cotizacion.ruta">{{ cotizacion.ruta }}</span>
+											<span class="ms-1" style="white-space: pre-line;" v-if="cotizacion.ruta">{{ cotizacion.ruta }}</span>
 											<small class="text-muted ms-1" v-else>Sin asignar</small>
 											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
 												<i class="bi bi-pencil"></i>
@@ -129,7 +141,7 @@
 											</div>
 										</div>
 									</div>
-									
+						
 								</div>
 								<div class="col-md">
 									<div class="mb-2">
@@ -164,9 +176,7 @@
 									</div>
 								</div>
 							</div>
-						</div>
 					</div>
-				</div>
 
 				<!-- Servicios -->
 				<div class="col-12">
@@ -261,6 +271,7 @@
 					</div>
 				</div>
 			</div>
+			
 		</template>
 	</div>
 </template>

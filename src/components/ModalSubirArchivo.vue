@@ -5,6 +5,7 @@ import { useClienteStore } from '@/stores/clienteStore';
 import { useProveedoresStore } from '@/stores/proveedorStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useHospedajesStore } from '@/stores/hospedajeStore';
+import { useComisionesStore } from '@/stores/comisionStore';
 
 const props = defineProps(['modelo']) //'titulo', 'color'
 const archivoStore = useArchivoStore()
@@ -12,6 +13,7 @@ const clienteStore = useClienteStore()
 const proveedorStore = useProveedoresStore()
 const vehiculoStore = useVehiculosStore()
 const hospedajeStore = useHospedajesStore()
+const comisionStore = useComisionesStore()
 
 const archivo = ref(null)
 const nombre = ref('')
@@ -52,6 +54,14 @@ const cargar = async ()=>{
 				'link': resp.link
 			})
 			hospedajeStore.actualizar(hospedajeStore.hospedajeActual.id, hospedajeStore.hospedajeActual)
+		}
+		if(props.modelo == 'pago'){
+			const archivos = comisionStore.comisionActual?.archivos || []
+			archivos.unshift({
+				'nombre': nombre.value,
+				'link': resp.link
+			})
+			await comisionStore.actualizar(comisionStore.comisionActual.id, { archivos })
 		}
 
 	}

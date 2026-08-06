@@ -457,6 +457,10 @@ watch(() => filtros.fechaInicio, (nueva) => {
 
 const servicios = ref([]);
 
+// ── Compartido / Privado ──
+// Campo oculto: por defecto 'compartido'; solo cambia a 'privado' si se agrega un tour privado
+const compartido = ref('compartido');
+
 const capitalize = (str) => {
 	if (!str) return '';
 	return str.charAt(0).toUpperCase() + str.slice(1);
@@ -484,6 +488,9 @@ const agregarServicio = (tipo) => {
 		vuelo: 'Avión',
 		restaurante: 'Restaurante',
 	};
+	if (tipo === 'tour') {
+		compartido.value = 'privado';
+	}
 	servicios.value.push({
 		tipo,
 		destino: filtros.departamento,
@@ -780,6 +787,7 @@ const guardarCotizacion = async () => {
 				servicios: serviciosArr.value,
 				incluye: incluyeArr.value,
 				no_incluye: noIncluyeArr.value,
+				compartido: compartido.value,
 				estado: 'activo',
 			},
 			canasta,
