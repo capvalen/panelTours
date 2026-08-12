@@ -211,17 +211,17 @@ onMounted(() => {
 	<div class="config-panel">
 		<div class="tabs-header">
 			<button class="tab-btn" v-if="authStore.user?.perfil === 'administrador'" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'">
-				Usuarios
+				Todos los usuarios
 			</button>
 			<button class="tab-btn" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">
-				Contraseña
+				Mi contraseña
 			</button>
 		</div>
 
 		<div class="config-section" v-if="activeTab === 'usuarios' && authStore.user?.perfil === 'administrador'">
 			<div class="section-header">
 				<h2>Usuarios</h2>
-				<button class="btn btn-outline-primary" @click="openCreateUserModal">Nuevo usuario</button>
+				<button class="btn btn-outline-primary" @click="openCreateUserModal"><i class="bi bi-person-plus"></i> Nuevo usuario</button>
 			</div>
 			<table class="users-table">
 				<thead>
@@ -246,17 +246,17 @@ onMounted(() => {
 						<td>{{ index + 1 }}</td>
 						<td>{{ user.nombre }}</td>
 						<td>{{ user.user }}</td>
-						<td>{{ user.perfil || '-' }}</td>
+						<td class="text-capitalize">{{ user.perfil || '-' }}</td>
 						<td>{{ user.activo ? 'Activo' : 'Inactivo' }}</td>
 						<td>Interno</td>
 						<td class="actions-cell">
-							<button class="btn btn-outline-primary btn-sm" @click="openEditUserModal(user)">Editar</button>
-							<button class="btn btn-outline-danger btn-sm" @click="deleteUserAction(user)">Eliminar</button>
+							<button class="btn btn-outline-primary btn-sm" @click="openEditUserModal(user)"><i class="bi bi-pencil"></i> Editar</button>
+							<button class="btn btn-outline-danger btn-sm" @click="deleteUserAction(user)"><i class="bi bi-trash"></i> Eliminar</button>
 							<button
 								class="btn btn-outline-secondary btn-sm"
 								@click="openExternalPasswordModal(user)"
 							>
-								Cambiar clave
+								<i class="bi bi-key"></i> Cambiar clave
 							</button>
 						</td>
 					</tr>

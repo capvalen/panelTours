@@ -117,78 +117,98 @@
 										</tbody>
 									</table>
 								</div>
-								<div class="col-md">
-									<div class="mb-2">
-										<strong class="text-muted small">Punto de Recojo</strong>
-										<span v-if="!editandoPuntoRecojo">
-											<span class="ms-1" v-if="venta.punto_recojo">{{ venta.punto_recojo }}</span>
-											<small class="text-muted ms-1" v-else>Sin asignar</small>
-											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
-												<i class="bi bi-pencil"></i>
-											</button>
-										</span>
-										<div v-else class="d-flex align-items-start gap-1 mt-1">
-											<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
-											<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
-											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-										</div>
-									</div>
-									<div class="mb-2">
-										<strong class="text-muted small">Ruta</strong>
-										<span v-if="!editandoRuta">
-											<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
-											<small class="text-muted ms-1" v-else>Sin asignar</small>
-											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
-												<i class="bi bi-pencil"></i>
-											</button>
-										</span>
-										<div v-else class="d-flex align-items-start gap-1 mt-1">
-											<textarea class="form-control form-control-sm" v-model="rutaEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese la ruta..."></textarea>
-											<button class="btn btn-sm btn-success" @click="guardarRuta" title="Guardar"><i class="bi bi-check-lg"></i></button>
-											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-										</div>
-									</div>
-									<div class="mb-2">
-										<strong class="text-muted small">Servicios</strong>
-										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
-										<div class="mt-1">
-											<div v-for="(item, index) in venta.servicios || []" :key="'srv-'+index" class="d-flex align-items-center gap-1 mb-1">
-												<span class="small">{{ item }}</span>
-												<button class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarServicio(index)" title="Eliminar"><i class="bi bi-x"></i></button>
-											</div>
-										</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="col-12">
+					<div class="row row-cols-3 mt-3">
+						<div class="col-md">
+							<div class="mb-2">
+								<strong class="text-muted small">Punto de Recojo</strong>
+								<span v-if="!editandoPuntoRecojo">
+									<span class="ms-1" v-if="venta.punto_recojo">{{ venta.punto_recojo }}</span>
+									<small class="text-muted ms-1" v-else>Sin asignar</small>
+									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
+										<i class="bi bi-pencil"></i>
+									</button>
+								</span>
+								<div v-else class="d-flex align-items-start gap-1 mt-1">
+									<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
+									<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
+									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+								</div>
+							</div>
+							<div class="mb-2">
+								<strong class="text-muted small">Ruta</strong>
+								<span v-if="!editandoRuta">
+									<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
+									<small class="text-muted ms-1" v-else>Sin asignar</small>
+									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
+										<i class="bi bi-pencil"></i>
+									</button>
+								</span>
+								<div v-else class="d-flex align-items-start gap-1 mt-1">
+									<textarea class="form-control form-control-sm" v-model="rutaEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese la ruta..."></textarea>
+									<button class="btn btn-sm btn-success" @click="guardarRuta" title="Guardar"><i class="bi bi-check-lg"></i></button>
+									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+								</div>
+							</div>
+							<div class="mb-2">
+								<strong class="text-muted small">Servicios</strong>
+								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
+								<div class="mt-1">
+									<div v-for="(item, index) in venta.servicios || []" :key="'srv-'+index" class="d-flex align-items-center gap-1 mb-1">
+										<span class="small">{{ item }}</span>
+										<button class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarServicio(index)" title="Eliminar"><i class="bi bi-x"></i></button>
 									</div>
 								</div>
-								<div class="col-md">
-									<div class="mb-2">
-										<strong class="text-muted small">Incluye</strong>
-										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
-											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarIncluye"
-											title="Agregar">+</button>
-										<div class="mt-1">
-											<div v-for="(item, index) in venta.incluye || []" :key="'inc-' + index"
-												class="d-flex align-items-center gap-1 mb-1">
-												<span class="small">{{ item }}</span>
-												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
-													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarIncluye(index)"
-													title="Eliminar"><i class="bi bi-x"></i></button>
-											</div>
-										</div>
+							</div>
+							<div class="mb-2">
+								<strong class="text-muted small">Hora inicio</strong>
+								<span v-if="!editandoHora">
+									<span class="ms-1" v-if="venta.hora_inicio">{{ venta.hora_inicio }}</span>
+									<small class="text-muted ms-1" v-else>Sin asignar</small>
+									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
+										<i class="bi bi-pencil"></i>
+									</button>
+								</span>
+								<div v-else class="d-flex align-items-start gap-1 mt-1">
+									<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
+									<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
+									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="col-md">
+							<div class="mb-2">
+								<strong class="text-muted small">Incluye</strong>
+								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+									style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarIncluye"
+									title="Agregar">+</button>
+								<div class="mt-1">
+									<div v-for="(item, index) in venta.incluye || []" :key="'inc-' + index"
+										class="d-flex align-items-center gap-1 mb-1">
+										<span class="small">{{ item }}</span>
+										<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+											style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarIncluye(index)"
+											title="Eliminar"><i class="bi bi-x"></i></button>
 									</div>
-									<div class="mb-2">
-										<strong class="text-muted small">No incluye</strong>
-										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
-											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarNoIncluye"
-											title="Agregar">+</button>
-										<div class="mt-1">
-											<div v-for="(item, index) in venta.no_incluye || []" :key="'noinc-' + index"
-												class="d-flex align-items-center gap-1 mb-1">
-												<span class="small">{{ item }}</span>
-												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
-													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarNoIncluye(index)"
-													title="Eliminar"><i class="bi bi-x"></i></button>
-											</div>
-										</div>
+								</div>
+							</div>
+							<div class="mb-2">
+								<strong class="text-muted small">No incluye</strong>
+								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+									style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarNoIncluye"
+									title="Agregar">+</button>
+								<div class="mt-1">
+									<div v-for="(item, index) in venta.no_incluye || []" :key="'noinc-' + index"
+										class="d-flex align-items-center gap-1 mb-1">
+										<span class="small">{{ item }}</span>
+										<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+											style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarNoIncluye(index)"
+											title="Eliminar"><i class="bi bi-x"></i></button>
 									</div>
 								</div>
 							</div>
@@ -1204,6 +1224,30 @@ const guardarRuta = async () => {
 
 const cancelarEdicionRuta = () => {
 	editandoRuta.value = false;
+};
+
+// ── Edición de hora de inicio ──
+const editandoHora = ref(false);
+const horaEdit = ref('');
+
+const iniciarEdicionHora = () => {
+	horaEdit.value = venta.value?.hora_inicio || '';
+	editandoHora.value = true;
+};
+
+const guardarHora = async () => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { hora_inicio: horaEdit.value || null } });
+		venta.value.hora_inicio = horaEdit.value || null;
+		editandoHora.value = false;
+	} catch (err) {
+		console.error('Error al guardar hora de inicio:', err);
+		Swal.fire('Error', 'No se pudo guardar la hora de inicio', 'error');
+	}
+};
+
+const cancelarEdicionHora = () => {
+	editandoHora.value = false;
 };
 
 const guardarArrays = async (campo, valor) => {

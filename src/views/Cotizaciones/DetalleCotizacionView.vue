@@ -141,6 +141,21 @@
 											</div>
 										</div>
 									</div>
+									<div class="mb-2">
+										<strong class="text-muted small">Hora inicio</strong>
+										<span v-if="!editandoHora">
+											<span class="ms-1" v-if="cotizacion.hora_inicio">{{ cotizacion.hora_inicio }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
+											<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
+									</div>
 						
 								</div>
 								<div class="col-md">
@@ -390,6 +405,30 @@ const guardarRuta = async () => {
 
 const cancelarEdicionRuta = () => {
 	editandoRuta.value = false;
+};
+
+// ── Edición de hora de inicio ──
+const editandoHora = ref(false);
+const horaEdit = ref('');
+
+const iniciarEdicionHora = () => {
+	horaEdit.value = cotizacion.value?.hora_inicio || '';
+	editandoHora.value = true;
+};
+
+const guardarHora = async () => {
+	try {
+		await cotizacionStore.actualizar(props.id, { venta: { hora_inicio: horaEdit.value || null } });
+		cotizacion.value.hora_inicio = horaEdit.value || null;
+		editandoHora.value = false;
+	} catch (err) {
+		console.error('Error al guardar hora de inicio:', err);
+		Swal.fire('Error', 'No se pudo guardar la hora de inicio', 'error');
+	}
+};
+
+const cancelarEdicionHora = () => {
+	editandoHora.value = false;
 };
 
 const guardarArrays = async (campo, valor) => {

@@ -599,7 +599,7 @@ Para seguir mejorando y asegurarnos de ofrecer siempre experiencias memorables, 
 👉 [Insertar Enlace del Cuestionario de Servicio aquí]
 
 🎁 ¡Queremos volver a verte pronto!
-Como muestra de nuestro agradecimiento por tu confianza, queremos otorgarte un [Ejemplo: 10% de descuento / un recuerdo especial / un servicio de cortesía] en tu próximo tour con nosotros. Este beneficio también es válido si se lo quieres regalar a un amigo o familiar que nos visite. ¡Solo tienen que mencionar este mensaje al momento de cotizar!
+Como muestra de nuestro agradecimiento por tu confianza, queremos otorgarte un 10% de descuento en un servicio como cortesía en tu próximo tour con nosotros. Este beneficio también es válido si se lo quieres regalar a un amigo o familiar que nos visite. ¡Solo tienen que mencionar este mensaje al momento de cotizar!
 
 Te enviamos un abrazo muy cálido desde ${lugar} y esperamos que los buenos viajes nunca se detengan. ✨
 

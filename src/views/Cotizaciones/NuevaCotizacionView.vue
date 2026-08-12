@@ -669,6 +669,7 @@ const agregarTourWeb = (tour) => {
 		motivo_descuento: '',
 		precio_adulto,
 		precio_kids,
+		hora_inicio: tour.contenido.hora || null,
 		descripcion: tour.contenido.nombre || 'Tour web',
 	});
 };
@@ -754,6 +755,7 @@ const guardarCotizacion = async () => {
 		const totalAdultos = servicios.value.reduce((sum, s) => sum + (Number(s.precio_adulto || 0) * filtros.adultos), 0);
 		const totalKids = servicios.value.reduce((sum, s) => sum + (Number(s.precio_kids || 0) * filtros.ninos), 0);
 		const totalGlobal = totalAPagar.value;
+		const horaInicio = servicios.value.find(s => s.hora_inicio)?.hora_inicio || null;
 
 		// Preparar canasta: agregar precio (subtotal) a cada item
 		const canasta = servicios.value.map(s => ({
@@ -765,6 +767,7 @@ const guardarCotizacion = async () => {
 			descuento: Number(s.descuento || 0),
 			motivo_descuento: s.motivo_descuento || '',
 			id_tour: s.idTour || null,
+			hora_inicio: s.hora_inicio || null,
 			precio: calcularSubtotal(s),
 		}));
 
@@ -775,6 +778,7 @@ const guardarCotizacion = async () => {
 				fecha: hoy,
 				fecha_inicio: filtros.fechaInicio || null,
 				fecha_fin: filtros.fechaFin || null,
+				hora_inicio: horaInicio,
 				adults: filtros.adultos,
 				kids: filtros.ninos,
 				cuantas_personas: filtros.adultos + filtros.ninos,
