@@ -10,6 +10,7 @@ const departamentosStore = useDepartamentosStore();
 /* const { clientes } = storeToRefs(clienteStore); */
 const texto = ref('');
 const departamentoId = ref('');
+const categoriaId = ref('');
 const nombreDepartamento = (departamento_id) => {
 	const depto = departamentosStore.departamentos.find(d => Number(d.id) === Number(departamento_id));
 	return depto ? depto.departamento : '-';
@@ -33,6 +34,7 @@ function eliminarProveedor(id, razonSocial, apellidos) {
 function buscar() {
 	const filtros = {};
 	if (departamentoId.value) filtros.departamento_id = departamentoId.value;
+	if (categoriaId.value) filtros.categoria = categoriaId.value;
 
 	if(texto.value.trim() == ''){
 		proveedorStore.listar(filtros)
@@ -61,6 +63,17 @@ onMounted(() => {
 							</div>
 						</div>
 						<div class="col-12 col-md my-1">
+							<select id="sltCategoria" class="form-select" v-model="categoriaId">
+								<option value="">Todos los tipos</option>
+								<option value="agencia">Agencia</option>
+								<option value="alojamiento">Alojamiento</option>
+								<option value="local">Local</option>
+								<option value="restaurant">Restaurant</option>
+								<option value="transporte">Transporte</option>
+								<option value="vendedor">Vendedor</option>
+							</select>
+						</div>
+						<div class="col-12 col-md my-1">
 							<select id="sltDepartamento" class="form-select" v-model="departamentoId">
 								<option value="">Todos los departamentos</option>
 								<option v-for="dep in departamentosStore.departamentos" :key="dep.id" :value="dep.id">
@@ -71,8 +84,8 @@ onMounted(() => {
 						<div class="col-5 col-md">
 							<div><button class="btn btn-outline-secondary" @click="buscar"><i class="bi bi-search"></i> Buscar</button></div>
 						</div>
-						<div class="col d-flex justify-content-center">
-							<div>
+						<div class="col-12 col-md-auto my-1">
+							<div class="d-flex align-items-center h-100">
 								<router-link to="/proveedor/nuevo" class="btn btn-outline-primary"><i class="bi bi-star"></i> Nuevo proveedor</router-link>
 							</div>
 						</div>

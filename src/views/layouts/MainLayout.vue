@@ -162,7 +162,7 @@
 			</div>
 
 			<!-- Contenido principal -->
-			<div class="col pt-3">
+			<div class="col pt-3" style="min-width: 0;">
 				<router-view class="container-fluid"></router-view>
 			</div>
 		</div>

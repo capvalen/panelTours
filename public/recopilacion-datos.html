@@ -160,7 +160,7 @@
 								</label>
 								<input
 									type="text"
-									v-model="servicio.nombre"
+									:value="nombreServicio"
 									readonly
 									class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium cursor-not-allowed"
 								/>
@@ -328,12 +328,23 @@
 											>Fecha de nacimiento</label
 										>
 										<input
-											type="date"
-											v-model="pasajero.fechaNacimiento"
+											type="text"
+											inputmode="numeric"
+											v-model="pasajero.fechaNacimientoDisplay"
+											placeholder="DD/MM/AAAA"
+											maxlength="10"
+											@input="pasajero.fechaNacimientoDisplay = mascaraFecha($event.target.value)"
 											class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg focus:border-primary-500 focus:outline-none input-focus transition-all text-sm bg-white"
 										/>
+										<p
+											v-if="pasajero.fechaNacimientoDisplay && edadPasajero(pasajero.fechaNacimientoDisplay) !== null"
+											class="text-xs text-slate-500 mt-1"
+										>
+											<i class="fas fa-cake-candles mr-1"></i>
+											Edad: {{ edadPasajero(pasajero.fechaNacimientoDisplay) }} años
+										</p>
 									</div>
-									<div class="space-y-1">
+									<div class="space-y-1" v-if="index !== 0">
 										<label
 											class="text-xs font-semibold text-slate-500 uppercase"
 											>Parentesco</label
@@ -495,12 +506,23 @@
 											>Fecha de nacimiento</label
 										>
 										<input
-											type="date"
-											v-model="pasajero.fechaNacimiento"
+											type="text"
+											inputmode="numeric"
+											v-model="pasajero.fechaNacimientoDisplay"
+											placeholder="DD/MM/AAAA"
+											maxlength="10"
+											@input="pasajero.fechaNacimientoDisplay = mascaraFecha($event.target.value)"
 											class="w-full px-3 py-2.5 border-2 border-slate-200 rounded-lg focus:border-primary-500 focus:outline-none input-focus transition-all text-sm bg-white"
 										/>
+										<p
+											v-if="pasajero.fechaNacimientoDisplay && edadPasajero(pasajero.fechaNacimientoDisplay) !== null"
+											class="text-xs text-slate-500 mt-1"
+										>
+											<i class="fas fa-cake-candles mr-1"></i>
+											Edad: {{ edadPasajero(pasajero.fechaNacimientoDisplay) }} años
+										</p>
 									</div>
-									<div class="space-y-1">
+									<div class="space-y-1" v-if="index !== 0">
 										<label
 											class="text-xs font-semibold text-slate-500 uppercase"
 											>Parentesco</label
@@ -850,18 +872,25 @@
 				</form>
 				<div
 					v-if="mostrarModalExito"
+					ref="modalExitoRef"
+					tabindex="-1"
 					class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 px-4"
 				>
 					<div class="bg-white rounded-2xl shadow-lg max-w-md w-full p-6 text-center">
 						<div class="w-14 h-14 mx-auto rounded-full bg-green-100 text-green-600 flex items-center justify-center mb-4">
 							<i class="fas fa-check text-2xl"></i>
 						</div>
-						<h3 class="text-2xl font-bold text-slate-800 mb-2">Felicitaciones</h3>
-						<p class="text-slate-600 mb-6">Tus datos se guardaron correctamente.</p>
+						<h3 class="text-2xl font-bold text-slate-800 mb-2">¡Gracias por tu registro!</h3>
+						<p class="text-slate-600 mb-2">Tus datos se guardaron correctamente.</p>
+						<p class="text-sm text-slate-400">
+							<i class="fas fa-hourglass-half mr-1"></i>
+							Esta página se cerrará automáticamente en
+							<strong>{{ contador }}</strong> segundos.
+						</p>
 						<button
 							type="button"
 							@click="cerrarModalExito"
-							class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all"
+							class="mt-4 px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all"
 						>
 							Aceptar
 						</button>
@@ -901,11 +930,15 @@
 						jsonResultado: null,
 						mostrarModalExito: false,
 						guardadoExitoso: false,
+						contador: 0,
 					};
 				},
 				computed: {
 					jsonFormateado() {
 						return this.jsonResultado ? JSON.stringify(this.jsonResultado, null, 2) : "";
+					},
+					nombreServicio() {
+						return this.servicio.nombre.replace("WEB", "");
 					},
 				},
 				async mounted() {
@@ -916,6 +949,56 @@
 					capitalizar(str) {
 						if (!str) return "";
 						return str.charAt(0).toUpperCase() + str.slice(1);
+					},
+					mascaraFecha(value) {
+						if (!value) return "";
+						const soloDigitos = value.replace(/\D/g, "").slice(0, 8);
+						let resultado = soloDigitos;
+						if (soloDigitos.length > 4) {
+							resultado =
+								soloDigitos.slice(0, 2) + "/" +
+								soloDigitos.slice(2, 4) + "/" +
+								soloDigitos.slice(4);
+						} else if (soloDigitos.length > 2) {
+							resultado = soloDigitos.slice(0, 2) + "/" + soloDigitos.slice(2);
+						}
+						return resultado;
+					},
+					isoADisplay(iso) {
+						if (!iso) return "";
+						const match = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+						if (!match) return iso;
+						return `${match[3]}/${match[2]}/${match[1]}`;
+					},
+					fechaDisplayAManifiesto(display) {
+						if (!display) return "";
+						const match = display.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+						if (!match) return "";
+						const [, dd, mm, yyyy] = match;
+						const dia = Number(dd);
+						const mes = Number(mm);
+						const anio = Number(yyyy);
+						if (mes < 1 || mes > 12) return "";
+						if (dia < 1 || dia > 31) return "";
+						const fecha = new Date(anio, mes - 1, dia);
+						if (
+							fecha.getFullYear() !== anio ||
+							fecha.getMonth() !== mes - 1 ||
+							fecha.getDate() !== dia
+						) return "";
+						return `${yyyy}-${mm}-${dd}`;
+					},
+					edadPasajero(display) {
+						const iso = this.fechaDisplayAManifiesto(display);
+						if (!iso) return null;
+						const [y, m, d] = iso.split("-").map(Number);
+						const hoy = new Date();
+						let edad = hoy.getFullYear() - y;
+						if (
+							hoy.getMonth() + 1 < m ||
+							(hoy.getMonth() + 1 === m && hoy.getDate() < d)
+						) edad--;
+						return edad >= 0 ? edad : null;
 					},
 					obtenerVentaIdDesdeUrl() {
 						const params = new URLSearchParams(window.location.search);
@@ -945,6 +1028,7 @@
 							paisEmision: persona?.pais_emision || "",
 							vacunas: persona?.vacunas || "no",
 							detalleVacunas: persona?.detalle_vacunas || "",
+							fechaNacimientoDisplay: this.isoADisplay(persona?.fecha_nacimiento || ""),
 						};
 					},
 					async cargarDatosDesdeUrl() {
@@ -981,7 +1065,7 @@
 						for (let i = 0; i < this.numClientes; i++) this.pasajeros.push(this.crearPasajeroVacio());
 					},
 					crearPasajeroVacio() {
-						return { dni: "", nombre: "", fechaNacimiento: "", parentesco: "padre", enfermedades: "no", detalleEnfermedades: "", alergia: "no", detalleAlergia: "", pedidoEspecial: "", pasaporte: "", vencimientoPasaporte: "", paisEmision: "", vacunas: "no", detalleVacunas: "" };
+						return { dni: "", nombre: "", fechaNacimiento: "", fechaNacimientoDisplay: "", parentesco: "padre", enfermedades: "no", detalleEnfermedades: "", alergia: "no", detalleAlergia: "", pedidoEspecial: "", pasaporte: "", vencimientoPasaporte: "", paisEmision: "", vacunas: "no", detalleVacunas: "" };
 					},
 	
 					validarFormulario() {
@@ -1004,7 +1088,7 @@
 								es_titular: index === 0,
 								dni: p.dni,
 								nombre: p.nombre,
-								fecha_nacimiento: p.fechaNacimiento,
+								fecha_nacimiento: this.fechaDisplayAManifiesto(p.fechaNacimientoDisplay),
 								parentesco: p.parentesco,
 								enfermedades: p.enfermedades,
 								detalle_enfermedades: p.detalleEnfermedades,
@@ -1044,14 +1128,49 @@
 							});
 							if (!response.ok) throw new Error(`Error ${response.status}`);
 							this.guardadoExitoso = true;
-							this.mostrarModalExito = true;
+							this.abrirModalExito();
 						} catch (error) {
 							console.error("No se pudo guardar el registro:", error);
 							alert("Ocurrió un error al guardar los datos. Inténtalo nuevamente.");
 						}
 					},
-					cerrarModalExito() {
+					cerrarModalExito(cerrarPagina = false) {
 						this.mostrarModalExito = false;
+						if (this.intervaloTimer) {
+							clearInterval(this.intervaloTimer);
+							this.intervaloTimer = null;
+						}
+						if (cerrarPagina) {
+							try {
+								window.close();
+								// Algunos navegadores solo cierran ventanas abiertas con window.open().
+								// Truco adicional para forzar el cierre en esos casos:
+								setTimeout(() => {
+									if (!window.closed) {
+										window.open("", "_self", "");
+										window.close();
+									}
+								}, 200);
+							} catch (error) {
+								console.error("No se pudo cerrar la página:", error);
+							}
+						}
+					},
+					abrirModalExito() {
+						this.contador = 3;
+						this.mostrarModalExito = true;
+						this.$nextTick(() => {
+							const el = this.$refs.modalExitoRef;
+							if (el) {
+								el.scrollIntoView({ behavior: "smooth", block: "center" });
+								el.focus();
+							}
+						});
+						if (this.intervaloTimer) clearInterval(this.intervaloTimer);
+						this.intervaloTimer = setInterval(() => {
+							this.contador--;
+							if (this.contador <= 0) this.cerrarModalExito(true);
+						}, 1000);
 					},
 				},
 			}).mount("#app");

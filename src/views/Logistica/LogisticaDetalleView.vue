@@ -151,10 +151,18 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr class="table-secondary">
-									<td colspan="8"><strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }} · <strong>Punto de recojo:</strong> {{ logistica.ventas?.[0]?.punto_recojo || '-' }}</td>
-								</tr>
 								<template v-for="venta in logistica.ventas" :key="venta.id">
+									<tr class="table-secondary">
+										<td colspan="8">
+											<router-link
+												:to="{ name: 'detalleVenta', params: { id: venta.id } }"
+												class="fw-bold text-primary text-decoration-none me-2"
+											>
+												GEA-{{ String(venta.id).padStart(3, '0') }}
+											</router-link>
+											<strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }} · <strong>Punto de recojo:</strong> {{ venta.punto_recojo || '-' }}
+										</td>
+									</tr>
 									<tr v-for="(persona, pIdx) in venta.personas" :key="persona.id">
 										<td class="text-center text-muted">{{ indexGlobal(venta, pIdx) }}</td>
 										<td>

@@ -149,7 +149,7 @@
 		</div>
 
 		<!-- Lista de servicios agregados (tabla) -->
-		<div v-if="servicios.length > 0" class="mt-3">
+		<div v-if="servicios.length > 0" ref="tablaServiciosRef" class="mt-3">
 			<h6 class="card-title mb-3"><i class="bi bi-caret-right"></i> Servicios agregados</h6>
 			<div class="table-responsive">
 				<table class="table table-bordered table-hover align-middle mb-0">
@@ -287,6 +287,9 @@
 			</div>
 		</div>
 
+		<!-- Espacio extra al final para permitir scroll -->
+		<div class="pb-5"></div>
+
 		<!-- Modal: Extraer Tour desde la web -->
 		<div class="modal fade" id="modalExtraerTour" tabindex="-1" aria-labelledby="modalExtraerTourLabel" aria-hidden="true">
 			<div class="modal-dialog modal-lg modal-dialog-scrollable">
@@ -372,7 +375,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, computed } from 'vue';
+import { ref, reactive, watch, onMounted, computed, nextTick } from 'vue';
 import api from '@/services/axios';
 import { useRoute, useRouter } from 'vue-router';
 import { useClienteStore } from '@/stores/clienteStore';
@@ -456,6 +459,15 @@ watch(() => filtros.fechaInicio, (nueva) => {
 });
 
 const servicios = ref([]);
+const tablaServiciosRef = ref(null);
+
+const scrollTablaServicios = async () => {
+	await nextTick();
+	const el = tablaServiciosRef.value;
+	if (el) {
+		el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+};
 
 // ── Compartido / Privado ──
 // Campo oculto: por defecto 'compartido'; solo cambia a 'privado' si se agrega un tour privado
@@ -500,6 +512,7 @@ const agregarServicio = (tipo) => {
 		descuento: 0,
 		motivo_descuento: '',
 	});
+	scrollTablaServicios();
 };
 
 const eliminarServicio = (index) => {
@@ -672,6 +685,7 @@ const agregarTourWeb = (tour) => {
 		hora_inicio: tour.contenido.hora || null,
 		descripcion: tour.contenido.nombre || 'Tour web',
 	});
+	scrollTablaServicios();
 };
 
 // ── Inicialización ──

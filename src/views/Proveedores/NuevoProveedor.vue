@@ -79,12 +79,13 @@ onMounted(() => {
 						<div class="col-md-6">
 							<label for="categoria" class="form-label">Categoría</label>
 							<select class="form-select" id="categoria" v-model="nuevo.categoria">
-								<option value="alojamiento">Alojamiento</option>
-								<option value="transporte">Transporte</option>
-								<option value="restaurant">Restaurant</option>
-								<option value="local">Local</option>
 								<option value="agencia">Agencia</option>
+								<option value="alojamiento">Alojamiento</option>
 								<option value="guía">Guía</option>
+								<option value="local">Local</option>
+								<option value="restaurant">Restaurant</option>
+								<option value="transporte">Transporte</option>
+								<option value="vendedor">Vendedor</option>
 							</select>
 						</div>
 						<div class="col-md-6">
