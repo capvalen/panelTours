@@ -164,20 +164,20 @@
 									readonly
 									class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium cursor-not-allowed"
 								/>
-							</div>
-							<div class="space-y-2">
-								<label
-									class="text-sm font-semibold text-slate-700 flex items-center gap-2"
-								>
-									<i class="fas fa-tag text-primary-500"></i>
-									Tipo de servicio
-								</label>
-								<div
-									class="px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium capitalize"
-								>
-									{{ servicio.tipo }}
+							</div>								<div class="space-y-2">
+									<label
+										class="text-sm font-semibold text-slate-700 flex items-center gap-2"
+									>
+										<i class="fas fa-tag text-primary-500"></i>
+										Modalidad
+									</label>
+									<input
+										type="text"
+										:value="capitalizar(compartido)"
+										readonly
+										class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-600 font-medium cursor-not-allowed"
+									/>
 								</div>
-							</div>
 							<div class="space-y-2">
 								<label class="text-sm font-semibold text-slate-700 flex items-center gap-2">
 									<i class="fas fa-users text-primary-500"></i>
@@ -886,8 +886,8 @@
 			createApp({
 				data() {
 					return {
-						baseUrl: API_BASE,
-						servicio: { nombre: "", tipo: "" },
+						baseUrl: API_BASE,								servicio: { nombre: "", tipo: "" },
+								compartido: "",
 						numClientes: 0,
 						titular: {
 							celular: "",
@@ -958,9 +958,9 @@
 							if (!response.ok) throw new Error(`Error ${response.status}`);
 							const data = await response.json();
 							const personas = Array.isArray(data.personas) ? data.personas : [];
-							const venta = data.venta || {};
-							this.servicio.nombre = venta.descripcion || this.servicio.nombre;
-							this.servicio.tipo = venta.tipo || this.servicio.tipo;
+							const venta = data.venta || {};								this.servicio.nombre = venta.descripcion || this.servicio.nombre;
+								this.servicio.tipo = venta.tipo || this.servicio.tipo;
+								this.compartido = venta.compartido || '';
 							this.numClientes = data.total > 0 ? data.total : personas.length;
 							if (personas.length === 0) {
 								this.inicializarPasajeros();

@@ -54,9 +54,6 @@
 				</div>
 				<transition name="slide">
 					<div v-if="configOpen && !collapsed">
-						<router-link to="/configuraciones" class="menuSubItem" v-if="puedeVer('administrador')">
-							<div class="menuFila menuFila-sub"><i class="bi bi-gear"></i> Usuarios</div>
-						</router-link>
 						<router-link to="/clientes" class="menuSubItem" v-if="puedeVer('counter')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-wechat"></i> Clientes</div>
 						</router-link>
@@ -74,6 +71,9 @@
 						</router-link>
 						<router-link to="/recordatorios" class="menuSubItem" v-if="puedeVer('administrador')">
 							<div class="menuFila menuFila-sub"><i class="bi bi-stars"></i> Recordatorios</div>
+						</router-link>
+						<router-link to="/configuraciones" class="menuSubItem" v-if="puedeVer('administrador')">
+							<div class="menuFila menuFila-sub"><i class="bi bi-gear"></i> Configuraciones</div>
 						</router-link>
 					</div>
 				</transition>
@@ -146,6 +146,9 @@
 						</router-link>
 						<router-link to="/recordatorios" v-if="puedeVer('administrador')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
 							<i class="bi bi-stars"></i> Recordatorios
+						</router-link>
+						<router-link to="/configuraciones" v-if="puedeVer('administrador')" class="menuFila-mobile menuSubItem-mobile" @click="closeOffcanvas">
+							<i class="bi bi-gear"></i> Configuraciones
 						</router-link>
 						</div>
 					</transition>

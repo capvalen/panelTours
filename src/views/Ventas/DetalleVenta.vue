@@ -692,7 +692,7 @@ const personaForm = ref({
 });
 
 const parentescos = [
-	'acompañante', 'alumno', 'amistad', 'empleado', 'esposo/a',
+	'titular', 'acompañante', 'alumno', 'amistad', 'empleado', 'esposo/a',
 	'hermano/a', 'hijo', 'jefe', 'madre', 'padre', 'pareja', 'tio/a', 'tutor/a'
 ];
 
@@ -839,6 +839,15 @@ watch(() => logisticaForm.value.fecha, async (nuevaFecha) => {
 			}
 		} catch {}
 	}
+});
+
+// Sync parentesco ↔ es_titular
+watch(() => personaForm.value.parentesco, (nuevo) => {
+	personaForm.value.es_titular = (nuevo === 'titular');
+});
+
+watch(() => personaForm.value.es_titular, (esTitular) => {
+	personaForm.value.parentesco = esTitular ? 'titular' : 'acompañante';
 });
 
 const resetLogisticaForm = () => {
