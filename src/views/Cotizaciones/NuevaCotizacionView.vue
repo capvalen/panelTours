@@ -654,23 +654,26 @@ const abrirModalExtraer = () => {
 };
 
 const agregarTourWeb = (tour) => {
+	const contenido = tour?.contenido || {};
+	const destino = contenido.destino || filtros.departamento || '';
 	const precio_adulto = Number(esPeruano.value
-		? tour.contenido.peruanos?.adultos
-		: tour.contenido.extranjeros?.adultos) || 0;
+		? contenido.peruanos?.adultos
+		: contenido.extranjeros?.adultos) || 0;
 	const precio_kids = Number(esPeruano.value
-		? tour.contenido.peruanos?.kids
-		: tour.contenido.extranjeros?.kids) || 0;
+		? contenido.peruanos?.kids
+		: contenido.extranjeros?.kids) || 0;
 
 	servicios.value.push({
 		tipo: 'web',
 		idTour: tour.id,
-		destino: filtros.departamento,
+		destino,
+		punto_partida: destino,
 		descuento: 0,
 		motivo_descuento: '',
 		precio_adulto,
 		precio_kids,
-		hora_inicio: tour.contenido.hora || null,
-		descripcion: tour.contenido.nombre || 'Tour web',
+		hora_inicio: contenido.hora || null,
+		descripcion: contenido.nombre || 'Tour web',
 	});
 };
 

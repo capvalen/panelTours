@@ -27,6 +27,10 @@ const router = createRouter({
 			meta: { requiresAuth: true }, // Requiere autenticación
 			children: [
 				{
+					path: '',
+					redirect: { name: 'dashboard' }
+				},
+				{
 					path: '/dashboard',
 					name: 'dashboard',
 					component: () => import('@/views/Inicio.vue'),
