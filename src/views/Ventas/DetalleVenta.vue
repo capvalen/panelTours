@@ -251,6 +251,7 @@
 								<th class="text-end">Descuento</th>
 								<th>Motivo descuento</th>
 								<th class="text-end">Subtotal</th>
+								<th class="text-center" style="width: 160px;">Acción</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -263,6 +264,11 @@
 								<td class="text-end">{{ item.descuento ? 'S/ ' + formatPrecio(item.descuento) : '-' }}</td>
 								<td>{{ item.motivo_descuento || '-' }}</td>
 								<td class="text-end fw-semibold">S/ {{ formatPrecio(item.precio) }}</td>
+								<td class="text-center">
+									<button class="btn btn-sm btn-success" @click="abrirModalConfirmacionServicio(item)" :disabled="!venta.cliente?.celular">
+										<i class="bi bi-whatsapp"></i> Confirmación
+									</button>
+								</td>
 							</tr>
 						</tbody>
 					</table>
@@ -273,6 +279,7 @@
 			</div>
 		</div>
 	</div>
+
 
 	<!-- Pagos -->
 				<div class="col-12">
@@ -431,6 +438,54 @@
 				</div>
 			</div>
 		</template>
+	</div>
+
+	<!-- Modal Confirmación de servicio -->
+	<div class="modal fade" id="modalConfirmacionServicio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-lg modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Confirmación de servicio</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="text-muted small mb-3">Selecciona la temporada para incluir las recomendaciones en el mensaje de WhatsApp.</p>
+					<div class="d-flex flex-column gap-2">
+						<button
+							class="temporada-option text-start p-3 rounded-3 border"
+							:class="{ 'active': temporadaConfirmacionSeleccionada === -1 }"
+							@click="temporadaConfirmacionSeleccionada = -1"
+						>
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi" :class="temporadaConfirmacionSeleccionada === -1 ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+								<div class="fw-semibold">Sin temporada</div>
+							</div>
+						</button>
+						<button
+							v-for="(t, index) in temporadas"
+							:key="index"
+							class="temporada-option text-start p-3 rounded-3 border"
+							:class="{ 'active': temporadaConfirmacionSeleccionada === index }"
+							@click="temporadaConfirmacionSeleccionada = index"
+						>
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi" :class="temporadaConfirmacionSeleccionada === index ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+								<div>
+									<div class="fw-semibold">{{ t.valor?.titulo || 'Temporada' }}</div>
+									<div class="text-muted small">{{ stripHtml(t.valor?.contenido).substring(0, 80) }}{{ stripHtml(t.valor?.contenido).length > 80 ? '...' : '' }}</div>
+								</div>
+							</div>
+						</button>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-success" @click="enviarConfirmacionServicio" :disabled="!servicioConfirmacion">
+						<i class="bi bi-whatsapp"></i> Enviar WhatsApp
+					</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Modal Pago -->
@@ -671,6 +726,7 @@ import { useLogisticaStore } from '@/stores/logisticaStore';
 import { useCajaStore } from '@/stores/cajaStore';
 import { useClienteStore } from '@/stores/clienteStore';
 import { useProveedoresStore } from '@/stores/proveedorStore';
+import { useConfiguracionStore } from '@/stores/configuracionStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -684,6 +740,7 @@ const logisticaStore = useLogisticaStore();
 const cajaStore = useCajaStore();
 const clienteStore = useClienteStore();
 const proveedorStore = useProveedoresStore();
+const configStore = useConfiguracionStore();
 const { encodeForUrl, formatMoneda, fechaLatamSimple, capitalize } = useFormat();
 
 const venta = ref(null);
@@ -788,6 +845,27 @@ const formatFechaDestino = (fecha) => {
 	if (!fecha) return '-';
 	const d = new Date(fecha);
 	return d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const stripHtml = (html) => {
+	if (!html) return '';
+	const tmp = document.createElement('div');
+	tmp.innerHTML = html;
+	return (tmp.textContent || tmp.innerText || '').replace(/\s+/g, ' ').trim();
+};
+
+const temporadas = computed(() => configStore.temporadas);
+const servicioConfirmacion = ref(null);
+const temporadaConfirmacionSeleccionada = ref(-1);
+let modalConfirmacionServicioInstance = null;
+
+const abrirModalConfirmacionServicio = (item) => {
+	servicioConfirmacion.value = item;
+	temporadaConfirmacionSeleccionada.value = -1;
+	if (!modalConfirmacionServicioInstance) {
+		modalConfirmacionServicioInstance = new Modal(document.getElementById('modalConfirmacionServicio'));
+	}
+	modalConfirmacionServicioInstance.show();
 };
 
 const clienteNombre = computed(() => {
@@ -1403,6 +1481,7 @@ const eliminarNoIncluye = (index) => {
 
 onMounted(async () => {
 	try {
+		await configStore.cargarTemporadas();
 		if (esAdmin.value) {
 			await cargarVendedores();
 		}
@@ -1528,6 +1607,40 @@ const enviarConfirmacion = () => {
 		const wame = `https://api.whatsapp.com/send?phone=51${telefono}&text=${encodeURIComponent(mensaje)}`;
 		window.open(wame, '_blank');
 	};
+
+const enviarConfirmacionServicio = () => {
+	const cliente = venta.value?.cliente;
+	if (!cliente?.celular || !servicioConfirmacion.value) return;
+
+	const temporadaSeleccionada = temporadaConfirmacionSeleccionada.value === -1
+		? null
+		: temporadas.value[temporadaConfirmacionSeleccionada.value];
+
+	const recomendaciones = temporadaSeleccionada?.valor?.contenido
+		? stripHtml(temporadaSeleccionada.valor.contenido)
+		: '• Usar ropa cómoda y abrigada.\n• Mantener hidratación durante todo el recorrido.\n• Llevar protector solar y agua.\n• Llegar con 10 a 15 minutos de anticipación.';
+
+	const nombre = clienteNombre.value || 'Viajero';
+	const servicio = servicioConfirmacion.value.descripcion || 'Servicio';
+	const puntoRecojo = venta.value?.punto_recojo || 'Por confirmar';
+	const mensaje = `¡Hola *${nombre}*! 👋 Te saluda el equipo de Grupo Euro Andino. 🇵🇪 Queremos que mañana tengas un excelente día. ☀️ 
+
+Le escribimos para reconfirmar su reserva para el tour: *${servicio}* 🚐 para el día de mañana. 
+
+📍 Punto de encuentro: ${puntoRecojo}
+⏰ Hora de recojo: 10:30 a. m [por el momento así].
+Favor de presentarse de 10 a 15 minutos antes. 
+
+🎒 Recomendaciones para tu viaje: 
+${recomendaciones}
+
+Cualquier consulta estamos para ayudarles. ¡Nos vemos mañana! 😊✨`;
+
+	const telefono = String(cliente.celular).replace(/\D/g, '').replace(/^51/, '');
+	const wame = `https://api.whatsapp.com/send?phone=51${telefono}&text=${encodeURIComponent(mensaje)}`;
+	modalConfirmacionServicioInstance?.hide();
+	window.open(wame, '_blank');
+};
 
 const copiarLinkCheckin = () => {
 	const parametro = encodeForUrl({ id: route.params.id });
