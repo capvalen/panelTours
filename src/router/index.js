@@ -77,7 +77,7 @@ const router = createRouter({
 				{
 					path: '/proveedor/editar/:id',
 					name: 'editarProveedor',
-					component: () => import('../views/Proveedores/editar.vue'),
+					component: () => import('../views/Proveedores/EditarProveedor.vue'),
 				},
 				{
 					path: '/vehiculos',

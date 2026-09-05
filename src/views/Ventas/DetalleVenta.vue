@@ -30,6 +30,18 @@
 						<span :class="'badge bg-' + estadoBadgeColor">
 							{{ capitalize(venta.estado) }}
 						</span>
+						&middot;
+						<select class="form-select form-select-sm d-inline-block" style="width: auto;" :value="venta.compartido" @change="cambiarCompartido($event.target.value)">
+							<option value="compartido">Compartido</option>
+							<option value="privado">Privado</option>
+						</select>
+						&middot;
+						<i class="bi bi-person"></i>
+						<span v-if="!esAdmin">{{ vendedorActualNombre }}</span>
+						<select v-else class="form-select form-select-sm d-inline-block" style="width: auto;" :value="venta.vendedor_id || ''" @change="cambiarVendedor($event.target.value)">
+							<option value="">Ningún vendedor</option>
+							<option v-for="v in vendedoresLista" :key="v.id" :value="v.id">{{ v.razon_social || v.nombre }}</option>
+						</select>
 					</p>
 				</div>
 				<div class="d-flex gap-2">
@@ -82,8 +94,8 @@
 					<div class="card h-100">
 						<div class="card-body">
 							<h6 class="card-title"><i class="bi bi-geo-alt"></i> Datos del viaje</h6>
-							<div class="row row-cols-3">
-								<div class="col-md">
+							<div class="row">
+								<div class="col-md-6">
 									<table class="table table-sm table-borderless mb-0">
 										<tbody>
 											<tr>
@@ -98,8 +110,14 @@
 												<td class="text-muted small">Fecha fin</td>
 												<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
 											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div class="col-md-6">
+									<table class="table table-sm table-borderless mb-0">
+										<tbody>
 											<tr>
-												<td class="text-muted small">Adultos</td>
+												<td class="text-muted small" style="width: 100px;">Adultos</td>
 												<td>{{ venta.adults || 0 }}</td>
 											</tr>
 											<tr>
@@ -652,6 +670,7 @@ import { usePagosStore } from '@/stores/pagoStore';
 import { useLogisticaStore } from '@/stores/logisticaStore';
 import { useCajaStore } from '@/stores/cajaStore';
 import { useClienteStore } from '@/stores/clienteStore';
+import { useProveedoresStore } from '@/stores/proveedorStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 import { Modal } from 'bootstrap';
@@ -664,6 +683,7 @@ const pagosStore = usePagosStore();
 const logisticaStore = useLogisticaStore();
 const cajaStore = useCajaStore();
 const clienteStore = useClienteStore();
+const proveedorStore = useProveedoresStore();
 const { encodeForUrl, formatMoneda, fechaLatamSimple, capitalize } = useFormat();
 
 const venta = ref(null);
@@ -692,7 +712,7 @@ const personaForm = ref({
 });
 
 const parentescos = [
-	'acompañante', 'alumno', 'amistad', 'empleado', 'esposo/a',
+	'titular', 'acompañante', 'alumno', 'amistad', 'empleado', 'esposo/a',
 	'hermano/a', 'hijo', 'jefe', 'madre', 'padre', 'pareja', 'tio/a', 'tutor/a'
 ];
 
@@ -839,6 +859,15 @@ watch(() => logisticaForm.value.fecha, async (nuevaFecha) => {
 			}
 		} catch {}
 	}
+});
+
+// Sync parentesco ↔ es_titular
+watch(() => personaForm.value.parentesco, (nuevo) => {
+	personaForm.value.es_titular = (nuevo === 'titular');
+});
+
+watch(() => personaForm.value.es_titular, (esTitular) => {
+	personaForm.value.parentesco = esTitular ? 'titular' : 'acompañante';
 });
 
 const resetLogisticaForm = () => {
@@ -1250,6 +1279,55 @@ const cancelarEdicionHora = () => {
 	editandoHora.value = false;
 };
 
+const cambiarCompartido = async (nuevoValor) => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { compartido: nuevoValor } });
+		venta.value.compartido = nuevoValor;
+		Swal.fire({ title: 'Tipo actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar compartido:', err);
+		Swal.fire('Error', 'No se pudo actualizar el tipo', 'error');
+	}
+};
+
+// ── Vendedor ──
+const vendedoresLista = ref([]);
+
+const esAdmin = computed(() => {
+	return authStore.user?.perfil === 'administrador';
+});
+
+const vendedorActualNombre = computed(() => {
+	const id = venta.value?.vendedor_id;
+	if (!id) return 'Sin asignar';
+	const found = vendedoresLista.value.find(v => Number(v.id) === Number(id));
+	if (found) return found.razon_social || found.nombre;
+	return venta.value?.vendedor?.razon_social || venta.value?.vendedor?.nombre || `Vendedor ${id}`;
+});
+
+// Los vendedores son proveedores con categoría 'vendedor'
+const cargarVendedores = async () => {
+	try {
+		const res = await proveedorStore.listar({ categoria: 'vendedor' });
+		vendedoresLista.value = Array.isArray(res) ? res : [];
+	} catch (err) {
+		console.error('Error al cargar vendedores:', err);
+	}
+};
+
+const cambiarVendedor = async (valor) => {
+	// '' → null (ningún vendedor)
+	const nuevoId = valor === '' || valor === null ? null : Number(valor);
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { vendedor_id: nuevoId } });
+		venta.value.vendedor_id = nuevoId;
+		Swal.fire({ title: nuevoId ? 'Vendedor actualizado' : 'Vendedor asignado: ninguno', icon: 'success', timer: 2000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar vendedor:', err);
+		Swal.fire('Error', 'No se pudo actualizar el vendedor', 'error');
+	}
+};
+
 const guardarArrays = async (campo, valor) => {
 	try {
 		await ventaStore.actualizar(route.params.id, { venta: { [campo]: valor } });
@@ -1325,6 +1403,9 @@ const eliminarNoIncluye = (index) => {
 
 onMounted(async () => {
 	try {
+		if (esAdmin.value) {
+			await cargarVendedores();
+		}
 		const data = await ventaStore.obtenerPorId(route.params.id);
 		venta.value = data;
 		await Promise.all([cargarPersonas(), cargarPagos()]);

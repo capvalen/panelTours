@@ -2,6 +2,21 @@
 	cursor: pointer;
 }
 
+/* ── Tamaño de fuente base del proyecto ── */
+/* Bootstrap usa 1rem = 16px por defecto. Reducimos el root a 15px
+   para reducir la fuente global en 1px. */
+html {
+	font-size: 15px;
+}
+
+/* ── Grid robusto: evitar que contenido ancho desborde y empuje filas ── */
+/* Por defecto las columnas de Bootstrap (min-width: auto) se expanden con
+   contenido ancho (ej. tablas con nowrap), rompiendo el layout. Forzamos
+   min-width: 0 para que el overflow se maneje con scroll interno. */
+.row > * {
+	min-width: 0;
+}
+
 /* ── Paleta azul global ── */
 /* Override Bootstrap primarios */
 :root {

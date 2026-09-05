@@ -42,25 +42,26 @@
 				<div class="col-md-4">
 					<div class="card h-100">
 						<div class="card-body">
-							<h6 class="card-title"><i class="bi bi-person"></i> Datos del cliente</h6>
-							<table class="table table-sm table-borderless mb-0">
-								<tr>
-									<td class="text-muted small" style="width: 100px;">Nombre</td>
-									<td class="fw-semibold">{{ clienteNombre }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">DNI / RUC</td>
-									<td>{{ cotizacion.cliente?.dni || cotizacion.cliente?.ruc || '-' }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Celular</td>
-									<td>{{ cotizacion.cliente?.celular || '-' }}</td>
-								</tr>
-								<tr>
-									<td class="text-muted small">Nacionalidad</td>
-									<td>{{ capitalize(cotizacion.nacionalidad || 'peruana') }}</td>
-								</tr>
-							</table>
+							<h6 class="card-title"><i class="bi bi-person"></i> Datos del cliente</h6>								<table class="table table-sm table-borderless mb-0">
+									<tbody>
+										<tr>
+											<td class="text-muted small" style="width: 100px;">Nombre</td>
+											<td class="fw-semibold">{{ clienteNombre }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">DNI / RUC</td>
+											<td>{{ cotizacion.cliente?.dni || cotizacion.cliente?.ruc || '-' }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">Celular</td>
+											<td>{{ cotizacion.cliente?.celular || '-' }}</td>
+										</tr>
+										<tr>
+											<td class="text-muted small">Nacionalidad</td>
+											<td>{{ capitalize(cotizacion.nacionalidad || 'peruana') }}</td>
+										</tr>
+									</tbody>
+								</table>
 						</div>
 					</div>
 				</div>
@@ -69,43 +70,50 @@
 				<div class="col-md-8">
 					<div class="card h-100">
 						<div class="card-body">
-							<h6 class="card-title"><i class="bi bi-geo-alt"></i> Datos del viaje</h6>
-							<div class="row row-cols-3">
-								<div class="col-md">
+							<h6 class="card-title"><i class="bi bi-geo-alt"></i> Datos del viaje</h6>							<div class="row">
+								<div class="col-md-6">
 									<table class="table table-sm table-borderless mb-0">
-										<tr>
-											<td class="text-muted small" style="width: 100px;">Destino</td>
-											<td class="fw-semibold">{{ cotizacion.departamento?.departamento || '-' }}</td>
-										</tr>
-										<tr v-if="cotizacion.fecha_inicio">
-											<td class="text-muted small">Fecha inicio</td>
-											<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_inicio) }}</td>
-										</tr>
-										<tr v-if="cotizacion.fecha_fin">
-											<td class="text-muted small">Fecha fin</td>
-											<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_fin) }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Adultos</td>
-											<td>{{ cotizacion.adults || 0 }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Niños</td>
-											<td>{{ cotizacion.kids || 0 }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Total personas</td>
-											<td>{{ cotizacion.cuantas_personas || (cotizacion.adults + cotizacion.kids) || 0 }}</td>
-										</tr>
-										<tr v-if="cotizacion.ciudad">
-											<td class="text-muted small">Ciudad</td>
-											<td>{{ cotizacion.ciudad }}</td>
-										</tr>
-										<tr>
-											<td class="text-muted small">Modalidad</td>
-											<td class="text-capitalize">{{ cotizacion.compartido || 'compartido' }}</td>
-										</tr>
+										<tbody>
+											<tr>
+												<td class="text-muted small" style="width: 100px;">Destino</td>
+												<td class="fw-semibold">{{ cotizacion.departamento?.departamento || '-' }}</td>
+											</tr>
+											<tr v-if="cotizacion.fecha_inicio">
+												<td class="text-muted small">Fecha inicio</td>
+												<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_inicio) }}</td>
+											</tr>
+											<tr v-if="cotizacion.fecha_fin">
+												<td class="text-muted small">Fecha fin</td>
+												<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_fin) }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Modalidad</td>
+												<td class="text-capitalize">{{ cotizacion.compartido || 'compartido' }}</td>
+											</tr>
+										</tbody>
 									</table>
+								</div>
+								<div class="col-md-6">
+									<table class="table table-sm table-borderless mb-0">
+										<tbody>
+											<tr>
+												<td class="text-muted small" style="width: 100px;">Adultos</td>
+												<td>{{ cotizacion.adults || 0 }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Niños</td>
+												<td>{{ cotizacion.kids || 0 }}</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Total personas</td>
+												<td>{{ cotizacion.cuantas_personas || (cotizacion.adults + cotizacion.kids) || 0 }}</td>
+											</tr>
+											<tr v-if="cotizacion.ciudad">
+												<td class="text-muted small">Ciudad</td>
+												<td>{{ cotizacion.ciudad }}</td>
+											</tr>
+									</tbody>
+								</table>
 								</div>
 							</div>
 
@@ -259,6 +267,17 @@
 					</div>
 				</div>
 
+				<!-- Recomendaciones de temporada -->
+				<div class="col-12" v-if="cotizacion.temporada">
+					<div class="card">
+						<div class="card-body">
+							<h6 class="card-title"><i class="bi bi-calendar-event"></i> Recomendaciones de temporada</h6>
+							<h5 class="mb-2">{{ typeof cotizacion.temporada === 'object' ? cotizacion.temporada.titulo : '' }}</h5>
+							<div class="temporada-contenido" v-html="typeof cotizacion.temporada === 'object' ? cotizacion.temporada.contenido : cotizacion.temporada"></div>
+						</div>
+					</div>
+				</div>
+
 				<!-- Acciones -->
 				<div class="col-12 mb-4">
 					<div class="d-flex justify-content-between">
@@ -267,10 +286,10 @@
 								<i class="bi bi-arrow-left"></i> Volver
 							</router-link>
 						</div>
-						<button class="btn btn-success" @click="generarPDF">
-							<i class="bi bi-file-pdf"></i>
-							Generar PDF del viajero
-						</button>
+					<button class="btn btn-success" @click="abrirModalPDF">
+						<i class="bi bi-file-pdf"></i>
+						Generar PDF del viajero
+					</button>
 						<template v-if="cotizacion.estado !== 'convertido'">
 							<button class="btn btn-primary" @click="convertirReserva" :disabled="convirtiendo">
 								<i class="bi bi-arrow-right-circle"></i>
@@ -288,6 +307,54 @@
 			</div>
 			
 		</template>
+
+		<!-- Modal Temporada PDF -->
+		<div v-if="showPdfModal" class="modal-backdrop" @click.self="showPdfModal = false">
+			<div class="modal-dialog modal-dialog-centered">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title"><i class="bi bi-calendar-event me-1"></i> Seleccionar temporada</h5>
+						<button type="button" class="btn-close" @click="showPdfModal = false"></button>
+					</div>
+					<div class="modal-body">
+						<p class="text-muted small mb-3">Elige la temporada para incluir en el PDF del viajero.</p>
+						<div class="d-flex flex-column gap-2">
+							<button
+								class="temporada-option text-start p-3 rounded-3 border"
+								:class="{ 'active': temporadaSeleccionada === -1 }"
+								@click="seleccionarTemporada(-1)"
+							>
+								<div class="d-flex align-items-center gap-2">
+									<i class="bi" :class="temporadaSeleccionada === -1 ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+									<div class="fw-semibold">Sin temporada</div>
+							</div>
+						</button>
+						<button
+								v-for="(t, index) in temporadas"
+								:key="index"
+								class="temporada-option text-start p-3 rounded-3 border"
+								:class="{ 'active': temporadaSeleccionada === index }"
+								@click="seleccionarTemporada(index)"
+							>
+								<div class="d-flex align-items-center gap-2">
+									<i class="bi" :class="temporadaSeleccionada === index ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+									<div>
+										<div class="fw-semibold">{{ t.valor?.titulo }}</div>
+										<div class="temporada-excerpt text-muted small">{{ stripHtml(t.valor?.contenido).substring(0, 30) }}{{ stripHtml(t.valor?.contenido).length > 30 ? '...' : '' }}</div>
+								</div>
+							</div>
+						</button>
+					</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-outline-secondary" @click="showPdfModal = false">Cancelar</button>
+					<button type="button" class="btn btn-success" @click="generarPDF">
+						<i class="bi bi-file-pdf"></i> Generar PDF
+					</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
@@ -297,6 +364,7 @@ import api from '@/services/axios';
 import { useRouter } from 'vue-router';
 import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { useAuthStore } from '@/stores/auth';
+import { useConfiguracionStore } from '@/stores/configuracionStore';
 import Swal from 'sweetalert2';
 
 const props = defineProps({
@@ -311,6 +379,19 @@ const cotizacion = ref(null);
 const cargando = ref(true);
 const error = ref('');
 const convirtiendo = ref(false);
+const configStore = useConfiguracionStore();
+
+// ── Modal PDF ──
+const showPdfModal = ref(false);
+const temporadaSeleccionada = ref(null);
+
+const stripHtml = (html) => {
+	if (!html) return '';
+	const tmp = document.createElement('div');
+	tmp.innerHTML = html;
+	return tmp.textContent || tmp.innerText || '';
+};
+const temporadas = computed(() => configStore.temporadas);
 
 const getIcono = (tipo) => {
 	const iconos = {
@@ -506,11 +587,31 @@ const eliminarNoIncluye = (index) => {
 
 // ── Acciones ──
 
-const generarPDF = () => {
+const abrirModalPDF = () => {
+	temporadaSeleccionada.value = -1;
+	showPdfModal.value = true;
+};
+
+const seleccionarTemporada = (index) => {
+	temporadaSeleccionada.value = index;
+};
+
+const generarPDF = async () => {
+	if (temporadaSeleccionada.value === null || temporadaSeleccionada.value === undefined) {
+		Swal.fire('Aviso', 'Selecciona una temporada antes de generar el PDF', 'warning');
+		return;
+	}
+	const temporadaId = temporadaSeleccionada.value === -1 ? null : temporadas.value[temporadaSeleccionada.value]?.id || null;
+	try {
+		await cotizacionStore.actualizar(props.id, { temporada_id: temporadaId });
+	} catch (err) {
+		console.error('Error al guardar temporada:', err);
+	}
 	const baseUrl = import.meta.env.MODE === 'production'
 		? 'https://apipanel.grupoeuroandino.com/api'
 		: 'http://127.0.0.1:8000/api';
 	const url = `${baseUrl}/cotizacion/${props.id}/pdf`;
+	showPdfModal.value = false;
 	window.open(url, '_blank');
 };
 
@@ -569,3 +670,86 @@ const convertirReserva = async () => {
 	}
 };
 </script>
+
+<style scoped>
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1050;
+}
+
+.modal-dialog {
+	max-width: 480px;
+	width: 100%;
+}
+
+.modal-content {
+	background: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.modal-header {
+	padding: 1rem 1.25rem;
+	border-bottom: 1px solid #e9ecef;
+}
+
+.modal-body {
+	padding: 1.25rem;
+}
+
+.modal-footer {
+	padding: 0.75rem 1.25rem;
+	border-top: 1px solid #e9ecef;
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.temporada-option {
+	border: 2px solid #e9ecef !important;
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.temporada-option:hover {
+	border-color: #93c5fd !important;
+	background: #f8faff;
+}
+
+.temporada-option.active {
+	border-color: #0d6efd !important;
+	background: #eef4ff;
+}
+
+.temporada-excerpt {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 360px;
+	line-height: 1.3;
+}
+
+.temporada-contenido {
+	font-size: 0.9rem;
+	color: #475569;
+	line-height: 1.6;
+}
+
+.temporada-contenido :deep(img) {
+	max-width: 100%;
+	border-radius: 4px;
+	margin: 0.5rem 0;
+}
+
+.temporada-contenido :deep(ul),
+.temporada-contenido :deep(ol) {
+	padding-left: 1.5rem;
+	margin: 0.5rem 0;
+}
+</style>

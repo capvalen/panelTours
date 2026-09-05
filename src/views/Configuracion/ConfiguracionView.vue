@@ -1,14 +1,117 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick, watch } from 'vue';
 import api from '@/services/axios';
 import { useAuthStore } from '@/stores/auth';
+import { useConfiguracionStore } from '@/stores/configuracionStore';
+import Swal from 'sweetalert2';
 
 const authStore = useAuthStore();
+const configStore = useConfiguracionStore();
 
 const title = ref('Configuraciones');
 const activeTab = ref('password');
 
-// Form data for password change
+// ── Quill editor ──
+const editorContainer = ref(null);
+let quillInstance = null;
+
+const initQuill = () => {
+	nextTick(() => {
+		if (quillInstance) return;
+		const el = editorContainer.value;
+		if (!el) return;
+		quillInstance = new Quill(el, {
+			theme: 'snow',
+			placeholder: 'Escribe el contenido de la temporada...',
+			modules: {
+				toolbar: [
+					[{ header: [1, 2, 3, false] }],
+					['bold', 'italic', 'underline'],
+					[{ list: 'ordered' }, { list: 'bullet' }],
+					['link', 'image'],
+					['clean'],
+				],
+			},
+		});
+	});
+};
+
+// ── Temporadas ──
+const temporadaForm = ref({ titulo: '', contenido: '' });
+const editandoId = ref(null);
+const editandoRegistroId = ref(null);
+
+const cargarTemporadas = async () => {
+	await configStore.cargarTemporadas();
+};
+
+const guardarTemporada = async () => {
+	if (!temporadaForm.value.titulo.trim()) {
+		Swal.fire('Aviso', 'El título es obligatorio', 'warning');
+		return;
+	}
+	const contenido = quillInstance ? quillInstance.root.innerHTML : '';
+	if (!contenido || contenido === '<p><br></p>') {
+		Swal.fire('Aviso', 'El contenido es obligatorio', 'warning');
+		return;
+	}
+
+	try {
+		if (editandoRegistroId.value) {
+			await configStore.actualizarTemporada(editandoRegistroId.value, temporadaForm.value.titulo.trim(), contenido);
+			Swal.fire('Éxito', 'Temporada actualizada', 'success');
+		} else {
+			await configStore.guardarTemporada(temporadaForm.value.titulo.trim(), contenido);
+			Swal.fire('Éxito', 'Temporada creada', 'success');
+		}
+		resetFormTemporada();
+	} catch {
+		Swal.fire('Error', 'No se pudo guardar la temporada', 'error');
+	}
+};
+
+const editarTemporada = (t) => {
+	temporadaForm.value.titulo = t.titulo;
+	editandoId.value = t.id;
+	editandoRegistroId.value = t.id;
+	nextTick(() => {
+		initQuill();
+		if (quillInstance) {
+			quillInstance.root.innerHTML = t.valor?.contenido || '';
+		}
+	});
+};
+
+const eliminarTemporada = async (t) => {
+	const result = await Swal.fire({
+		title: '¿Eliminar temporada?',
+		text: 'Esta acción no se puede deshacer',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, eliminar',
+		cancelButtonText: 'Cancelar',
+	});
+	if (!result.isConfirmed) return;
+
+	try {
+		await configStore.eliminarTemporada(t.id);
+		Swal.fire('Eliminado', 'Temporada eliminada', 'success');
+		resetFormTemporada();
+	} catch {
+		Swal.fire('Error', 'No se pudo eliminar la temporada', 'error');
+	}
+};
+
+const resetFormTemporada = () => {
+	temporadaForm.value = { titulo: '', contenido: '' };
+	editandoId.value = null;
+	editandoRegistroId.value = null;
+	if (quillInstance) {
+		quillInstance.root.innerHTML = '';
+	}
+};
+
+// ── Usuarios ──
 const passwordForm = ref({
 	currentPassword: '',
 	newPassword: '',
@@ -36,7 +139,6 @@ const externalPasswordForm = ref({
 	confirmPassword: ''
 });
 
-// Handle password change
 const changePassword = async () => {
 	if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
 		alert('Las contraseñas no coinciden');
@@ -167,11 +269,6 @@ const changeExternalUserPassword = async () => {
 		return;
 	}
 
-	console.log('Changing external user password:', {
-		userId: targetExternalUser.value.id,
-		newPassword: externalPasswordForm.value.newPassword
-	});
-
 	try {
 		await api.put(`/usuarios/${targetExternalUser.value.id}`, {
 			password: externalPasswordForm.value.newPassword
@@ -199,28 +296,46 @@ const deleteUserAction = async (user) => {
 	await deleteUserApi(user);
 };
 
+// Watch for tab changes to init Quill when switching to temporadas
+watch(activeTab, (val) => {
+	if (val === 'temporadas') {
+		initQuill();
+	}
+});
+
 onMounted(() => {
 	if (authStore.user?.perfil === 'administrador') {
 		listarUsuarios();
 	}
+	cargarTemporadas();
 });
 </script>
 
 <template>
 	<h1>{{ title }}</h1>
 	<div class="config-panel">
-		<div class="tabs-header">
-			<button class="tab-btn" v-if="authStore.user?.perfil === 'administrador'" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'">
-				Todos los usuarios
-			</button>
-			<button class="tab-btn" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">
-				Mi contraseña
-			</button>
-		</div>
+		<ul class="nav nav-tabs mb-3">
+			<li class="nav-item" v-if="authStore.user?.perfil === 'administrador'">
+				<button class="nav-link" :class="{ active: activeTab === 'usuarios' }" @click="activeTab = 'usuarios'">
+					<i class="bi bi-people me-1"></i> Usuarios
+				</button>
+			</li>
+			<li class="nav-item">
+				<button class="nav-link" :class="{ active: activeTab === 'password' }" @click="activeTab = 'password'">
+					<i class="bi bi-key me-1"></i> Mi contraseña
+				</button>
+			</li>
+			<li class="nav-item">
+				<button class="nav-link" :class="{ active: activeTab === 'temporadas' }" @click="activeTab = 'temporadas'">
+					<i class="bi bi-calendar-event me-1"></i> Contenido de temporadas
+				</button>
+			</li>
+		</ul>
 
+		<!-- ══════════ TAB: USUARIOS ══════════ -->
 		<div class="config-section" v-if="activeTab === 'usuarios' && authStore.user?.perfil === 'administrador'">
 			<div class="section-header">
-				<h2>Usuarios</h2>
+				<h3>Usuarios</h3>
 				<button class="btn btn-outline-primary" @click="openCreateUserModal"><i class="bi bi-person-plus"></i> Nuevo usuario</button>
 			</div>
 			<table class="users-table">
@@ -252,10 +367,7 @@ onMounted(() => {
 						<td class="actions-cell">
 							<button class="btn btn-outline-primary btn-sm" @click="openEditUserModal(user)"><i class="bi bi-pencil"></i> Editar</button>
 							<button class="btn btn-outline-danger btn-sm" @click="deleteUserAction(user)"><i class="bi bi-trash"></i> Eliminar</button>
-							<button
-								class="btn btn-outline-secondary btn-sm"
-								@click="openExternalPasswordModal(user)"
-							>
+							<button class="btn btn-outline-secondary btn-sm" @click="openExternalPasswordModal(user)">
 								<i class="bi bi-key"></i> Cambiar clave
 							</button>
 						</td>
@@ -264,8 +376,9 @@ onMounted(() => {
 			</table>
 		</div>
 
+		<!-- ══════════ TAB: CONTRASEÑA ══════════ -->
 		<div class="config-section" v-if="activeTab === 'password'">
-			<h2>Cambiar contraseña</h2>
+			<h3>Cambiar contraseña</h3>
 			<form @submit.prevent="changePassword">
 				<div class="form-group">
 					<label for="currentPassword">Contraseña actual:</label>
@@ -282,8 +395,63 @@ onMounted(() => {
 				<button type="submit" class="btn btn-outline-primary"><i class="bi bi-passport"></i> Cambiar contraseña</button>
 			</form>
 		</div>
+
+		<!-- ══════════ TAB: TEMPORADAS ══════════ -->
+		<div class="config-section" v-if="activeTab === 'temporadas'">
+			<div class="row g-4">
+				<!-- Formulario a la izquierda -->
+				<div class="col-md-5">						<h3>{{ editandoId !== null ? 'Editar temporada' : 'Nueva temporada' }}</h3>
+					<form @submit.prevent="guardarTemporada">
+						<div class="form-group">
+							<label>Título <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" v-model="temporadaForm.titulo" placeholder="Ej: Temporada alta 2025" required>
+						</div>
+						<div class="form-group">
+							<label>Contenido <span class="text-danger">*</span></label>
+							<div class="quill-wrapper">
+								<div ref="editorContainer"></div>
+							</div>
+						</div>
+						<div class="d-flex gap-2">
+							<button type="submit" class="btn btn-primary">
+								<i class="bi" :class="editandoId !== null ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+								{{ editandoId !== null ? 'Actualizar' : 'Guardar' }}
+							</button>
+							<button v-if="editandoId !== null" type="button" class="btn btn-outline-secondary" @click="resetFormTemporada">
+								Cancelar
+							</button>
+						</div>
+					</form>
+				</div>
+
+				<!-- Lista de temporadas a la derecha -->
+				<div class="col-md-7">						<h3>Temporadas registradas</h3>
+					<div v-if="configStore.temporadas.length === 0" class="text-muted text-center py-4">
+						<i class="bi bi-inbox fs-1"></i>
+						<p class="mt-2">No hay temporadas registradas</p>
+					</div>
+					<div v-else class="temporadas-list">
+						<div v-for="t in configStore.temporadas" :key="t.id" class="temporada-card">
+							<div class="temporada-header">
+								<h5 class="mb-0">{{ t.valor?.titulo }}</h5>
+								<div class="d-flex gap-1">
+									<button class="btn btn-sm btn-outline-primary" @click="editarTemporada(t)" title="Editar">
+										<i class="bi bi-pencil"></i>
+									</button>
+									<button class="btn btn-sm btn-outline-danger" @click="eliminarTemporada(t)" title="Eliminar">
+										<i class="bi bi-trash"></i>
+									</button>
+								</div>
+							</div>
+							<div class="temporada-contenido" v-html="t.valor?.contenido"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 
+	<!-- ══════════ MODAL: USUARIO ══════════ -->
 	<div class="modal-backdrop" v-if="isUserModalOpen" @click.self="closeUserModal">
 		<div class="modal-card">
 			<h3>{{ editingUserId ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
@@ -300,9 +468,9 @@ onMounted(() => {
 					<label for="userRole">Rol</label>
 					<select id="userRole" v-model="userForm.perfil">
 						<option value="administrador">Administrador</option>
-					<option value="counter">Counter</option>
-					<option value="logística">Logística</option>
-					<option value="caja">Caja</option>
+						<option value="counter">Counter</option>
+						<option value="logística">Logística</option>
+						<option value="caja">Caja</option>
 					</select>
 				</div>
 				<div class="form-group">
@@ -317,6 +485,7 @@ onMounted(() => {
 		</div>
 	</div>
 
+	<!-- ══════════ MODAL: CONTRASEÑA EXTERNA ══════════ -->
 	<div class="modal-backdrop" v-if="isPasswordModalOpen" @click.self="closeExternalPasswordModal">
 		<div class="modal-card">
 			<h3>Cambiar clave de {{ targetExternalUser?.nombre }}</h3>
@@ -340,30 +509,31 @@ onMounted(() => {
 
 <style scoped>
 .config-panel {
-	max-width: 960px;
+	max-width: 1100px;
 	margin: 0 auto;
 	padding: 1rem;
 }
 
-.tabs-header {
-	display: flex;
-	gap: 0.5rem;
-	margin-bottom: 1rem;
+.nav-tabs .nav-link {
+	color: #64748b;
+	border: none;
+	border-bottom: 2px solid transparent;
+	border-radius: 0;
+	padding: 0.65rem 1.1rem;
+	font-weight: 500;
+	background: transparent;
+	transition: all 0.2s ease;
 }
 
-.tab-btn {
-	border: 1px solid #cbd5e1;
-	background: #fff;
-	color: #334155;
-	padding: 0.55rem 0.9rem;
-	border-radius: 8px;
-	cursor: pointer;
+.nav-tabs .nav-link:hover {
+	color: #0d6efd;
+	border-bottom-color: #93c5fd;
 }
 
-.tab-btn.active {
-	background: #0d6efd;
-	color: #fff;
-	border-color: #0d6efd;
+.nav-tabs .nav-link.active {
+	color: #0d6efd;
+	border-bottom: 2px solid #0d6efd;
+	background: transparent;
 }
 
 .config-section {
@@ -373,7 +543,7 @@ onMounted(() => {
 	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.config-section h2 {
+.config-section h3 {
 	margin-top: 0;
 	color: #333;
 }
@@ -388,7 +558,8 @@ onMounted(() => {
 	font-weight: bold;
 }
 
-.form-group input {
+.form-group input,
+.form-group select {
 	width: 100%;
 	padding: 0.75rem;
 	border: 1px solid #ddd;
@@ -401,15 +572,6 @@ onMounted(() => {
 	outline: none;
 	border-color: #007bff;
 	box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-.form-group select {
-	width: 100%;
-	padding: 0.75rem;
-	border: 1px solid #ddd;
-	border-radius: 4px;
-	font-size: 1rem;
-	box-sizing: border-box;
 }
 
 .section-header {
@@ -451,6 +613,7 @@ onMounted(() => {
 	align-items: center;
 	justify-content: center;
 	padding: 1rem;
+	z-index: 1050;
 }
 
 .modal-card {
@@ -468,9 +631,74 @@ onMounted(() => {
 	margin-top: 1rem;
 }
 
-.inline-group {
+/* ── Quill wrapper ── */
+.quill-wrapper {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+}
+
+.quill-wrapper :deep(.ql-toolbar) {
+	border-radius: 4px 4px 0 0;
+	border-color: #ccc;
+}
+
+.quill-wrapper :deep(.ql-container) {
+	border-radius: 0 0 4px 4px;
+	border-color: #ccc;
+	min-height: 200px;
+	font-size: 0.95rem;
+}
+
+/* ── Temporadas list ── */
+.temporadas-list {
 	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+}
+
+.temporada-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 1rem;
+	transition: box-shadow 0.2s;
+}
+
+.temporada-card:hover {
+	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.temporada-header {
+	display: flex;
+	justify-content: space-between;
 	align-items: center;
-	gap: 0.6rem;
+	margin-bottom: 0.75rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.temporada-header h5 {
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: #1e293b;
+}
+
+.temporada-contenido {
+	font-size: 0.9rem;
+	color: #475569;
+	line-height: 1.6;
+}
+
+.temporada-contenido :deep(img) {
+	max-width: 100%;
+	border-radius: 4px;
+	margin: 0.5rem 0;
+}
+
+.temporada-contenido :deep(ul),
+.temporada-contenido :deep(ol) {
+	padding-left: 1.5rem;
+	margin: 0.5rem 0;
 }
 </style>
