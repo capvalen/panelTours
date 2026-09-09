@@ -215,9 +215,8 @@ onMounted(async () => {
 <style>
 #rowMenu {
 	background: linear-gradient(180deg, #3b82f6 0%, #bfdbfe 50%, #bae6fd 100%);
-	height: 100vh;
-	position: sticky;
-	top: 0;
+	height: 100%;
+	min-height: 100vh;
 	border-radius: 0 8px 8px 0;
 	color: #1e293b;
 	overflow-y: auto;
@@ -472,5 +471,8 @@ a {
 	transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 	overflow: hidden;
 	flex-shrink: 0;
+	position: sticky;
+	top: 0;
+	height: 100vh;
 }
 </style>
