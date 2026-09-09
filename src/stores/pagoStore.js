@@ -35,6 +35,46 @@ export const usePagosStore = defineStore('pagos', {
 			return response.data;
 		},
 
+		async listarTodos(params = {}) {
+			const response = await api.get('/pagos', { params });
+			this.pagos = response.data;
+			return response.data;
+		},
+
+		async guardarProveedor(datos) {
+			const response = await api.post('/pagos', datos);
+			this.pagos.unshift(response.data);
+			return response.data;
+		},
+
+		async obtenerCobro(id) {
+			const response = await api.get(`/pagos/${id}`);
+			this.pagoActual = response.data;
+			return response.data;
+		},
+
+		async abonarCobro(id, datos) {
+			const response = await api.put(`/pagos/${id}`, datos);
+			if (this.pagoActual && this.pagoActual.id === id) {
+				this.pagoActual = response.data;
+			}
+			return response.data;
+		},
+
+		async obtenerPagoPagar(id) {
+			const response = await api.get(`/pagos-pagar/${id}`);
+			this.pagoActual = response.data;
+			return response.data;
+		},
+
+		async abonarPagoPagar(id, datos) {
+			const response = await api.put(`/pagos-pagar/${id}`, datos);
+			if (this.pagoActual && this.pagoActual.id === id) {
+				this.pagoActual = response.data;
+			}
+			return response.data;
+		},
+
 		async obtenerPorId(idVenta, pago) {
 			const response = await api.get(`/ventas/${idVenta}/pagos/${pago}`);
 			this.pagoActual = response.data;

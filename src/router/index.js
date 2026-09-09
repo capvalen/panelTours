@@ -250,7 +250,19 @@ const router = createRouter({
 				{
 					path: '/pago/:id',
 					name: 'detallePago',
-					component: () => import('../views/Pagos/DetallePago.vue'),
+					component: () => import('../views/Pagos/DetalleCobro.vue'),
+					props: (route) => ({ id: route.params.id, tipo: 'pago-pagar' }),
+				},
+				{
+					path: '/comision/:id',
+					name: 'detalleComision',
+					component: () => import('../views/Pagos/DetalleComision.vue'),
+					props: true,
+				},
+				{
+					path: '/cobro/:id',
+					name: 'detalleCobro',
+					component: () => import('../views/Pagos/DetalleCobro.vue'),
 					props: true,
 				},
 				{
@@ -282,8 +294,9 @@ const roleAccess = {
 	'/logistica': ['administrador', 'logística'],
 	'/caja': ['administrador', 'caja'],
 	'/pago': ['administrador', 'caja'],
+	'/cobro': ['administrador', 'caja'],
+	'/comision': ['administrador', 'caja', 'logística'],
 	'/finanzas': ['administrador', 'caja'],
-	'/comision': ['administrador'],
 	'/configuraciones': ['administrador', 'counter', 'logística', 'caja'],
 	'/recordatorios': ['administrador'],
 	'/operaciones': ['administrador'],

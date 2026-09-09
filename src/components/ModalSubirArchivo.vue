@@ -6,6 +6,7 @@ import { useProveedoresStore } from '@/stores/proveedorStore';
 import { useVehiculosStore } from '@/stores/vehiculoStore';
 import { useHospedajesStore } from '@/stores/hospedajeStore';
 import { useComisionesStore } from '@/stores/comisionStore';
+import { usePagosStore } from '@/stores/pagoStore';
 
 const props = defineProps(['modelo']) //'titulo', 'color'
 const archivoStore = useArchivoStore()
@@ -14,6 +15,7 @@ const proveedorStore = useProveedoresStore()
 const vehiculoStore = useVehiculosStore()
 const hospedajeStore = useHospedajesStore()
 const comisionStore = useComisionesStore()
+const pagoStore = usePagosStore()
 
 const archivo = ref(null)
 const nombre = ref('')
@@ -62,6 +64,22 @@ const cargar = async ()=>{
 				'link': resp.link
 			})
 			await comisionStore.actualizar(comisionStore.comisionActual.id, { archivos })
+		}
+		if(props.modelo == 'cobro'){
+			const archivos = pagoStore.pagoActual?.archivos || []
+			archivos.unshift({
+				'nombre': nombre.value,
+				'link': resp.link
+			})
+			await pagoStore.abonarCobro(pagoStore.pagoActual.id, { archivos })
+		}
+		if(props.modelo == 'pago-pagar'){
+			const archivos = pagoStore.pagoActual?.archivos || []
+			archivos.unshift({
+				'nombre': nombre.value,
+				'link': resp.link
+			})
+			await pagoStore.abonarPagoPagar(pagoStore.pagoActual.id, { archivos })
 		}
 
 	}

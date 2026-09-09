@@ -49,7 +49,7 @@
 									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionLugar" title="Cancelar"><i class="bi bi-x-lg"></i></button>
 								</span>
 							</p>
-							<p class="mb-0"><strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }}</p>
+							
 							<p class="mb-0"><strong>Recaudación total:</strong> S/ {{ formatNum(recaudacionTotal) }}</p>
 						</div>
 						<div class="d-flex align-items-center gap-2">
@@ -160,13 +160,13 @@
 											>
 												GEA-{{ String(venta.id).padStart(3, '0') }}
 											</router-link>
-											<strong>Vendedor:</strong> {{ logistica.usuario?.nombre || logistica.usuario?.usuario || 'Desconocido' }} · <strong>Punto de recojo:</strong> {{ venta.punto_recojo || '-' }}
+											<strong>Vendedor:</strong> {{ capitalize(venta.vendedor?.razon_social || venta.vendedor?.contacto) || 'Desconocido' }} · <strong>Punto de recojo:</strong> {{ venta.punto_recojo || '-' }}
 										</td>
 									</tr>
 									<tr v-for="(persona, pIdx) in venta.personas" :key="persona.id">
 										<td class="text-center text-muted">{{ indexGlobal(venta, pIdx) }}</td>
 										<td>
-											{{ persona.nombre }}
+											{{ capitalize(persona.nombre) }}
 											<span v-if="persona.es_titular" class="badge bg-primary ms-1">Titular</span>										<button
 											v-if="persona?.celular && (logistica.estado === 'pendiente' || logistica.estado === 'en curso')"
 											class="btn btn-sm btn-link text-success p-0 ms-1"
@@ -193,17 +193,17 @@
 										</td>
 										<td>{{ persona.dni || '-' }}</td>
 										<td>{{ calcularEdad(persona.fecha_nacimiento) !== null ? calcularEdad(persona.fecha_nacimiento) + ' años' : '-' }}</td>
-										<td>
-											<span v-if="persona.enfermedades === 'si'" class="text-danger">Sí</span>
-											<span v-else class="text-muted">No</span>
-											<span v-if="persona.enfermedades === 'si' && persona.detalle_enfermedades" class="small text-muted ms-1">({{ persona.detalle_enfermedades }})</span>
+										<td class="text-danger">
+											<span v-if="persona.enfermedades === 'si'">{{ capitalize('Sí') }}</span>
+											<span v-else>{{ capitalize('No') }}</span>
+											<span v-if="persona.enfermedades === 'si' && persona.detalle_enfermedades" class="small ms-1">({{ capitalize(persona.detalle_enfermedades) }})</span>
 										</td>
-										<td>
-											<span v-if="persona.alergia === 'si'" class="text-danger">Sí</span>
-											<span v-else class="text-muted">No</span>
-											<span v-if="persona.alergia === 'si' && persona.detalle_alergia" class="small text-muted ms-1">({{ persona.detalle_alergia }})</span>
+										<td class="text-danger">
+											<span v-if="persona.alergia === 'si'">{{ capitalize('Sí') }}</span>
+											<span v-else>{{ capitalize('No') }}</span>
+											<span v-if="persona.alergia === 'si' && persona.detalle_alergia" class="small ms-1">({{ capitalize(persona.detalle_alergia) }})</span>
 										</td>
-										<td>{{ persona.pedido_especial || '-' }}</td>
+										<td class="text-danger">{{ capitalize(persona.pedido_especial) || '-' }}</td>
 										<td class="text-end fw-semibold">
 											<span v-if="pIdx === 0" :class="saldoColor(venta)">{{ formatSaldo(venta) }}</span>
 										</td>
@@ -294,7 +294,7 @@ import Swal from 'sweetalert2';
 const route = useRoute();
 const logistica = ref(null);
 const cargando = ref(true);
-const { convertirHora, encodeForUrl } = useFormat();
+const { convertirHora, encodeForUrl, capitalize } = useFormat();
 
 const guiaSearch = ref('');
 const guias = ref([]);
@@ -628,7 +628,7 @@ const enviarWhatsAppPasajero = (persona, venta) => {
 
 	const mensaje = `¡Hola ${nombre}! 👋 Te saluda el equipo de Grupo Euro Andino. 🇵🇪 Queremos que mañana tengas un excelente día. ☀️
 
-Le escribimos para reconfirmar su reserva para el tour: ${titulo} 🚐 para el día de mañana.
+Le escribimos para re-confirmar su reserva para el tour: ${titulo} 🚐 para el día de mañana.
 
 📍 Punto de encuentro: ${lugar}
 

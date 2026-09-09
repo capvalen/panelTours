@@ -265,7 +265,7 @@
 								<td>{{ item.motivo_descuento || '-' }}</td>
 								<td class="text-end fw-semibold">S/ {{ formatPrecio(item.precio) }}</td>
 								<td class="text-center">
-									<button class="btn btn-sm btn-success" @click="abrirModalConfirmacionServicio(item)" :disabled="!venta.cliente?.celular">
+									<button class="btn btn-sm btn-success" @click="abrirModalConfirmacionServicio(item)">
 										<i class="bi bi-whatsapp"></i> Confirmación
 									</button>
 								</td>
@@ -438,54 +438,6 @@
 				</div>
 			</div>
 		</template>
-	</div>
-
-	<!-- Modal Confirmación de servicio -->
-	<div class="modal fade" id="modalConfirmacionServicio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-		<div class="modal-dialog modal-lg modal-dialog-scrollable">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Confirmación de servicio</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<p class="text-muted small mb-3">Selecciona la temporada para incluir las recomendaciones en el mensaje de WhatsApp.</p>
-					<div class="d-flex flex-column gap-2">
-						<button
-							class="temporada-option text-start p-3 rounded-3 border"
-							:class="{ 'active': temporadaConfirmacionSeleccionada === -1 }"
-							@click="temporadaConfirmacionSeleccionada = -1"
-						>
-							<div class="d-flex align-items-center gap-2">
-								<i class="bi" :class="temporadaConfirmacionSeleccionada === -1 ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
-								<div class="fw-semibold">Sin temporada</div>
-							</div>
-						</button>
-						<button
-							v-for="(t, index) in temporadas"
-							:key="index"
-							class="temporada-option text-start p-3 rounded-3 border"
-							:class="{ 'active': temporadaConfirmacionSeleccionada === index }"
-							@click="temporadaConfirmacionSeleccionada = index"
-						>
-							<div class="d-flex align-items-center gap-2">
-								<i class="bi" :class="temporadaConfirmacionSeleccionada === index ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
-								<div>
-									<div class="fw-semibold">{{ t.valor?.titulo || 'Temporada' }}</div>
-									<div class="text-muted small">{{ stripHtml(t.valor?.contenido).substring(0, 80) }}{{ stripHtml(t.valor?.contenido).length > 80 ? '...' : '' }}</div>
-								</div>
-							</div>
-						</button>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-					<button type="button" class="btn btn-success" @click="enviarConfirmacionServicio" :disabled="!servicioConfirmacion">
-						<i class="bi bi-whatsapp"></i> Enviar WhatsApp
-					</button>
-				</div>
-			</div>
-		</div>
 	</div>
 
 	<!-- Modal Pago -->
@@ -713,7 +665,98 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal Recordatorio: seleccionar temporada -->
+	<div class="modal fade" id="modalRecordatorio" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-lg modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">{{ modoRecordatorio === 'confirmacion' ? 'Confirmación de servicio' : 'Enviar recordatorio' }}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="text-muted small mb-3">{{ modoRecordatorio === 'confirmacion' ? 'Selecciona la temporada para incluir las recomendaciones en el mensaje de confirmación.' : 'Selecciona la temporada para incluir las recomendaciones en el mensaje de recordatorio.' }}</p>
+					<div class="d-flex flex-column gap-2">
+						<button
+							class="temporada-option text-start p-3 rounded-3 border"
+							:class="{ 'active': recordatorioTemporadaSeleccionada === -1 }"
+							@click="recordatorioTemporadaSeleccionada = -1"
+						>
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi" :class="recordatorioTemporadaSeleccionada === -1 ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+								<div class="fw-semibold">Sin temporada</div>
+							</div>
+						</button>
+						<button
+							v-for="(t, index) in temporadas"
+							:key="index"
+							class="temporada-option text-start p-3 rounded-3 border"
+							:class="{ 'active': recordatorioTemporadaSeleccionada === index }"
+							@click="recordatorioTemporadaSeleccionada = index"
+						>
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi" :class="recordatorioTemporadaSeleccionada === index ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
+								<div>
+									<div class="fw-semibold">{{ t.valor?.titulo || 'Temporada' }}</div>
+									<div class="text-muted small">{{ stripHtml(t.valor?.contenido).substring(0, 80) }}{{ stripHtml(t.valor?.contenido).length > 80 ? '...' : '' }}</div>
+								</div>
+							</div>
+						</button>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" @click="confirmarRecordatorio">Continuar</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Modal Recordatorio: opciones de envío -->
+	<div class="modal fade" id="modalRecordatorioOpciones" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-sm modal-dialog-centered">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">{{ modoRecordatorio === 'confirmacion' ? 'Confirmación de servicio' : 'Enviar recordatorio' }}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="text-muted small mb-3">¿Cómo deseas enviar {{ modoRecordatorio === 'confirmacion' ? 'la confirmación' : 'el recordatorio' }}?</p>
+					<div class="d-flex flex-column gap-2">
+						<button class="btn btn-success" @click="enviarRecordatorioWhatsApp" :disabled="!venta?.cliente?.celular">
+							<i class="bi bi-whatsapp"></i> Enviar por WhatsApp Web
+						</button>
+						<button class="btn btn-outline-primary" @click="copiarRecordatorio">
+							<i class="bi bi-clipboard"></i> Copiar al portapapeles
+						</button>
+					</div>
+					<p v-if="!venta?.cliente?.celular" class="text-muted small mt-2 mb-0">
+						<i class="bi bi-info-circle"></i> El cliente no tiene celular registrado, solo puedes copiar el mensaje.
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
+
+<style scoped>
+.temporada-option {
+	border: 2px solid #e9ecef !important;
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.temporada-option:hover {
+	border-color: #93c5fd !important;
+	background: #f8faff;
+}
+
+.temporada-option.active {
+	border-color: #0d6efd !important;
+	background: #eef4ff;
+}
+</style>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
@@ -856,16 +899,19 @@ const stripHtml = (html) => {
 
 const temporadas = computed(() => configStore.temporadas);
 const servicioConfirmacion = ref(null);
-const temporadaConfirmacionSeleccionada = ref(-1);
-let modalConfirmacionServicioInstance = null;
+const modoRecordatorio = ref('recordatorio'); // 'recordatorio' | 'confirmacion'
 
 const abrirModalConfirmacionServicio = (item) => {
 	servicioConfirmacion.value = item;
-	temporadaConfirmacionSeleccionada.value = -1;
-	if (!modalConfirmacionServicioInstance) {
-		modalConfirmacionServicioInstance = new Modal(document.getElementById('modalConfirmacionServicio'));
+	modoRecordatorio.value = 'confirmacion';
+	// Recordar la temporada guardada anteriormente en la venta
+	const guardada = venta.value?.temporada_id;
+	const idx = temporadas.value.findIndex(t => Number(t.id) === Number(guardada));
+	recordatorioTemporadaSeleccionada.value = idx >= 0 ? idx : -1;
+	if (!modalRecordatorioInstance) {
+		modalRecordatorioInstance = new Modal(document.getElementById('modalRecordatorio'));
 	}
-	modalConfirmacionServicioInstance.show();
+	modalRecordatorioInstance.show();
 };
 
 const clienteNombre = computed(() => {
@@ -1608,40 +1654,6 @@ const enviarConfirmacion = () => {
 		window.open(wame, '_blank');
 	};
 
-const enviarConfirmacionServicio = () => {
-	const cliente = venta.value?.cliente;
-	if (!cliente?.celular || !servicioConfirmacion.value) return;
-
-	const temporadaSeleccionada = temporadaConfirmacionSeleccionada.value === -1
-		? null
-		: temporadas.value[temporadaConfirmacionSeleccionada.value];
-
-	const recomendaciones = temporadaSeleccionada?.valor?.contenido
-		? stripHtml(temporadaSeleccionada.valor.contenido)
-		: '• Usar ropa cómoda y abrigada.\n• Mantener hidratación durante todo el recorrido.\n• Llevar protector solar y agua.\n• Llegar con 10 a 15 minutos de anticipación.';
-
-	const nombre = clienteNombre.value || 'Viajero';
-	const servicio = servicioConfirmacion.value.descripcion || 'Servicio';
-	const puntoRecojo = venta.value?.punto_recojo || 'Por confirmar';
-	const mensaje = `¡Hola *${nombre}*! 👋 Te saluda el equipo de Grupo Euro Andino. 🇵🇪 Queremos que mañana tengas un excelente día. ☀️ 
-
-Le escribimos para reconfirmar su reserva para el tour: *${servicio}* 🚐 para el día de mañana. 
-
-📍 Punto de encuentro: ${puntoRecojo}
-⏰ Hora de recojo: 10:30 a. m [por el momento así].
-Favor de presentarse de 10 a 15 minutos antes. 
-
-🎒 Recomendaciones para tu viaje: 
-${recomendaciones}
-
-Cualquier consulta estamos para ayudarles. ¡Nos vemos mañana! 😊✨`;
-
-	const telefono = String(cliente.celular).replace(/\D/g, '').replace(/^51/, '');
-	const wame = `https://api.whatsapp.com/send?phone=51${telefono}&text=${encodeURIComponent(mensaje)}`;
-	modalConfirmacionServicioInstance?.hide();
-	window.open(wame, '_blank');
-};
-
 const copiarLinkCheckin = () => {
 	const parametro = encodeForUrl({ id: route.params.id });
 	const baseUrl = import.meta.env.MODE === 'production' ? 'https://panel.grupoeuroandino.com/' : 'http://localhost:5173/';
@@ -1672,5 +1684,74 @@ const copiarLinkCheckin = () => {
 			window.open(wame, '_blank');
 		}
 	});
+};
+
+// ── Enviar recordatorio / confirmación ──
+const recordatorioTemporadaSeleccionada = ref(-1);
+let modalRecordatorioInstance = null;
+let modalRecordatorioOpcionesInstance = null;
+
+const confirmarRecordatorio = async () => {
+	const temporadaId = recordatorioTemporadaSeleccionada.value === -1
+		? null
+		: temporadas.value[recordatorioTemporadaSeleccionada.value]?.id || null;
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { temporada_id: temporadaId } });
+		venta.value.temporada_id = temporadaId;
+	} catch (err) {
+		console.error('Error al guardar temporada:', err);
+	}
+	modalRecordatorioInstance?.hide();
+	if (!modalRecordatorioOpcionesInstance) {
+		modalRecordatorioOpcionesInstance = new Modal(document.getElementById('modalRecordatorioOpciones'));
+	}
+	modalRecordatorioOpcionesInstance.show();
+};
+
+const textoRecordatorio = computed(() => {
+	const temporada = recordatorioTemporadaSeleccionada.value === -1
+		? null
+		: temporadas.value[recordatorioTemporadaSeleccionada.value];
+
+	const recomendaciones = temporada?.valor?.contenido
+		? stripHtml(temporada.valor.contenido)
+		: '• Usar ropa cómoda y abrigada.\n• Mantener hidratación durante todo el recorrido.\n• Llevar protector solar y agua.\n• Llegar con 10 a 15 minutos de anticipación.';
+
+	const nombre = clienteNombre.value || 'Viajero';
+	const servicio = modoRecordatorio.value === 'confirmacion'
+		? (servicioConfirmacion.value?.descripcion || 'Servicio')
+		: (venta.value?.items?.[0]?.descripcion || 'Tour');
+	const puntoRecojo = venta.value?.punto_recojo || 'Por confirmar';
+
+	return `¡Hola ${nombre}! 👋 Te saluda el equipo de Grupo Euro Andino. 🇵🇪 Queremos que mañana tengas un excelente día. ☀️ 
+
+Le escribimos para re-confirmar su reserva para el tour: ${servicio} 🚐 para el día de mañana. 
+
+📍 Punto de encuentro: ${puntoRecojo}
+⏰ Hora de recojo: 10:30 a. m .
+Favor de presentarse de 10 a 15 minutos antes. 
+
+🎒 Recomendaciones para tu viaje: 
+${recomendaciones}
+
+Cualquier consulta estamos para ayudarles. ¡Nos vemos mañana! 😊✨`;
+});
+
+const enviarRecordatorioWhatsApp = () => {
+	const cliente = venta.value?.cliente;
+	if (!cliente?.celular) {
+		Swal.fire('Aviso', 'El cliente no tiene celular registrado', 'warning');
+		return;
+	}
+	const telefono = String(cliente.celular).replace(/\D/g, '').replace(/^51/, '');
+	const wame = `https://api.whatsapp.com/send?phone=51${telefono}&text=${encodeURIComponent(textoRecordatorio.value)}`;
+	modalRecordatorioOpcionesInstance?.hide();
+	window.open(wame, '_blank');
+};
+
+const copiarRecordatorio = () => {
+	navigator.clipboard.writeText(textoRecordatorio.value);
+	modalRecordatorioOpcionesInstance?.hide();
+	Swal.fire({ title: 'Copiado', text: 'Mensaje copiado al portapapeles', icon: 'success', timer: 2000, showConfirmButton: false });
 };
 </script>

@@ -9,7 +9,6 @@
 	</nav>
 
 	<p class="text-muted">Acciones</p>
-	<p>Nota: el excel tiene en la suma un error de un "13" como número fijo. La multiplicación para la utilidad esta multiplicando la celda incorrecta</p>
 
 	<div class="table-responsive mb-4">
 		<table class="table table-hover">

@@ -73,6 +73,11 @@ export function useFormat() {
 		return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase()
 	}
 
+	const capitalizeFirst = (text) => {
+		if (!text) return ''
+		return text.charAt(0).toUpperCase() + text.slice(1)
+	}
+
 	const usuarioActual = ()=>{
 		const userString = localStorage.getItem('user');
 		if (!userString) {
@@ -110,7 +115,7 @@ export function useFormat() {
 		fechaLatamCorta, fechaLatamSimple, horaCorta, convertirHora,
 		formatHoy, ahora,
 		rutaArchivo,
-		capitalize, usuarioActual,
+		capitalize, capitalizeFirst, usuarioActual,
 		listaDepartamentos, consultarApiDolar,
 		encodeForUrl
   }

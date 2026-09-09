@@ -2,7 +2,7 @@
 
 	<div class="dashboard-header mb-4">
 		<h2 class="fw-bold">Panel de administración</h2>
-		<p class="mb-0" style="color:#3b82f6;">Grupo Euroandino</p>
+		<p class="mb-0" style="color:#3b82f6;">Grupo Euro Andino</p>
 	</div>
 
 	<div class="row g-3">
@@ -81,26 +81,89 @@
 		<router-link to="/cliente/nuevo" class="btn btn-outline-primary" style="border-color:#3b82f6;color:#3b82f6;"><i class="bi bi-wechat"></i> Nuevo Cliente</router-link>
 	</div>
 
-	<!-- pagos pendientes -->
+	<!-- pagos por cobrar -->
 	<div class="mt-4">
 		<div class="d-flex justify-content-between align-items-center mb-3">
-			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-cash" style="color:#f59e0b;"></i> Pagos por pagar</h5>
+			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-arrow-up-circle" style="color:#10b981;"></i> Pagos por cobrar</h5>
+			<router-link to="/pagos" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
+		</div>
+		<div v-if="pagosPorCobrar.length === 0" class="text-muted py-3 text-center">
+			<small>No hay pagos por cobrar</small>
+		</div>
+		<div v-else class="row g-2">
+			<div v-for="item in pagosPorCobrar.slice(0, 6)" :key="'cobro-' + item.id" class="col-md-4">
+				<router-link :to="'/cobro/' + item.id" style="text-decoration:none;">
+					<div class="card border-0 shadow-sm recordatorio-card h-100" style="border-left-color:#10b981;cursor:pointer;">
+						<div class="card-body py-2 px-3">
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi bi-arrow-up-circle" style="color:#10b981;font-size:0.9rem;"></i>
+								<div class="flex-grow-1 overflow-hidden">
+									<div class="pagoItem text-truncate">{{ capitalizeFirst(item.concepto) || '-' }}</div>
+									<div class="small text-muted text-truncate">{{ capitalizeFirst(item.beneficiario) || '-' }}</div>
+								</div>
+								<span class="small ms-auto" style="color:#10b981;">{{ formatMoneda(item.saldo_pendiente) }}</span>
+							</div>
+						</div>
+					</div>
+				</router-link>
+			</div>
+		</div>
+	</div>
+
+	<!-- pagos por pagar -->
+	<div class="mt-4">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-arrow-down-circle" style="color:#ef4444;"></i> Pagos por pagar</h5>
+			<router-link to="/pagos" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
+		</div>
+		<div v-if="pagosPorPagar.length === 0" class="text-muted py-3 text-center">
+			<small>No hay pagos por pagar</small>
+		</div>
+		<div v-else class="row g-2">
+			<div v-for="item in pagosPorPagar.slice(0, 6)" :key="'pago-' + item.id" class="col-md-4">
+				<router-link :to="'/pago/' + item.id" style="text-decoration:none;">
+					<div class="card border-0 shadow-sm recordatorio-card h-100" style="border-left-color:#ef4444;cursor:pointer;">
+						<div class="card-body py-2 px-3">
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi bi-arrow-down-circle" style="color:#ef4444;font-size:0.9rem;"></i>
+								<div class="flex-grow-1 overflow-hidden">
+									<div class="pagoItem text-truncate">{{ capitalizeFirst(item.concepto) || '-' }}</div>
+									<div class="small text-muted text-truncate">{{ capitalizeFirst(item.beneficiario) || '-' }}</div>
+								</div>
+								<span class="small ms-auto" style="color:#ef4444;">{{ formatMoneda(item.saldo_pendiente) }}</span>
+							</div>
+						</div>
+					</div>
+				</router-link>
+			</div>
+		</div>
+	</div>
+
+	<!-- comisiones -->
+	<div class="mt-4">
+		<div class="d-flex justify-content-between align-items-center mb-3">
+			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-percent" style="color:#3b82f6;"></i> Comisiones</h5>
 			<router-link to="/pagos" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
 		</div>
 		<div v-if="comisionesPendientes.length === 0" class="text-muted py-3 text-center">
-			<small>No hay pagos pendientes</small>
+			<small>No hay comisiones pendientes</small>
 		</div>
-		<div v-else class="d-flex flex-column gap-2">
-			<div v-for="item in comisionesPendientes.slice(0, 6)" :key="item.id">
-				<div class="card border-0 shadow-sm recordatorio-card" style="border-left-color:#f59e0b;">
-					<div class="card-body py-2 px-3">
-						<div class="d-flex align-items-center gap-2">
-							<i class="bi" :class="item.comisionable_type?.includes('Guia') ? 'bi-person-walking' : item.comisionable_type?.includes('Proveedor') ? 'bi-building' : 'bi-truck'" style="color:#94a3b8;"></i>
-							<h6 class="mb-0 text-muted small">{{ nombreComisionable(item) }}</h6>
-							<span class="small" style="color:#f59e0b;">{{ formatMoneda(item.monto) }}</span>
+		<div v-else class="row g-2">
+			<div v-for="item in comisionesPendientes.slice(0, 6)" :key="'comision-' + item.id" class="col-md-4">
+				<router-link :to="'/comision/' + item.id" style="text-decoration:none;">
+					<div class="card border-0 shadow-sm recordatorio-card h-100" style="border-left-color:#3b82f6;cursor:pointer;">
+						<div class="card-body py-2 px-3">
+							<div class="d-flex align-items-center gap-2">
+								<i class="bi bi-percent" style="color:#3b82f6;font-size:0.9rem;"></i>
+								<div class="flex-grow-1 overflow-hidden">
+									<div class="pagoItem text-truncate">{{ capitalizeFirst(item.concepto) || '-' }}</div>
+									<div class="small text-muted text-truncate">{{ capitalizeFirst(item.beneficiario) || '-' }}</div>
+								</div>
+								<span class="small ms-auto" style="color:#3b82f6;">{{ formatMoneda(item.saldo_pendiente) }}</span>
+							</div>
 						</div>
 					</div>
-				</div>
+				</router-link>
 			</div>
 		</div>
 	</div>
@@ -172,28 +235,33 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 import { useDashboardStore } from '@/stores/dashboardStore';
-import { useComisionesStore } from '@/stores/comisionStore';
+import { usePagosStore } from '@/stores/pagoStore';
 import { useRecordatoriosStore } from '@/stores/recordatoriosStore';
 import { useFormat } from '@/composables/formatos';
 
 const dashboard = useDashboardStore();
-const comisionStore = useComisionesStore();
+const pagoStore = usePagosStore();
 const recordatoriosStore = useRecordatoriosStore();
-const { formatMoneda, formatRelative, capitalize } = useFormat();
+const { formatMoneda, formatRelative, capitalize, capitalizeFirst } = useFormat();
 
 const recordatorios = ref([]);
-const comisionesPendientes = ref([]);
 const ventasCheckin = ref([]);
 
-const nombreComisionable = (item) => {
-	if (!item.comisionable) return '-';
-	if (item.comisionable_type?.includes('Guia')) {
-		return item.comisionable.nombre || '-';
+// ── 3 tipos de pagos ──
+const pagosPorCobrar = ref([]);
+const pagosPorPagar = ref([]);
+const comisionesPendientes = ref([]);
+
+const cargarPagos = async () => {
+	try {
+		await pagoStore.listarTodos();
+		const lista = Array.isArray(pagoStore.pagos) ? pagoStore.pagos : [];
+		pagosPorCobrar.value = lista.filter(p => p.es_cobro === true && p.saldo_pendiente > 0);
+		pagosPorPagar.value = lista.filter(p => p.es_cobro === false && p.origen === 'pago' && p.saldo_pendiente > 0);
+		comisionesPendientes.value = lista.filter(p => p.origen === 'comision' && p.saldo_pendiente > 0);
+	} catch (error) {
+		console.error('Error al cargar pagos:', error);
 	}
-	if (item.comisionable_type?.includes('Proveedor')) {
-		return item.comisionable.razon_social || '-';
-	}
-	return item.comisionable.nombre_conductor || item.comisionable.placa || '-';
 };
 
 onMounted(async () => {
@@ -222,13 +290,8 @@ onMounted(async () => {
 		console.error('Error al cargar check-in:', error);
 	}
 
-	// Cargar comisiones pendientes o con adelanto
-	try {
-		await comisionStore.listar({ estado_pago: 'pendiente,adelantado' });
-		comisionesPendientes.value = comisionStore.comisiones || [];
-	} catch (error) {
-		console.error('Error al cargar comisiones pendientes:', error);
-	}
+	// Cargar los 3 tipos de pagos
+	await cargarPagos();
 	
 	// Cargar recordatorios pendientes
 	try {
@@ -282,5 +345,11 @@ onMounted(async () => {
 .recordatorio-card:hover {
 	transform: translateY(-2px);
 	box-shadow: 0 6px 20px rgba(59,130,246,0.1) !important;
+}
+
+.pagoItem {
+	color: #17273f;
+	font-size: 0.8rem;
+	font-weight: 600;
 }
 </style>

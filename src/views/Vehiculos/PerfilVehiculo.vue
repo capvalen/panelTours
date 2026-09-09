@@ -126,11 +126,84 @@ watch(
 		</div>
 	</div>
 
+	<!-- ══════════ 1. PAGOS POR COBRAR ══════════ -->
 	<div class="row mt-3 mb-5">
 		<div class="col-12">
 			<div class="card">
-				<div class="card-header">
-					<h6 class="mb-0 fw-bold"><i class="bi bi-cash-stack"></i> Comisiones</h6>
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h6 class="mb-0 fw-bold"><i class="bi bi-arrow-up-circle text-success"></i> Pagos por cobrar</h6>
+					<span class="badge text-bg-success">0</span>
+				</div>
+				<div class="card-body p-0">
+					<div class="table-responsive">
+						<table class="table table-bordered align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>#</th>
+									<th>Fecha</th>
+									<th>Concepto</th>
+									<th>Método</th>
+									<th>Total</th>
+									<th>Adelantado</th>
+									<th>Pendiente</th>
+									<th>Referencia</th>
+									<th>Estado</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td colspan="9" class="text-muted text-center">No hay cobros registrados</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ══════════ 2. PAGOS POR PAGAR ══════════ -->
+	<div class="row mt-3 mb-5">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h6 class="mb-0 fw-bold"><i class="bi bi-arrow-down-circle text-danger"></i> Pagos por pagar</h6>
+					<span class="badge text-bg-danger">0</span>
+				</div>
+				<div class="card-body p-0">
+					<div class="table-responsive">
+						<table class="table table-bordered align-middle mb-0">
+							<thead class="table-light">
+								<tr>
+									<th>#</th>
+									<th>Fecha</th>
+									<th>Concepto / Beneficiario</th>
+									<th>Método</th>
+									<th>Monto</th>
+									<th>Pendiente</th>
+									<th>Estado</th>
+									<th>Referencia</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td colspan="8" class="text-muted text-center">No hay pagos por pagar</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ══════════ 3. COMISIONES ══════════ -->
+	<div class="row mt-3 mb-5">
+		<div class="col-12">
+			<div class="card">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<h6 class="mb-0 fw-bold"><i class="bi bi-percent text-primary"></i> Comisiones</h6>
+					<span class="badge text-bg-primary">{{ comisiones.length }}</span>
 				</div>
 				<div class="card-body p-0">
 					<div class="table-responsive">
@@ -147,7 +220,7 @@ watch(
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/pago/' + item.id)">
+								<tr v-for="(item, index) in comisiones" :key="item.id" style="cursor:pointer;" @click="router.push('/comision/' + item.id)">
 									<td class="text-muted">{{ index + 1 }}</td>
 									<td>{{ fechaLatamSimple(item.fecha) }}</td>
 									<td>{{ item.observaciones || '-' }}</td>
@@ -163,7 +236,7 @@ watch(
 											{{ item.estado_pago === 'adelantado' ? 'Con adelanto' : item.estado_pago === 'pendiente' ? 'Pendiente de pagar' : item.estado_pago === 'pagado' ? 'Pagado' : item.estado_pago === 'anulado' ? 'Anulado' : item.estado_pago || '-' }}
 										</span>
 									</td>
-									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver pago" @click="router.push('/pago/' + item.id)"><i class="bi bi-eye"></i></button></td>
+									<td @click.stop><button class="btn btn-sm btn-outline-primary" title="Ver comisión" @click="router.push('/comision/' + item.id)"><i class="bi bi-eye"></i></button></td>
 								</tr>
 								<tr v-if="comisiones.length === 0">
 									<td colspan="7" class="text-muted text-center">No hay comisiones registradas</td>
