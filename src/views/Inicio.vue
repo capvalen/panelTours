@@ -76,8 +76,7 @@
 	</div>
 
 	<div class="d-flex gap-2 flex-wrap justify-content-end my-3">
-		<router-link to="/venta/nueva" class="btn btn-primary" style="background:#3b82f6;border-color:#3b82f6;"><i class="bi bi-file-text"></i> Nueva cotización</router-link>
-		<router-link to="/venta/nueva" class="btn btn-success" style="background:#10b981;border-color:#10b981;"><i class="bi bi-calendar-check"></i> Nueva Reserva</router-link>
+		<router-link to="/cotizacion/nueva" class="btn btn-primary" style="background:#3b82f6;border-color:#3b82f6;"><i class="bi bi-file-text"></i> Nueva cotización</router-link>
 		<router-link to="/cliente/nuevo" class="btn btn-outline-primary" style="border-color:#3b82f6;color:#3b82f6;"><i class="bi bi-wechat"></i> Nuevo Cliente</router-link>
 	</div>
 

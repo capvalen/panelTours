@@ -31,11 +31,6 @@
 							{{ capitalize(venta.estado) }}
 						</span>
 						&middot;
-						<select class="form-select form-select-sm d-inline-block" style="width: auto;" :value="venta.compartido" @change="cambiarCompartido($event.target.value)">
-							<option value="compartido">Compartido</option>
-							<option value="privado">Privado</option>
-						</select>
-						&middot;
 						<i class="bi bi-person"></i>
 						<span v-if="!esAdmin">{{ vendedorActualNombre }}</span>
 						<select v-else class="form-select form-select-sm d-inline-block" style="width: auto;" :value="venta.vendedor_id || ''" @change="cambiarVendedor($event.target.value)">
@@ -102,13 +97,67 @@
 												<td class="text-muted small" style="width: 100px;">Destino</td>
 												<td class="fw-semibold">{{ venta.departamento?.departamento || '-' }}</td>
 											</tr>
-											<tr v-if="venta.fecha_inicio">
+											<tr>
 												<td class="text-muted small">Fecha inicio</td>
-												<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_inicio) }}</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoFechas">
+														{{ formatFechaLarga(venta.fecha_inicio) }}
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionFechas" title="Editar fechas">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<input v-else type="date" class="form-control form-control-sm" v-model="fechaInicioEdit">
+												</td>
 											</tr>
-											<tr v-if="venta.fecha_fin">
+											<tr>
 												<td class="text-muted small">Fecha fin</td>
-												<td class="fw-semibold">{{ formatFechaLarga(venta.fecha_fin) }}</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoFechas">{{ formatFechaLarga(venta.fecha_fin) }}</span>
+													<input v-else type="date" class="form-control form-control-sm" v-model="fechaFinEdit">
+												</td>
+											</tr>
+											<tr v-if="editandoFechas">
+												<td></td>
+												<td class="d-flex gap-1">
+													<button class="btn btn-sm btn-success" @click="guardarFechas" title="Guardar"><i class="bi bi-check-lg"></i></button>
+													<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionFechas" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+												</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Hora inicio</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoHora">
+														<span v-if="venta.hora_inicio">{{ formatHora(venta.hora_inicio) }}</span>
+														<small class="text-muted" v-else>Sin asignar</small>
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<div v-else class="d-flex align-items-start gap-1">
+														<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
+														<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
+														<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+													</div>
+												</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Modalidad</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoModalidad">
+														<span class="text-capitalize">{{ venta.compartido || 'compartido' }}</span>
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionModalidad" title="Editar">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<div v-else class="d-flex align-items-start gap-1">
+														<select class="form-select form-select-sm" v-model="modalidadEdit" style="flex:1; min-width:200px;">
+															<option value="compartido">Compartido</option>
+															<option value="privado">Privado</option>
+														</select>
+														<button class="btn btn-sm btn-success" @click="guardarModalidad" title="Guardar"><i class="bi bi-check-lg"></i></button>
+														<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionModalidad" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+													</div>
+												</td>
 											</tr>
 										</tbody>
 									</table>
@@ -141,92 +190,84 @@
 				</div>
 
 				<div class="col-12">
-					<div class="row row-cols-3 mt-3">
-						<div class="col-md">
-							<div class="mb-2">
-								<strong class="text-muted small">Punto de Recojo</strong>
-								<span v-if="!editandoPuntoRecojo">
-									<span class="ms-1" v-if="venta.punto_recojo">{{ venta.punto_recojo }}</span>
-									<small class="text-muted ms-1" v-else>Sin asignar</small>
-									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
-										<i class="bi bi-pencil"></i>
-									</button>
-								</span>
-								<div v-else class="d-flex align-items-start gap-1 mt-1">
-									<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
-									<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
-									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-								</div>
-							</div>
-							<div class="mb-2">
-								<strong class="text-muted small">Ruta</strong>
-								<span v-if="!editandoRuta">
-									<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
-									<small class="text-muted ms-1" v-else>Sin asignar</small>
-									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
-										<i class="bi bi-pencil"></i>
-									</button>
-								</span>
-								<div v-else class="d-flex align-items-start gap-1 mt-1">
-									<textarea class="form-control form-control-sm" v-model="rutaEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese la ruta..."></textarea>
-									<button class="btn btn-sm btn-success" @click="guardarRuta" title="Guardar"><i class="bi bi-check-lg"></i></button>
-									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-								</div>
-							</div>
-							<div class="mb-2">
-								<strong class="text-muted small">Servicios</strong>
-								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
-								<div class="mt-1">
-									<div v-for="(item, index) in venta.servicios || []" :key="'srv-'+index" class="d-flex align-items-center gap-1 mb-1">
-										<span class="small">{{ item }}</span>
-										<button class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarServicio(index)" title="Eliminar"><i class="bi bi-x"></i></button>
+					<div class="card">
+						<div class="card-body">
+							<h6 class="card-title"><i class="bi bi-card-checklist"></i> Datos extras</h6>
+							<div class="row row-cols-3">
+								<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Punto de Recojo</strong>
+										<span v-if="!editandoPuntoRecojo">
+											<span class="ms-1" v-if="venta.punto_recojo">{{ venta.punto_recojo }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
+											<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
+									</div>
+									<div class="mb-2">
+										<strong class="text-muted small">Ruta</strong>
+										<span v-if="!editandoRuta">
+											<span class="ms-1" v-if="venta.ruta">{{ venta.ruta }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionRuta" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<textarea class="form-control form-control-sm" v-model="rutaEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese la ruta..."></textarea>
+											<button class="btn btn-sm btn-success" @click="guardarRuta" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
 									</div>
 								</div>
-							</div>
-							<div class="mb-2">
-								<strong class="text-muted small">Hora inicio</strong>
-								<span v-if="!editandoHora">
-									<span class="ms-1" v-if="venta.hora_inicio">{{ venta.hora_inicio }}</span>
-									<small class="text-muted ms-1" v-else>Sin asignar</small>
-									<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
-										<i class="bi bi-pencil"></i>
-									</button>
-								</span>
-								<div v-else class="d-flex align-items-start gap-1 mt-1">
-									<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
-									<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
-									<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-								</div>
-							</div>
-						</div>
-						<div class="col-md">
-							<div class="mb-2">
-								<strong class="text-muted small">Incluye</strong>
-								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
-									style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarIncluye"
-									title="Agregar">+</button>
-								<div class="mt-1">
-									<div v-for="(item, index) in venta.incluye || []" :key="'inc-' + index"
-										class="d-flex align-items-center gap-1 mb-1">
-										<span class="small">{{ item }}</span>
-										<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
-											style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarIncluye(index)"
-											title="Eliminar"><i class="bi bi-x"></i></button>
+								<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Servicios</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.servicios || []" :key="'srv-'+index" class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0" style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarServicio(index)" title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
 									</div>
 								</div>
-							</div>
-							<div class="mb-2">
-								<strong class="text-muted small">No incluye</strong>
-								<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
-									style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarNoIncluye"
-									title="Agregar">+</button>
-								<div class="mt-1">
-									<div v-for="(item, index) in venta.no_incluye || []" :key="'noinc-' + index"
-										class="d-flex align-items-center gap-1 mb-1">
-										<span class="small">{{ item }}</span>
-										<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
-											style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarNoIncluye(index)"
-											title="Eliminar"><i class="bi bi-x"></i></button>
+								<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Incluye</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarIncluye"
+											title="Agregar">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.incluye || []" :key="'inc-' + index"
+												class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarIncluye(index)"
+													title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
+									</div>
+									<div class="mb-2">
+										<strong class="text-muted small">No incluye</strong>
+										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
+											style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarNoIncluye"
+											title="Agregar">+</button>
+										<div class="mt-1">
+											<div v-for="(item, index) in venta.no_incluye || []" :key="'noinc-' + index"
+												class="d-flex align-items-center gap-1 mb-1">
+												<span class="small">{{ item }}</span>
+												<button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+													style="width:20px;height:20px;font-size:10px;line-height:1" @click="eliminarNoIncluye(index)"
+													title="Eliminar"><i class="bi bi-x"></i></button>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -851,7 +892,7 @@ const formatFechaLarga = (fecha) => {
 	if (!fecha) return '-';
 	const d = parseLocalDate(fecha);
 	if (!d) return '-';
-	return d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+	return d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
 };
 
 const formatFechaSimple = (fecha) => {
@@ -859,6 +900,15 @@ const formatFechaSimple = (fecha) => {
 	const d = parseLocalDate(fecha);
 	if (!d) return '-';
 	return d.toLocaleDateString('es-PE', { day: 'numeric', month: 'long', year: 'numeric' });
+};
+
+const formatHora = (hora) => {
+	if (!hora) return '';
+	const [h, m] = hora.split(':').map(Number);
+	if (isNaN(h) || isNaN(m)) return hora;
+	const periodo = h >= 12 ? 'p.m.' : 'a.m.';
+	const h12 = h % 12 || 12;
+	return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${periodo}`;
 };
 
 
@@ -1254,7 +1304,7 @@ const guardarPersona = async () => {
 		}
 		modalInstance.value?.hide();
 		await cargarPersonas();
-		Swal.fire({ title: 'Éxito', text: personaEditando.value ? 'Persona actualizada' : 'Persona agregada', icon: 'success', timer: 5000, timerProgressBar: true, showConfirmButton: false });
+		Swal.fire({ title: 'Éxito', text: personaEditando.value ? 'Persona actualizada' : 'Persona agregada', icon: 'success', timer: 3000, timerProgressBar: true, showConfirmButton: false });
 	} catch (err) {
 		console.error('Error al guardar persona:', err);
 		Swal.fire('Error', 'No se pudo guardar la persona', 'error');
@@ -1325,7 +1375,7 @@ const seleccionarCliente = async (cliente) => {
 		venta.value.cliente = cliente;
 		await cargarPersonas();
 		modalCambiarClienteInstance?.hide();
-		Swal.fire({ title: 'Cliente actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
+		Swal.fire({ title: 'Cliente actualizado', icon: 'success', timer: 3000, showConfirmButton: false });
 	} catch (err) {
 		console.error('Error al cambiar cliente:', err);
 		Swal.fire('Error', 'No se pudo cambiar el cliente', 'error');
@@ -1403,15 +1453,68 @@ const cancelarEdicionHora = () => {
 	editandoHora.value = false;
 };
 
-const cambiarCompartido = async (nuevoValor) => {
+// ── Edición de fechas de inicio y fin ──
+const editandoFechas = ref(false);
+const fechaInicioEdit = ref('');
+const fechaFinEdit = ref('');
+
+const iniciarEdicionFechas = () => {
+	fechaInicioEdit.value = venta.value?.fecha_inicio?.slice(0, 10) || '';
+	fechaFinEdit.value = venta.value?.fecha_fin?.slice(0, 10) || '';
+	editandoFechas.value = true;
+};
+
+const guardarFechas = async () => {
 	try {
-		await ventaStore.actualizar(route.params.id, { venta: { compartido: nuevoValor } });
-		venta.value.compartido = nuevoValor;
-		Swal.fire({ title: 'Tipo actualizado', icon: 'success', timer: 2000, showConfirmButton: false });
+		await ventaStore.actualizar(route.params.id, {
+			venta: {
+				fecha_inicio: fechaInicioEdit.value || null,
+				fecha_fin: fechaFinEdit.value || null,
+			}
+		});
+		venta.value.fecha_inicio = fechaInicioEdit.value || null;
+		venta.value.fecha_fin = fechaFinEdit.value || null;
+		editandoFechas.value = false;
 	} catch (err) {
-		console.error('Error al cambiar compartido:', err);
-		Swal.fire('Error', 'No se pudo actualizar el tipo', 'error');
+		console.error('Error al guardar fechas:', err);
+		Swal.fire('Error', 'No se pudieron guardar las fechas', 'error');
 	}
+};
+
+const cancelarEdicionFechas = () => {
+	editandoFechas.value = false;
+};
+
+// Si la fecha fin queda antes que la fecha inicio, se iguala al mismo día
+watch(() => fechaInicioEdit.value, (nueva) => {
+	if (nueva && fechaFinEdit.value && fechaFinEdit.value < nueva) {
+		fechaFinEdit.value = nueva;
+	}
+});
+
+// ── Edición de modalidad (compartido/privado) ──
+const editandoModalidad = ref(false);
+const modalidadEdit = ref('compartido');
+
+const iniciarEdicionModalidad = () => {
+	modalidadEdit.value = venta.value?.compartido || 'compartido';
+	editandoModalidad.value = true;
+};
+
+const guardarModalidad = async () => {
+	try {
+		await ventaStore.actualizar(route.params.id, { venta: { compartido: modalidadEdit.value } });
+		venta.value.compartido = modalidadEdit.value;
+		editandoModalidad.value = false;
+		Swal.fire({ title: 'Modalidad actualizada', icon: 'success', timer: 3000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar modalidad:', err);
+		Swal.fire('Error', 'No se pudo actualizar la modalidad', 'error');
+	}
+};
+
+const cancelarEdicionModalidad = () => {
+	editandoModalidad.value = false;
 };
 
 // ── Vendedor ──
@@ -1445,7 +1548,7 @@ const cambiarVendedor = async (valor) => {
 	try {
 		await ventaStore.actualizar(route.params.id, { venta: { vendedor_id: nuevoId } });
 		venta.value.vendedor_id = nuevoId;
-		Swal.fire({ title: nuevoId ? 'Vendedor actualizado' : 'Vendedor asignado: ninguno', icon: 'success', timer: 2000, showConfirmButton: false });
+		Swal.fire({ title: nuevoId ? 'Vendedor actualizado' : 'Vendedor asignado: ninguno', icon: 'success', timer: 3000, showConfirmButton: false });
 	} catch (err) {
 		console.error('Error al cambiar vendedor:', err);
 		Swal.fire('Error', 'No se pudo actualizar el vendedor', 'error');
@@ -1666,7 +1769,7 @@ const copiarLinkCheckin = () => {
 		title: 'Link copiado',
 		text: 'Link copiado al portapapeles',
 		icon: 'success',
-		timer: 5000,
+		timer: 3000,
 		timerProgressBar: true,
 		showDenyButton: !!celularCliente,
 		showCancelButton: true,
@@ -1752,6 +1855,6 @@ const enviarRecordatorioWhatsApp = () => {
 const copiarRecordatorio = () => {
 	navigator.clipboard.writeText(textoRecordatorio.value);
 	modalRecordatorioOpcionesInstance?.hide();
-	Swal.fire({ title: 'Copiado', text: 'Mensaje copiado al portapapeles', icon: 'success', timer: 2000, showConfirmButton: false });
+	Swal.fire({ title: 'Copiado', text: 'Mensaje copiado al portapapeles', icon: 'success', timer: 3000, showConfirmButton: false });
 };
 </script>

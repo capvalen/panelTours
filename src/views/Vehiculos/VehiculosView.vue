@@ -14,6 +14,13 @@ const nombreDepartamento = (departamento_id) => {
 	return depto ? depto.departamento : '-';
 };
 
+const formatVehiculo = (v) => {
+	if (!v) return '-';
+	const tipo = v.tipo_carro && v.tipo_carro !== 'ninguno' ? v.tipo_carro.charAt(0).toUpperCase() + v.tipo_carro.slice(1) : 'Sin especificar';
+	const cap = v.capacidad ? ` (cap. ${v.capacidad} asientos)` : '';
+	return tipo + cap;
+};
+
 function eliminarVehiculo(id, placa, nombreConductor) {
 	if( confirm(`¿Confirma que desea eliminar el vehículo ${placa}${nombreConductor ? ' - ' + nombreConductor : ''}?`) ){
 		vehiculoStore.eliminar(id)
@@ -88,9 +95,11 @@ onMounted(() => {
 				<thead>
 					<tr>
 						<th scope="col">#</th>
-						<th scope="col">Tipo</th>
+						<th scope="col">Tipo carro</th>
+						<th scope="col">Capacidad</th>
 						<th scope="col">Placa</th>
 						<th scope="col">Conductor</th>
+						<th scope="col">Ciudad</th>
 						<th scope="col">Licencia</th>
 						<th scope="col">Combustible</th>
 						<th scope="col">Departamento</th>
@@ -100,9 +109,11 @@ onMounted(() => {
 				<tbody>
 					<tr v-for="(vehiculo, index ) in vehiculoStore.vehiculos" @click="$router.push({ name: 'perfilVehiculo', params: { id: vehiculo.id } })" style="cursor: pointer;">
 						<td>{{ index + 1 }}</td>
-						<td class="text-capitalize">{{ vehiculo.tipo_vehiculo }}</td>
+						<td>{{ formatVehiculo(vehiculo) }}</td>
+						<td>{{ vehiculo.capacidad ? vehiculo.capacidad + ' asientos' : '-' }}</td>
 						<td>{{ vehiculo.placa }}</td>
 						<td>{{ vehiculo.nombre_conductor }}</td>
+						<td>{{ vehiculo.ciudad || '-' }}</td>
 						<td>{{ vehiculo.licencia_conductor }}</td>
 						<td class="text-capitalize">{{ vehiculo.tipo_combustible }}</td>
 						<td>{{ vehiculo.departamento?.departamento }}</td>

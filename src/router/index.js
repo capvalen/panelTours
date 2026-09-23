@@ -222,6 +222,12 @@ const router = createRouter({
 					props: true
 				},
 				{
+					path: '/cotizacion/previsualizacion/:id',
+					name: 'previsualizacionCotizacion',
+					component: () => import('../views/Cotizaciones/PrevisualizacionCotizacionView.vue'),
+					props: true
+				},
+				{
 					path: '/logistica',
 					name: 'Logistica',
 					component: () => import('../views/Logistica/LogisticaView.vue'),

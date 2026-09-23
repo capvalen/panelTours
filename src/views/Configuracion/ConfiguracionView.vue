@@ -71,7 +71,7 @@ const guardarTemporada = async () => {
 };
 
 const editarTemporada = (t) => {
-	temporadaForm.value.titulo = t.titulo;
+	temporadaForm.value.titulo = t.valor?.titulo || '';
 	editandoId.value = t.id;
 	editandoRegistroId.value = t.id;
 	nextTick(() => {

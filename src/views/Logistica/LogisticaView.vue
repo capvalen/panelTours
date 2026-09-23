@@ -63,6 +63,7 @@
 									<span v-if="faltanCheckin(item) > 0" class="text-danger ms-1"> Faltan {{ faltanCheckin(item) }} check-ins</span>
 									<span v-else class="text-success ms-1"> Check-ins completos</span>
 									<span class="ms-2">· {{ item.destino || '-' }}</span>
+									<span v-if="item.vehiculo" class="ms-2">· 🚐 {{ formatVehiculo(item.vehiculo) }} <span class="text-muted">({{ item.vehiculo.placa }})</span><span v-if="item.vehiculo.ciudad" class="text-muted"> - {{ item.vehiculo.ciudad }}</span></span>
 								</p>
 							</div>
 							<button class="btn btn-outline-primary" @click="entrarManifiesto(item.id)">
@@ -136,6 +137,13 @@ const primeraCiudad = (item) => {
 
 const faltanCheckin = (item) => {
 	return Math.max(0, totalPersonas(item) - totalPasajeros(item));
+};
+
+const formatVehiculo = (v) => {
+	if (!v) return '';
+	const tipo = v.tipo_carro && v.tipo_carro !== 'ninguno' ? v.tipo_carro.charAt(0).toUpperCase() + v.tipo_carro.slice(1) : 'Sin especificar';
+	const cap = v.capacidad ? ` (cap. ${v.capacidad} asientos)` : '';
+	return tipo + cap;
 };
 
 const entrarManifiesto = (id) => {

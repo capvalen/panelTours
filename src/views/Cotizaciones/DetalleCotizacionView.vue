@@ -62,6 +62,11 @@
 										</tr>
 									</tbody>
 								</table>
+								<div class="d-flex gap-1 mt-2">
+									<button class="btn btn-sm btn-outline-primary" @click="abrirModalCambiarCliente">
+										<i class="bi bi-arrow-repeat"></i> Cambiar cliente
+									</button>
+								</div>
 						</div>
 					</div>
 				</div>
@@ -78,17 +83,67 @@
 												<td class="text-muted small" style="width: 100px;">Destino</td>
 												<td class="fw-semibold">{{ cotizacion.departamento?.departamento || '-' }}</td>
 											</tr>
-											<tr v-if="cotizacion.fecha_inicio">
+											<tr>
 												<td class="text-muted small">Fecha inicio</td>
-												<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_inicio) }}</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoFechas">
+														{{ formatFechaLarga(cotizacion.fecha_inicio) }}
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionFechas" title="Editar fechas">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<input v-else type="date" class="form-control form-control-sm" v-model="fechaInicioEdit">
+												</td>
 											</tr>
-											<tr v-if="cotizacion.fecha_fin">
+											<tr>
 												<td class="text-muted small">Fecha fin</td>
-												<td class="fw-semibold">{{ formatFechaLarga(cotizacion.fecha_fin) }}</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoFechas">{{ formatFechaLarga(cotizacion.fecha_fin) }}</span>
+													<input v-else type="date" class="form-control form-control-sm" v-model="fechaFinEdit">
+												</td>
+											</tr>
+											<tr v-if="editandoFechas">
+												<td></td>
+												<td class="d-flex gap-1">
+													<button class="btn btn-sm btn-success" @click="guardarFechas" title="Guardar"><i class="bi bi-check-lg"></i></button>
+													<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionFechas" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+												</td>
+											</tr>
+											<tr>
+												<td class="text-muted small">Hora inicio</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoHora">
+														<span v-if="cotizacion.hora_inicio">{{ formatHora(cotizacion.hora_inicio) }}</span>
+														<small class="text-muted" v-else>Sin asignar</small>
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<div v-else class="d-flex align-items-start gap-1">
+														<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
+														<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
+														<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+													</div>
+												</td>
 											</tr>
 											<tr>
 												<td class="text-muted small">Modalidad</td>
-												<td class="text-capitalize">{{ cotizacion.compartido || 'compartido' }}</td>
+												<td class="fw-semibold">
+													<span v-if="!editandoModalidad">
+														<span class="text-capitalize">{{ cotizacion.compartido || 'compartido' }}</span>
+														<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionModalidad" title="Editar">
+															<i class="bi bi-pencil"></i>
+														</button>
+													</span>
+													<div v-else class="d-flex align-items-start gap-1">
+														<select class="form-select form-select-sm" v-model="modalidadEdit" style="flex:1; min-width:200px;">
+															<option value="compartido">Compartido</option>
+															<option value="privado">Privado</option>
+														</select>
+														<button class="btn btn-sm btn-success" @click="guardarModalidad" title="Guardar"><i class="bi bi-check-lg"></i></button>
+														<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionModalidad" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+													</div>
+												</td>
 											</tr>
 										</tbody>
 									</table>
@@ -122,8 +177,26 @@
 					</div>
 				</div>
 					<div class="col-12">
-						<div class="row row-cols-3 mt-3">
-								<div class="col-md">
+						<div class="card">
+							<div class="card-body">
+								<h6 class="card-title"><i class="bi bi-card-checklist"></i> Datos extras</h6>
+								<div class="row row-cols-3">
+									<div class="col-md">
+									<div class="mb-2">
+										<strong class="text-muted small">Punto de Recojo</strong>
+										<span v-if="!editandoPuntoRecojo">
+											<span class="ms-1" v-if="cotizacion.punto_recojo">{{ cotizacion.punto_recojo }}</span>
+											<small class="text-muted ms-1" v-else>Sin asignar</small>
+											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionPuntoRecojo" title="Editar">
+												<i class="bi bi-pencil"></i>
+											</button>
+										</span>
+										<div v-else class="d-flex align-items-start gap-1 mt-1">
+											<textarea class="form-control form-control-sm" v-model="puntoRecojoEdit" rows="2" style="flex:1; min-width:200px;" placeholder="Ingrese el punto de recojo..."></textarea>
+											<button class="btn btn-sm btn-success" @click="guardarPuntoRecojo" title="Guardar"><i class="bi bi-check-lg"></i></button>
+											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionPuntoRecojo" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+										</div>
+									</div>
 									<div class="mb-2">
 										<strong class="text-muted small">Ruta</strong>
 										<span v-if="!editandoRuta">
@@ -139,6 +212,8 @@
 											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionRuta" title="Cancelar"><i class="bi bi-x-lg"></i></button>
 										</div>
 									</div>
+								</div>
+								<div class="col-md">
 									<div class="mb-2">
 										<strong class="text-muted small">Servicios</strong>
 										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0" style="width:20px;height:20px;font-size:14px;line-height:1" @click="agregarServicio" title="Agregar servicio">+</button>
@@ -149,24 +224,6 @@
 											</div>
 										</div>
 									</div>
-									<div class="mb-2">
-										<strong class="text-muted small">Hora inicio</strong>
-										<span v-if="!editandoHora">
-											<span class="ms-1" v-if="cotizacion.hora_inicio">{{ cotizacion.hora_inicio }}</span>
-											<small class="text-muted ms-1" v-else>Sin asignar</small>
-											<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionHora" title="Editar">
-												<i class="bi bi-pencil"></i>
-											</button>
-										</span>
-										<div v-else class="d-flex align-items-start gap-1 mt-1">
-											<input type="time" class="form-control form-control-sm" v-model="horaEdit" style="flex:1; min-width:200px;">
-											<button class="btn btn-sm btn-success" @click="guardarHora" title="Guardar"><i class="bi bi-check-lg"></i></button>
-											<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionHora" title="Cancelar"><i class="bi bi-x-lg"></i></button>
-										</div>
-									</div>
-						
-								</div>
-								<div class="col-md">
 									<div class="mb-2">
 										<strong class="text-muted small">Incluye</strong>
 										<button class="btn btn-sm btn-outline-primary ms-1 rounded-circle p-0"
@@ -199,6 +256,8 @@
 									</div>
 								</div>
 							</div>
+							</div>
+						</div>
 					</div>
 
 				<!-- Servicios -->
@@ -286,10 +345,10 @@
 								<i class="bi bi-arrow-left"></i> Volver
 							</router-link>
 						</div>
-					<button class="btn btn-success" @click="abrirModalPDF">
+					<router-link :to="'/cotizacion/previsualizacion/' + props.id" class="btn btn-success">
 						<i class="bi bi-file-pdf"></i>
-						Generar PDF del viajero
-					</button>
+						Previsualizar PDF
+					</router-link>
 						<template v-if="cotizacion.estado !== 'convertido'">
 							<button class="btn btn-primary" @click="convertirReserva" :disabled="convirtiendo">
 								<i class="bi bi-arrow-right-circle"></i>
@@ -307,50 +366,39 @@
 			</div>
 			
 		</template>
+	</div>
 
-		<!-- Modal Temporada PDF -->
-		<div v-if="showPdfModal" class="modal-backdrop" @click.self="showPdfModal = false">
-			<div class="modal-dialog modal-dialog-centered">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h5 class="modal-title"><i class="bi bi-calendar-event me-1"></i> Seleccionar temporada</h5>
-						<button type="button" class="btn-close" @click="showPdfModal = false"></button>
-					</div>
-					<div class="modal-body">
-						<p class="text-muted small mb-3">Elige la temporada para incluir en el PDF del viajero.</p>
-						<div class="d-flex flex-column gap-2">
-							<button
-								class="temporada-option text-start p-3 rounded-3 border"
-								:class="{ 'active': temporadaSeleccionada === -1 }"
-								@click="seleccionarTemporada(-1)"
-							>
-								<div class="d-flex align-items-center gap-2">
-									<i class="bi" :class="temporadaSeleccionada === -1 ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
-									<div class="fw-semibold">Sin temporada</div>
-							</div>
+	<!-- Modal Cambiar Cliente -->
+	<div class="modal fade" id="modalCambiarCliente" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-sm modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">Cambiar cliente</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<label class="form-label">Buscar cliente</label>
+					<div class="input-group mb-2">
+						<input type="text" class="form-control" v-model="terminoBusquedaCliente" placeholder="Nombre, DNI o celular..." @keyup.enter="buscarClientes">
+						<button class="btn btn-primary" @click="buscarClientes" :disabled="buscandoClientes">
+							<i v-if="buscandoClientes" class="bi bi-arrow-repeat spinner"></i>
+							<i v-else class="bi bi-search"></i>
 						</button>
+					</div>
+					<div v-if="resultadosClientes.length > 0" class="list-group mt-2">
 						<button
-								v-for="(t, index) in temporadas"
-								:key="index"
-								class="temporada-option text-start p-3 rounded-3 border"
-								:class="{ 'active': temporadaSeleccionada === index }"
-								@click="seleccionarTemporada(index)"
-							>
-								<div class="d-flex align-items-center gap-2">
-									<i class="bi" :class="temporadaSeleccionada === index ? 'bi-check-circle-fill text-primary' : 'bi-circle'" style="font-size: 1.1rem;"></i>
-									<div>
-										<div class="fw-semibold">{{ t.valor?.titulo }}</div>
-										<div class="temporada-excerpt text-muted small">{{ stripHtml(t.valor?.contenido).substring(0, 30) }}{{ stripHtml(t.valor?.contenido).length > 30 ? '...' : '' }}</div>
-								</div>
-							</div>
+							v-for="cliente in resultadosClientes"
+							:key="cliente.id"
+							class="list-group-item list-group-item-action text-start"
+							@click="seleccionarCliente(cliente)"
+						>
+							<strong>{{ cliente.razon_social || [cliente.apellidos, cliente.nombres].filter(Boolean).join(' ') }}</strong>
+							<br>
+							<small class="text-muted">{{ cliente.dni || cliente.ruc || 'Sin DNI/RUC' }} {{ cliente.celular ? '| ' + cliente.celular : '' }}</small>
 						</button>
 					</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-outline-secondary" @click="showPdfModal = false">Cancelar</button>
-					<button type="button" class="btn btn-success" @click="generarPDF">
-						<i class="bi bi-file-pdf"></i> Generar PDF
-					</button>
+					<div v-else-if="sinResultadosClientes" class="alert alert-warning mt-2 py-2 small">
+						<i class="bi bi-exclamation-triangle"></i> No se encontraron clientes.
 					</div>
 				</div>
 			</div>
@@ -359,13 +407,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import api from '@/services/axios';
 import { useRouter } from 'vue-router';
 import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { useAuthStore } from '@/stores/auth';
-import { useConfiguracionStore } from '@/stores/configuracionStore';
+import { useClienteStore } from '@/stores/clienteStore';
 import Swal from 'sweetalert2';
+import { Modal } from 'bootstrap';
 
 const props = defineProps({
 	id: [String, Number],
@@ -374,24 +423,12 @@ const props = defineProps({
 const router = useRouter();
 const cotizacionStore = useCotizacionStore();
 const authStore = useAuthStore();
+const clienteStore = useClienteStore();
 
 const cotizacion = ref(null);
 const cargando = ref(true);
 const error = ref('');
 const convirtiendo = ref(false);
-const configStore = useConfiguracionStore();
-
-// ── Modal PDF ──
-const showPdfModal = ref(false);
-const temporadaSeleccionada = ref(null);
-
-const stripHtml = (html) => {
-	if (!html) return '';
-	const tmp = document.createElement('div');
-	tmp.innerHTML = html;
-	return tmp.textContent || tmp.innerText || '';
-};
-const temporadas = computed(() => configStore.temporadas);
 
 const getIcono = (tipo) => {
 	const iconos = {
@@ -433,7 +470,16 @@ const formatFechaLarga = (fecha) => {
 	if (!fecha) return '-';
 	const d = parseLocalDate(fecha);
 	if (!d) return '-';
-	return d.toLocaleDateString('es-PE', { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' });
+	return d.toLocaleDateString('es-PE', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+};
+
+const formatHora = (hora) => {
+	if (!hora) return '';
+	const [h, m] = hora.split(':').map(Number);
+	if (isNaN(h) || isNaN(m)) return hora;
+	const periodo = h >= 12 ? 'p.m.' : 'a.m.';
+	const h12 = h % 12 || 12;
+	return `${String(h12).padStart(2, '0')}:${String(m).padStart(2, '0')} ${periodo}`;
 };
 
 const clienteNombre = computed(() => {
@@ -463,6 +509,75 @@ onMounted(async () => {
 		cargando.value = false;
 	}
 });
+// ── Cambiar cliente ──
+const terminoBusquedaCliente = ref('');
+const resultadosClientes = ref([]);
+const sinResultadosClientes = ref(false);
+const buscandoClientes = ref(false);
+let modalCambiarClienteInstance = null;
+
+const abrirModalCambiarCliente = () => {
+	terminoBusquedaCliente.value = '';
+	resultadosClientes.value = [];
+	sinResultadosClientes.value = false;
+	if (!modalCambiarClienteInstance) {
+		modalCambiarClienteInstance = new Modal(document.getElementById('modalCambiarCliente'));
+	}
+	modalCambiarClienteInstance.show();
+};
+
+const buscarClientes = async () => {
+	const termino = terminoBusquedaCliente.value.trim();
+	if (!termino) return;
+	buscandoClientes.value = true;
+	sinResultadosClientes.value = false;
+	resultadosClientes.value = [];
+	try {
+		await clienteStore.buscarClientes(termino);
+		resultadosClientes.value = clienteStore.clientes;
+		sinResultadosClientes.value = resultadosClientes.value.length === 0;
+	} catch (err) {
+		console.error('Error al buscar clientes:', err);
+		sinResultadosClientes.value = true;
+	} finally {
+		buscandoClientes.value = false;
+	}
+};
+
+const seleccionarCliente = async (cliente) => {
+	try {
+		await cotizacionStore.actualizar(props.id, { venta: { cliente_id: cliente.id } });
+		cotizacion.value.cliente = cliente;
+		modalCambiarClienteInstance?.hide();
+		Swal.fire({ title: 'Cliente actualizado', icon: 'success', timer: 3000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar cliente:', err);
+		Swal.fire('Error', 'No se pudo cambiar el cliente', 'error');
+	}
+};
+// ── Edición de Punto de Recojo ──
+const editandoPuntoRecojo = ref(false);
+const puntoRecojoEdit = ref('');
+
+const iniciarEdicionPuntoRecojo = () => {
+	puntoRecojoEdit.value = cotizacion.value?.punto_recojo || '';
+	editandoPuntoRecojo.value = true;
+};
+
+const guardarPuntoRecojo = async () => {
+	try {
+		await cotizacionStore.actualizar(props.id, { venta: { punto_recojo: puntoRecojoEdit.value } });
+		cotizacion.value.punto_recojo = puntoRecojoEdit.value;
+		editandoPuntoRecojo.value = false;
+	} catch (err) {
+		console.error('Error al guardar punto de recojo:', err);
+		Swal.fire('Error', 'No se pudo guardar el punto de recojo', 'error');
+	}
+};
+
+const cancelarEdicionPuntoRecojo = () => {
+	editandoPuntoRecojo.value = false;
+};
 
 // ── Edición de campos ──
 const editandoRuta = ref(false);
@@ -511,6 +626,70 @@ const guardarHora = async () => {
 const cancelarEdicionHora = () => {
 	editandoHora.value = false;
 };
+
+// ── Edición de modalidad (compartido/privado) ──
+const editandoModalidad = ref(false);
+const modalidadEdit = ref('compartido');
+
+const iniciarEdicionModalidad = () => {
+	modalidadEdit.value = cotizacion.value?.compartido || 'compartido';
+	editandoModalidad.value = true;
+};
+
+const guardarModalidad = async () => {
+	try {
+		await cotizacionStore.actualizar(props.id, { venta: { compartido: modalidadEdit.value } });
+		cotizacion.value.compartido = modalidadEdit.value;
+		editandoModalidad.value = false;
+		Swal.fire({ title: 'Modalidad actualizada', icon: 'success', timer: 3000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al cambiar modalidad:', err);
+		Swal.fire('Error', 'No se pudo actualizar la modalidad', 'error');
+	}
+};
+
+const cancelarEdicionModalidad = () => {
+	editandoModalidad.value = false;
+};
+
+// ── Edición de fechas de inicio y fin ──
+const editandoFechas = ref(false);
+const fechaInicioEdit = ref('');
+const fechaFinEdit = ref('');
+
+const iniciarEdicionFechas = () => {
+	fechaInicioEdit.value = cotizacion.value?.fecha_inicio?.slice(0, 10) || '';
+	fechaFinEdit.value = cotizacion.value?.fecha_fin?.slice(0, 10) || '';
+	editandoFechas.value = true;
+};
+
+const guardarFechas = async () => {
+	try {
+		await cotizacionStore.actualizar(props.id, {
+			venta: {
+				fecha_inicio: fechaInicioEdit.value || null,
+				fecha_fin: fechaFinEdit.value || null,
+			}
+		});
+		cotizacion.value.fecha_inicio = fechaInicioEdit.value || null;
+		cotizacion.value.fecha_fin = fechaFinEdit.value || null;
+		editandoFechas.value = false;
+	} catch (err) {
+		console.error('Error al guardar fechas:', err);
+		Swal.fire('Error', 'No se pudieron guardar las fechas', 'error');
+	}
+};
+
+const cancelarEdicionFechas = () => {
+	editandoFechas.value = false;
+};
+
+// Si la fecha fin queda antes que la fecha inicio, se iguala al mismo día
+watch(() => fechaInicioEdit.value, (nueva) => {
+	if (nueva && fechaFinEdit.value && fechaFinEdit.value < nueva) {
+		fechaFinEdit.value = nueva;
+	}
+});
 
 const guardarArrays = async (campo, valor) => {
 	try {
@@ -587,34 +766,6 @@ const eliminarNoIncluye = (index) => {
 
 // ── Acciones ──
 
-const abrirModalPDF = () => {
-	temporadaSeleccionada.value = -1;
-	showPdfModal.value = true;
-};
-
-const seleccionarTemporada = (index) => {
-	temporadaSeleccionada.value = index;
-};
-
-const generarPDF = async () => {
-	if (temporadaSeleccionada.value === null || temporadaSeleccionada.value === undefined) {
-		Swal.fire('Aviso', 'Selecciona una temporada antes de generar el PDF', 'warning');
-		return;
-	}
-	const temporadaId = temporadaSeleccionada.value === -1 ? null : temporadas.value[temporadaSeleccionada.value]?.id || null;
-	try {
-		await cotizacionStore.actualizar(props.id, { temporada_id: temporadaId });
-	} catch (err) {
-		console.error('Error al guardar temporada:', err);
-	}
-	const baseUrl = import.meta.env.MODE === 'production'
-		? 'https://apipanel.grupoeuroandino.com/api'
-		: 'http://127.0.0.1:8000/api';
-	const url = `${baseUrl}/cotizacion/${props.id}/pdf`;
-	showPdfModal.value = false;
-	window.open(url, '_blank');
-};
-
 const convertirReserva = async () => {
 		const result = await Swal.fire({
 			title: '¿Convertir en reserva?',
@@ -652,9 +803,7 @@ const convertirReserva = async () => {
 		await Swal.fire({
 			icon: 'success',
 			title: 'Cotización convertida',
-			timer: 5000,
-			timerProgressBar: true,
-			showConfirmButton: false,
+			confirmButtonText: 'Aceptar',
 		});
 
 		router.push(`/venta/detalle/${data.venta_id}`);
@@ -672,69 +821,6 @@ const convertirReserva = async () => {
 </script>
 
 <style scoped>
-.modal-backdrop {
-	position: fixed;
-	inset: 0;
-	background: rgba(0, 0, 0, 0.5);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	z-index: 1050;
-}
-
-.modal-dialog {
-	max-width: 480px;
-	width: 100%;
-}
-
-.modal-content {
-	background: #fff;
-	border-radius: 12px;
-	overflow: hidden;
-}
-
-.modal-header {
-	padding: 1rem 1.25rem;
-	border-bottom: 1px solid #e9ecef;
-}
-
-.modal-body {
-	padding: 1.25rem;
-}
-
-.modal-footer {
-	padding: 0.75rem 1.25rem;
-	border-top: 1px solid #e9ecef;
-	display: flex;
-	justify-content: flex-end;
-	gap: 0.5rem;
-}
-
-.temporada-option {
-	border: 2px solid #e9ecef !important;
-	background: #fff;
-	cursor: pointer;
-	transition: all 0.2s ease;
-}
-
-.temporada-option:hover {
-	border-color: #93c5fd !important;
-	background: #f8faff;
-}
-
-.temporada-option.active {
-	border-color: #0d6efd !important;
-	background: #eef4ff;
-}
-
-.temporada-excerpt {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	max-width: 360px;
-	line-height: 1.3;
-}
-
 .temporada-contenido {
 	font-size: 0.9rem;
 	color: #475569;

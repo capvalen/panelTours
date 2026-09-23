@@ -28,6 +28,13 @@ const cargarDatos = async () => {
 	await vehiculoStore.obtenerPorId(route.params.id)
 }
 
+const formatVehiculo = (v) => {
+	if (!v) return '-';
+	const tipo = v.tipo_carro && v.tipo_carro !== 'ninguno' ? v.tipo_carro.charAt(0).toUpperCase() + v.tipo_carro.slice(1) : 'Sin especificar';
+	const cap = v.capacidad ? ` (cap. ${v.capacidad} asientos)` : '';
+	return tipo + cap;
+};
+
 onMounted(() => {
 	cargarDatos()
 	cargarComisiones()
@@ -66,7 +73,7 @@ watch(
 			<div class="card mb-3">
 				<div class="card-body">
 					<p><strong>🚗 Detalle del vehículo</strong></p>
-					<p><strong>Tipo:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_vehiculo }}</span></p>
+					<p><strong>Tipo:</strong> {{ formatVehiculo(vehiculoActual) }}</p>
 					<p><strong>Placa:</strong> {{ vehiculoActual?.placa }}</p>
 					<p><strong>Combustible:</strong> <span class="text-capitalize">{{ vehiculoActual?.tipo_combustible }}</span></p>
 					<p><strong>Departamento:</strong> {{ vehiculoActual?.departamento?.departamento || '-' }}</p>

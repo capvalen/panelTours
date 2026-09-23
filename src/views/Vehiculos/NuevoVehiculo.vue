@@ -8,13 +8,15 @@ const vehiculoStore = useVehiculosStore()
 const { listaDepartamentos } = useFormat()
 const departamentos = ref([])
 const nuevo = reactive({
-	tipo_vehiculo: '',
+	tipo_carro: 'ninguno',
+	capacidad: '',
 	placa: '',
 	dni_conductor: '',
 	nombre_conductor: '',
 	licencia_conductor: '',
 	edad_conductor: '',
 	celular: '',
+	ciudad: '',
 	tipo_combustible: 'gasolina',
 	incluye_seguro: false,
 	seguro: '',
@@ -33,8 +35,8 @@ onMounted(async () => {
 })
 
 function guardar() {
-	if (nuevo.tipo_vehiculo == '' || nuevo.nombre_conductor == '') {
-		Swal.fire('Error', 'Por favor complete los campos obligatorios (tipo de vehículo y nombre del conductor)', 'error')
+	if (nuevo.tipo_carro == '' || nuevo.tipo_carro == 'ninguno' || nuevo.nombre_conductor == '') {
+		Swal.fire('Error', 'Por favor complete los campos obligatorios (tipo de carro y nombre del conductor)', 'error')
 		return
 	}
 
@@ -76,12 +78,27 @@ function guardar() {
 					<h5 class="mb-4"><strong>Datos del vehículo</strong></h5>
 					<div class="row mb-3">
 						<div class="col-md-6">
-							<label for="tipoVehiculo" class="form-label">Tipo de vehículo <span class="text-danger">*</span></label>
-							<input type="text" class="form-control" id="tipoVehiculo" v-model="nuevo.tipo_vehiculo">
+							<label for="tipoCarro" class="form-label">Tipo de carro <span class="text-danger">*</span></label>
+							<select class="form-select" id="tipoCarro" v-model="nuevo.tipo_carro">
+								<option value="ninguno">Sin especificar</option>
+								<option value="auto">Auto</option>
+								<option value="minivan">Minivan</option>
+								<option value="van">Van</option>
+								<option value="coaster">Coaster</option>
+								<option value="minibus">Minibus</option>
+								<option value="bus">Bus</option>
+							</select>
 						</div>
 						<div class="col-md-6">
 							<label for="placa" class="form-label">Placa</label>
 							<input type="text" class="form-control" id="placa" v-model="nuevo.placa">
+						</div>
+					</div>
+
+					<div class="row mb-3">
+						<div class="col-md-6">
+							<label for="capacidad" class="form-label">Capacidad (asientos)</label>
+							<input type="number" class="form-control" id="capacidad" v-model="nuevo.capacidad" min="1" max="60" placeholder="1 - 60">
 						</div>
 					</div>
 
@@ -105,13 +122,17 @@ function guardar() {
 							</select>
 						</div>
 						<div class="col-md-4">
+							<label for="ciudad" class="form-label">Ciudad</label>
+							<input type="text" class="form-control" id="ciudad" v-model="nuevo.ciudad" placeholder="Ej: Cusco">
+						</div>
+					</div>
+					<div class="row mb-3">
+						<div class="col-md-4">
 							<div class="form-check form-switch mt-4">
 								<input class="form-check-input" type="checkbox" id="incluyeSeguro" v-model="nuevo.incluye_seguro">
 								<label class="form-check-label" for="incluyeSeguro">Incluye seguro</label>
 							</div>
 						</div>
-					</div>
-					<div class="row mb-3">
 						<div class="col-md-4">
 							<label for="seguro" class="form-label">Seguro</label>
 							<input type="text" class="form-control" id="seguro" v-model="nuevo.seguro">

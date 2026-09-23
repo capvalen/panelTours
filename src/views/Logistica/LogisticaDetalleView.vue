@@ -91,7 +91,7 @@
 						<div class="col-md-4 d-flex flex-column">
 							<strong class="small">Vehículo</strong>
 							<div v-if="logistica.vehiculo" class="small text-muted mt-1">
-								<div><span class="fw-semibold">Tipo:</span> {{ logistica.vehiculo.tipo_vehiculo || '-' }}</div>
+								<div><span class="fw-semibold">Tipo:</span> {{ formatVehiculo(logistica.vehiculo) }}</div>
 								<div><span class="fw-semibold">Placa:</span> {{ logistica.vehiculo.placa || '-' }}</div>
 								<div><span class="fw-semibold">Combustible:</span> {{ logistica.vehiculo.tipo_combustible || '-' }}</div>
 								<hr class="my-1">
@@ -273,7 +273,7 @@
 							class="list-group-item list-group-item-action text-start"
 							@click="asignarVehiculo(v)"
 						>
-							<div class="fw-semibold">{{ v.placa }} - {{ v.tipo_vehiculo }}</div>
+							<div class="fw-semibold">{{ v.placa }} - {{ formatVehiculo(v) }}</div>
 							<small class="text-muted">Conductor: {{ v.nombre_conductor || '-' }} · Cel: {{ v.celular || '-' }}</small>
 						</button>
 					</div>
@@ -288,6 +288,13 @@ import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { Modal } from 'bootstrap';
 import api from '@/services/axios';
+
+const formatVehiculo = (v) => {
+	if (!v) return '-';
+	const tipo = v.tipo_carro && v.tipo_carro !== 'ninguno' ? v.tipo_carro.charAt(0).toUpperCase() + v.tipo_carro.slice(1) : 'Sin especificar';
+	const cap = v.capacidad ? ` (cap. ${v.capacidad} asientos)` : '';
+	return tipo + cap;
+};
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 

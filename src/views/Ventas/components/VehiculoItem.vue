@@ -20,12 +20,12 @@ watch(searchText, (value) => {
 		props.item.vehiculo_id = selected.id;
 		props.item.placa = selected.placa;
 		props.item.conductor = selected.nombre_conductor;
-		props.item.tipo_vehiculo = selected.tipo_vehiculo;
+		props.item.tipo_carro = selected.tipo_carro;
 	} else {
 		props.item.vehiculo_id = null;
 		props.item.placa = '';
 		props.item.conductor = '';
-		props.item.tipo_vehiculo = '';
+		props.item.tipo_carro = '';
 	}
 });
 </script>
@@ -38,13 +38,13 @@ watch(searchText, (value) => {
 				placeholder="Buscar vehículo...">
 			<datalist id="listaVehiculos">
 				<option v-for="vehiculo in vehiculos" :key="vehiculo.id" :value="vehiculo.id">
-					{{ vehiculo.tipo_vehiculo + ' - ' + vehiculo.placa + ' - ' + vehiculo.nombre_conductor }}
+					{{ vehiculo.tipo_carro + ' - ' + vehiculo.placa + ' - ' + vehiculo.nombre_conductor }}
 				</option>
 			</datalist>
 		</div>
 		<div class="col d-none">
-			<label class="form-label">Tipo de vehículo</label>
-			<input type="text" class="form-control" v-model="item.tipo_vehiculo" disabled>
+			<label class="form-label">Tipo de carro</label>
+			<input type="text" class="form-control" v-model="item.tipo_carro" disabled>
 		</div>
 		<div class="col d-none">
 			<label class="form-label">Placa</label>
