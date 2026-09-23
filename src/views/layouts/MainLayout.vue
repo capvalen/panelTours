@@ -164,6 +164,9 @@
 			<!-- Contenido principal -->
 			<div class="col pt-3" style="min-width: 0;">
 				<router-view class="container-fluid"></router-view>
+				<footer class="text-center text-muted small py-3 mt-3">
+					Grupo Euro Andino &middot; <i class="bi bi-pc-display"></i> v{{ appVersion }}
+				</footer>
 			</div>
 		</div>
 	</div>
@@ -182,6 +185,8 @@ const authStore = useAuthStore()
 
 const configOpen = ref(false)
 const collapsed = ref(false)
+
+const appVersion = __APP_VERSION__ || '0.0.0'
 
 function puedeVer(...perfiles) {
 	return perfiles.includes(authStore.user?.perfil) || authStore.user?.perfil === 'administrador'
