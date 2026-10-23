@@ -111,6 +111,37 @@ const resetFormTemporada = () => {
 	}
 };
 
+// ── Sistema (solo entorno de desarrollo) ──
+// La pestaña y su botón se muestran únicamente cuando el proyecto corre en
+// modo development; en la build de producción no aparecen.
+const esDesarrollo = import.meta.env.MODE === 'development';
+const DESCOMPRIMIR_URL = 'https://panel.grupoeuroandino.com/descomprimir.php';
+
+const descomprimiendo = ref(false);
+const logDescompresion = ref('');
+
+const descomprimir = async () => {
+	descomprimiendo.value = true;
+	logDescompresion.value = '';
+	try {
+		const resp = await fetch(DESCOMPRIMIR_URL, { cache: 'no-store' });
+		const texto = await resp.text();
+		logDescompresion.value = texto;
+
+		if (resp.ok) {
+			Swal.fire({ title: 'Listo', text: 'Descompresión ejecutada en el servidor', icon: 'success', timer: 3000, showConfirmButton: false });
+		} else {
+			Swal.fire('Aviso', 'El servidor devolvió un error, revisa el detalle', 'warning');
+		}
+	} catch (error) {
+		console.error('Error al descomprimir:', error);
+		logDescompresion.value = 'No se pudo conectar con ' + DESCOMPRIMIR_URL + '\n' + (error?.message || error);
+		Swal.fire('Error', 'No se pudo conectar con el servidor', 'error');
+	} finally {
+		descomprimiendo.value = false;
+	}
+};
+
 // ── Usuarios ──
 const passwordForm = ref({
 	currentPassword: '',
@@ -330,6 +361,11 @@ onMounted(() => {
 					<i class="bi bi-calendar-event me-1"></i> Contenido de temporadas
 				</button>
 			</li>
+			<li class="nav-item" v-if="esDesarrollo">
+				<button class="nav-link" :class="{ active: activeTab === 'sistema' }" @click="activeTab = 'sistema'">
+					<i class="bi bi-gear me-1"></i> Sistema
+				</button>
+			</li>
 		</ul>
 
 		<!-- ══════════ TAB: USUARIOS ══════════ -->
@@ -449,6 +485,27 @@ onMounted(() => {
 				</div>
 			</div>
 		</div>
+		<!-- ══════════ TAB: SISTEMA (solo desarrollo) ══════════ -->
+		<div class="config-section" v-if="activeTab === 'sistema' && esDesarrollo">
+			<h3>Sistema</h3>
+			<p class="text-muted mb-3">
+				Herramientas de despliegue disponibles únicamente en el entorno de desarrollo.
+			</p>
+			<div class="form-group">
+				<label>Descomprimir archivo de despliegue</label>
+				<p class="text-muted small mb-2">
+					Busca <code>Archivador.zip</code> o <code>dist.zip</code> junto a <code>index.html</code> en el servidor
+					y descomprime el más reciente sobre esa misma carpeta.
+				</p>
+				<button type="button" class="btn btn-outline-primary" :disabled="descomprimiendo" @click="descomprimir">
+					<span v-if="descomprimiendo" class="spinner-border spinner-border-sm me-1"></span>
+					<i v-else class="bi bi-file-earmark-zip me-1"></i>
+					{{ descomprimiendo ? 'Descomprimiendo...' : 'Descomprimir ahora' }}
+				</button>
+				<p class="text-muted small mt-2 mb-0">{{ DESCOMPRIMIR_URL }}</p>
+			</div>
+			<pre v-if="logDescompresion" class="sistema-log">{{ logDescompresion }}</pre>
+		</div>
 	</div>
 
 	<!-- ══════════ MODAL: USUARIO ══════════ -->
@@ -546,6 +603,21 @@ onMounted(() => {
 .config-section h3 {
 	margin-top: 0;
 	color: #333;
+}
+
+.sistema-log {
+	background: #0f172a;
+	color: #e2e8f0;
+	border-radius: 6px;
+	padding: 0.85rem 1rem;
+	font-size: 0.85rem;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+	margin-top: 1rem;
+	margin-bottom: 0;
+	max-height: 320px;
+	overflow: auto;
 }
 
 .form-group {
