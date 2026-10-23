@@ -80,6 +80,17 @@ const tipoBadgeClass = (esCobro) => {
 	return esCobro ? 'border-success text-success' : 'border-danger text-danger';
 };
 
+// ── Origen del cobro: proveedor vs venta de cliente ──
+// Los cobros a proveedores traen proveedor_id; los pagos registrados en una
+// venta traen venta_id y no tienen proveedor.
+const esPagoDeVenta = (pago) => !pago.proveedor_id && !!pago.venta_id;
+
+const iconoOrigen = (pago) => esPagoDeVenta(pago) ? 'bi bi-cart' : 'bi bi-box-seam';
+
+const rutaDetallePago = (pago) => esPagoDeVenta(pago)
+	? '/venta/detalle/' + pago.venta_id
+	: '/cobro/' + pago.id;
+
 const estadoBadgeClass = (estado) => {
 	const map = {
 		'completado': 'border-success text-success',
@@ -188,11 +199,13 @@ const eliminarPago = async (id, codigoRef) => {
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="(pago, index) in pagosPorCobrar" :key="'cobro-' + pago.id" style="cursor:pointer;" @click="$router.push('/cobro/' + pago.id)">
+								<tr v-for="(pago, index) in pagosPorCobrar" :key="'cobro-' + pago.id" style="cursor:pointer;" @click="$router.push(rutaDetallePago(pago))">
 									<td>{{ index + 1 }}</td>
 									<td class="tdLargo">{{ fechaLatamSimple(pago.fecha) }}</td>
 									<td>
-										<div class="small fw-semibold">{{ pago.concepto || '-' }}</div>
+										<div class="small fw-semibold">
+											<i :class="iconoOrigen(pago)" class="me-1" :title="esPagoDeVenta(pago) ? 'Venta de cliente' : 'Proveedor'"></i>{{ pago.concepto || '-' }}
+										</div>
 										<div class="small text-muted">{{ pago.beneficiario || '-' }}</div>
 									</td>
 									<td>
@@ -210,7 +223,7 @@ const eliminarPago = async (id, codigoRef) => {
 									</td>
 									<td>{{ pago.codigo_referencia || '-' }}</td>
 									<td @click.stop>
-										<button class="btn btn-sm btn-outline-primary" title="Ver cobro" @click="$router.push('/cobro/' + pago.id)">
+										<button class="btn btn-sm btn-outline-primary" :title="esPagoDeVenta(pago) ? 'Ver venta' : 'Ver cobro'" @click="$router.push(rutaDetallePago(pago))">
 											<i class="bi bi-eye"></i>
 										</button>
 									</td>

@@ -69,24 +69,45 @@ const cambioVisado = () => {
   // Si es 'si', no modificamos tipo_visado
 };
 
+let debounceTimer = null
+
+function buscarReniecDebounced() {
+  clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(() => {
+    buscarReniec()
+  }, 500)
+}
+
+const notificar = (mensaje, icono) => {
+  Swal.fire({
+    toast: true,
+    position: 'bottom-end',
+    icon: icono,
+    title: mensaje,
+    showConfirmButton: false,
+    timer: 2500,
+    timerProgressBar: true,
+  })
+}
+
 async function buscarReniec() {
   if (!nuevo.dni || nuevo.dni.length !== 8) {
-    Swal.fire('DNI inválido', 'El DNI debe tener 8 dígitos', 'error');
     return;
   }
   try {
     const token = import.meta.env.VITE_API_TOKEN;
     const response = await fetch(`https://dnis.infocat.workers.dev/api/dni/${nuevo.dni}/${token}`);
     const data = await response.json();
-    if (data.error) {
-      Swal.fire('Error', data.error, 'error');
+    if (response.status === 404 || data.error) {
+      notificar('DNI no encontrado', 'error');
       return;
     }
     nuevo.apellidos = data.apellido;
     nuevo.nombres = data.nombre;
     nuevo.dni = data.dni;
+    notificar('DNI encontrado', 'success');
   } catch (error) {
-    Swal.fire('Error', 'No se pudo conectar con RENIEC', 'error');
+    notificar('DNI no encontrado', 'error');
   }
 }
 
@@ -121,7 +142,8 @@ async function buscarReniec() {
 						<div class="col-md-6">
 							<label for="dni" class="form-label">DNI</label>
 							<div class="input-group">
-								<input type="text" class="form-control" id="dni" v-model="nuevo.dni">
+								<input type="text" class="form-control" id="dni" v-model="nuevo.dni"
+									@input="buscarReniecDebounced()" @keyup.enter="buscarReniec()">
 								<button class="btn btn-outline-secondary" type="button" @click="buscarReniec()">
 									<img src="/images/reniec.png" alt="RENIEC" style="height: 20px; width: auto;">
 								</button>

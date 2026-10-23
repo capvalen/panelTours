@@ -9,6 +9,12 @@ dayjs.extend(relativeTime)
 dayjs.locale('es')
 dayjs.extend(utc);
 
+// Zona horaria del negocio (Perú, UTC-5, sin horario de verano).
+// El backend guarda las fechas en hora de America/Lima, por lo que NO se debe
+// usar dayjs.utc() para obtener la fecha/hora "de ahora": a partir de las 19:00
+// hora local devolvería el día siguiente y descuadraría la caja y las ventas.
+const OFFSET_LIMA = -300;
+
 export function useFormat() {
   const formatDate = (date, format = 'D MMMM YYYY h:mm a') => {
     if (!date) return ''
@@ -56,10 +62,10 @@ export function useFormat() {
 	}
 
 	const formatHoy = ()=>{
-		return dayjs.utc().format('YYYY-MM-DD');
+		return dayjs().utcOffset(OFFSET_LIMA).format('YYYY-MM-DD');
 	}
 	const ahora = ()=>{
-		return dayjs.utc().format('YYYY-MM-DD HH:mm:ss');
+		return dayjs().utcOffset(OFFSET_LIMA).format('YYYY-MM-DD HH:mm:ss');
 	}
 	const rutaArchivo = (link)=>{
 		if(!link) return ''

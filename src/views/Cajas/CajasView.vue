@@ -10,6 +10,27 @@ const cajaStore = useCajaStore()
 const dia = ref(formatHoy())
 const cargando = ref(false)
 
+// Caja que se encuentra abierta (null si no hay ninguna)
+const cajaAbierta = ref(null)
+
+const cargarCajaAbierta = async () => {
+	try {
+		// Fuente de verdad: consulta directa al backend por estado 'abierta'
+		cajaAbierta.value = await cajaStore.obtenerCajaAbierta()
+	} catch (error) {
+		cajaAbierta.value = null
+	}
+	// Respaldo: si el backend no la devolvió, se busca dentro de la lista cargada
+	if (!cajaAbierta.value) {
+		cajaAbierta.value = cajaStore.cajas.find(caja => caja.estado === 'abierta') || null
+	}
+}
+
+const irACajaAbierta = () => {
+	if (!cajaAbierta.value) return
+	router.push({ name: 'detalleCaja', params: { id: cajaAbierta.value.id } })
+}
+
 const cambiarDias = async () => {
 	cargando.value = true
 	try {
@@ -23,6 +44,7 @@ onMounted(async () => {
 	cargando.value = true
 	try {
 		await cajaStore.obtenerCajas()
+		await cargarCajaAbierta()
 	} finally {
 		cargando.value = false
 	}
@@ -53,7 +75,21 @@ onMounted(async () => {
 						</div>
 						<div class="col-6 col-md d-flex justify-content-center">
 							<div>
-								<router-link to="/caja/nueva" class="btn btn-outline-primary"><i class="bi bi-star"></i> Aperturar nueva caja</router-link>
+								<router-link
+									v-if="!cajaAbierta"
+									to="/caja/nueva"
+									class="btn btn-outline-primary text-nowrap"
+								>
+									<i class="bi bi-star"></i> Aperturar nueva caja
+								</router-link>
+								<button
+									v-else
+									type="button"
+									class="btn btn-success text-nowrap"
+									@click="irACajaAbierta"
+								>
+									<i class="bi bi-arrow-right"></i> Ir a caja abierta
+								</button>
 							</div>
 						</div>
 					</div>

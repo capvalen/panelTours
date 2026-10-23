@@ -24,6 +24,7 @@
 								class="form-control"
 								v-model="terminoBusqueda"
 								placeholder="Buscar por nombre, DNI o celular..."
+								@input="buscarClienteDebounced()"
 								@keyup.enter="buscarCliente"
 							>
 							<button class="btn btn-primary" @click="buscarCliente" :disabled="cargando">
@@ -47,8 +48,38 @@
 								<i class="bi bi-chevron-right text-muted"></i>
 							</button>
 						</div>
-						<div v-if="sinResultados" class="alert alert-warning mt-2 py-2 small">
+						<div v-if="sinResultados && !buscandoReniec && !personaReniec" class="alert alert-warning mt-2 py-2 small mb-0">
 							<i class="bi bi-exclamation-triangle"></i> No se encontraron clientes con ese término.
+						</div>
+
+						<!-- Buscando en RENIEC -->
+						<div v-if="buscandoReniec" class="alert alert-light border mt-2 py-2 small mb-0">
+							<span class="spinner-border spinner-border-sm text-primary me-2"></span> Buscando en RENIEC...
+						</div>
+
+						<!-- Persona encontrada en RENIEC (aún no registrada como cliente) -->
+						<div v-else-if="personaReniec" class="card border-success mt-2">
+							<div class="card-body py-2 px-3">
+								<div class="d-flex justify-content-between align-items-center gap-3">
+									<div>
+										<small class="text-success d-block">
+											<i class="bi bi-search"></i> Encontrado en RENIEC (no registrado)
+										</small>
+										<strong>{{ [personaReniec.apellidos, personaReniec.nombres].filter(Boolean).join(' ') }}</strong>
+										<br>
+										<small class="text-muted">DNI: {{ personaReniec.dni }}</small>
+									</div>
+									<button
+										class="btn btn-sm btn-success text-nowrap"
+										:disabled="creandoClienteReniec"
+										@click="seleccionarPersonaReniec"
+									>
+										<i v-if="creandoClienteReniec" class="bi bi-arrow-repeat spinner"></i>
+										<i v-else class="bi bi-person-check"></i>
+										{{ creandoClienteReniec ? 'Creando...' : 'Seleccionar persona' }}
+									</button>
+								</div>
+							</div>
 						</div>
 					</div>
 					<!-- Columna 2: Crear cliente nuevo -->
@@ -399,6 +430,11 @@ const resultados = ref([]);
 const sinResultados = ref(false);
 const cargando = ref(false);
 
+// ── Fallback RENIEC (cuando el cliente no está registrado) ──
+const personaReniec = ref(null);
+const buscandoReniec = ref(false);
+const creandoClienteReniec = ref(false);
+
 const clienteSeleccionado = ref({
 	id: 1,
 	nombres: 'cliente sin especificar',
@@ -411,27 +447,121 @@ const clienteSeleccionado = ref({
 	nacionalidad: 'peruano',
 });
 
+// Notificación tipo toast (esquina inferior derecha)
+const notificar = (mensaje, icono) => {
+	Swal.fire({
+		toast: true,
+		position: 'bottom-end',
+		icon: icono,
+		title: mensaje,
+		showConfirmButton: false,
+		timer: 2500,
+		timerProgressBar: true,
+	});
+};
+
+const esDni = (valor) => /^\d{8}$/.test(valor);
+
+// Debounce: busca automáticamente mientras se escribe
+let debounceBusquedaTimer = null;
+const buscarClienteDebounced = () => {
+	clearTimeout(debounceBusquedaTimer);
+	const termino = terminoBusqueda.value.trim();
+	if (!termino) {
+		resultados.value = [];
+		sinResultados.value = false;
+		personaReniec.value = null;
+		return;
+	}
+	debounceBusquedaTimer = setTimeout(() => {
+		buscarCliente();
+	}, 500);
+};
+
 const buscarCliente = async () => {
 	const termino = terminoBusqueda.value.trim();
 	if (!termino) return;
+	clearTimeout(debounceBusquedaTimer);
 	cargando.value = true;
 	sinResultados.value = false;
 	resultados.value = [];
+	personaReniec.value = null;
 	try {
 		await clienteStore.buscarClientes(termino);
 		resultados.value = clienteStore.clientes;
 		sinResultados.value = resultados.value.length === 0;
+		// Si el término es un DNI y se encontró localmente, se notifica
+		if (esDni(termino) && resultados.value.length > 0) {
+			notificar('DNI encontrado', 'success');
+		}
+		// Si no se encontró nada y el término es un DNI de 8 dígitos, buscamos en RENIEC
+		if (sinResultados.value && esDni(termino)) {
+			await buscarPersonaReniec(termino);
+		}
 	} catch (error) {
 		console.error('Error al buscar clientes:', error);
 		sinResultados.value = true;
+		if (esDni(termino)) {
+			await buscarPersonaReniec(termino);
+		}
 	} finally {
 		cargando.value = false;
+	}
+};
+
+const buscarPersonaReniec = async (dni) => {
+	buscandoReniec.value = true;
+	personaReniec.value = null;
+	try {
+		const persona = await clienteStore.buscarReniec(dni);
+		personaReniec.value = persona;
+		notificar('DNI encontrado', 'success');
+	} catch (error) {
+		// 404 => el DNI no existe en RENIEC
+		personaReniec.value = null;
+		notificar('DNI no encontrado', 'error');
+		if (error?.response?.status !== 404) {
+			console.error('Error al consultar RENIEC:', error);
+		}
+	} finally {
+		buscandoReniec.value = false;
+	}
+};
+
+// Crea el cliente a partir de los datos de RENIEC y lo asigna a la cotización en curso
+const seleccionarPersonaReniec = async () => {
+	if (!personaReniec.value) return;
+	creandoClienteReniec.value = true;
+	try {
+		let cliente;
+		if (personaReniec.value.cliente_id) {
+			// Ya existía un cliente con ese DNI: lo cargamos
+			cliente = await clienteStore.obtenerClienteId(personaReniec.value.cliente_id);
+		} else {
+			// Se crea un cliente nuevo con los datos de RENIEC
+			cliente = await clienteStore.crearDesdeReniec(personaReniec.value.dni);
+		}
+
+		clienteSeleccionado.value = { ...cliente };
+		resultados.value = [];
+		sinResultados.value = false;
+		terminoBusqueda.value = '';
+		personaReniec.value = null;
+
+		notificar('Cliente asignado a la cotización', 'success');
+	} catch (error) {
+		console.error('Error al crear el cliente desde RENIEC:', error);
+		Swal.fire('Error', 'No se pudo crear el cliente. Intente nuevamente.', 'error');
+	} finally {
+		creandoClienteReniec.value = false;
 	}
 };
 
 const seleccionarCliente = (cliente) => {
 	clienteSeleccionado.value = { ...cliente };
 	resultados.value = [];
+	sinResultados.value = false;
+	personaReniec.value = null;
 	terminoBusqueda.value = '';
 };
 

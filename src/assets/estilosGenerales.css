@@ -107,6 +107,13 @@ h1, h2, h3, h4, h5, h6 {
 h2 { border-bottom: 2px solid #bfdbfe; padding-bottom: 6px; display: inline-block; }
 h3 { color: #334155; }
 
+/* Sin borde inferior en las notificaciones (toasts) de SweetAlert */
+.swal2-toast .swal2-title {
+	border-bottom: none !important;
+	padding-bottom: 0 !important;
+	display: block !important;
+}
+
 /* Breadcrumb */
 .breadcrumb-item a { color: #3b82f6 !important; }
 .breadcrumb-item.active { color: #64748b !important; }

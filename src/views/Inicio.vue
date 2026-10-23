@@ -141,7 +141,7 @@
 	<!-- comisiones -->
 	<div class="mt-4">
 		<div class="d-flex justify-content-between align-items-center mb-3">
-			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-percent" style="color:#3b82f6;"></i> Comisiones</h5>
+			<h5 class="fw-bold mb-0" style="color:#1e293b;"><i class="bi bi-percent" style="color:#3b82f6;"></i> Comisiones por pagar</h5>
 			<router-link to="/pagos" class="btn btn-sm" style="background:rgba(59,130,246,0.1);color:#3b82f6;border:1px solid rgba(59,130,246,0.2);"><i class="bi bi-arrow-right"></i> Ver todas</router-link>
 		</div>
 		<div v-if="comisionesPendientes.length === 0" class="text-muted py-3 text-center">
@@ -230,9 +230,6 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import api from '@/services/axios';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
 import { useDashboardStore } from '@/stores/dashboardStore';
 import { usePagosStore } from '@/stores/pagoStore';
 import { useRecordatoriosStore } from '@/stores/recordatoriosStore';
@@ -241,7 +238,7 @@ import { useFormat } from '@/composables/formatos';
 const dashboard = useDashboardStore();
 const pagoStore = usePagosStore();
 const recordatoriosStore = useRecordatoriosStore();
-const { formatMoneda, formatRelative, capitalize, capitalizeFirst } = useFormat();
+const { formatMoneda, formatRelative, capitalize, capitalizeFirst, formatHoy } = useFormat();
 
 const recordatorios = ref([]);
 const ventasCheckin = ref([]);
@@ -268,7 +265,7 @@ onMounted(async () => {
 	
 	// Cargar ventas de hoy con check-in pendiente
 	try {
-		const hoy = dayjs.utc().format('YYYY-MM-DD');
+		const hoy = formatHoy();
 		const res = await api.get('/ventas');
 		const ventasHoy = (res.data || []).filter(v =>
 			v.estado !== 'anulado' && v.fecha && v.fecha.substring(0, 10) === hoy && v.progreso !== 'cotizacion'

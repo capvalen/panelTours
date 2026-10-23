@@ -356,6 +356,7 @@
 											<th class="text-end">Monto</th>
 											<th>Estado</th>
 											<th>Método</th>
+											<th>¿Quién paga?</th>
 											<th>Observaciones</th>
 											<th class="text-center" style="width: 100px;">Acciones</th>
 										</tr>
@@ -372,6 +373,7 @@
 												</span>
 											</td>
 											<td>{{ capitalize(pago.metodo_pago || '-') }}</td>
+											<td>{{ pago.quien_paga || '-' }}</td>
 											<td>{{ pago.observaciones || '-' }}</td>
 											<td class="text-center" style="white-space: nowrap;">
 												<button class="btn btn-sm btn-outline-success me-1" title="Ticket" @click="abrirTicketPago(pago.id)">
@@ -514,6 +516,10 @@
 								<option value="POS">POS</option>
 								<option value="transferencia">Transferencia</option>
 							</select>
+						</div>
+						<div class="col-12">
+							<label class="form-label">¿Quién paga?</label>
+							<input type="text" class="form-control" v-model="pagoForm.quienPaga" placeholder="Ej: el cliente, un tercero, nombre...">
 						</div>
 						<div class="col-12 d-none">
 							<label class="form-label">Estado del pago</label>
@@ -1012,6 +1018,7 @@ const pagoForm = ref({
 	metodoPago: 'efectivo',
 	observaciones: '',
 	estadoPago: 'pendiente',
+	quienPaga: '',
 });
 
 const modalLogisticaInstance = ref(null);
@@ -1100,6 +1107,7 @@ const resetPagoForm = () => {
 		metodoPago: 'efectivo',
 		observaciones: '',
 		estadoPago: 'pendiente',
+		quienPaga: '',
 	};
 };
 
@@ -1133,6 +1141,7 @@ const abrirModalEditarPago = (pago) => {
 		metodoPago: pago.metodo_pago || 'efectivo',
 		observaciones: pago.observaciones || '',
 		estadoPago: pago.estado_pago || 'pendiente',
+		quienPaga: pago.quien_paga || '',
 	};
 	if (!modalPagoInstance.value) {
 		const el = document.getElementById('modalPago');
@@ -1160,6 +1169,7 @@ const guardarPago = async () => {
 			observaciones: pagoForm.value.observaciones || null,
 			concepto: venta.value?.items?.[0]?.descripcion || 'Pago de venta',
 			saldo_pendiente: nuevoSaldoPendiente,
+			quien_paga: pagoForm.value.quienPaga || null,
 		};
 		let pagoCreado;
 		if (pagoEditando.value) {

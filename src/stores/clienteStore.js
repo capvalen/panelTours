@@ -26,6 +26,15 @@ export const useClienteStore = defineStore('cliente', {
 			}
 			return this.clienteActual
 		},
+		async buscarReniec(dni){
+			const resp = await api.get('/clientes/reniec/'+dni)
+			return resp.data
+		},
+		async crearDesdeReniec(dni){
+			const resp = await api.post('/clientes/desde-reniec', { dni })
+			this.clienteActual = resp.data
+			return this.clienteActual
+		},
 		async guardarCliente(cliente){
 			const resp = await api.post('/clientes', cliente)
 			this.clienteActual = resp.data

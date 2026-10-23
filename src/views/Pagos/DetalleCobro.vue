@@ -33,6 +33,7 @@ const tipoAbono = (abono) => {
 const pagoForm = ref({
 	tipo: 'adelanto',
 	monto: 0,
+	quien_paga: '',
 });
 
 const pagoValido = computed(() => {
@@ -43,7 +44,7 @@ const pagoValido = computed(() => {
 let modalPagoInstance = null;
 
 const abrirModalPago = () => {
-	pagoForm.value = { tipo: 'adelanto', monto: saldoPendiente.value };
+	pagoForm.value = { tipo: 'adelanto', monto: saldoPendiente.value, quien_paga: item.value?.quien_paga || '' };
 	if (!modalPagoInstance) {
 		modalPagoInstance = new Modal(document.getElementById('modalAbonoCobro'));
 	}
@@ -52,11 +53,12 @@ const abrirModalPago = () => {
 
 const confirmarAbono = async () => {
 	const monto = pagoForm.value.tipo === 'total' ? saldoPendiente.value : pagoForm.value.monto;
+	const quien_paga = pagoForm.value.quien_paga || null;
 
 	try {
 		item.value = esCobro.value
-			? await pagoStore.abonarCobro(item.value.id, { monto })
-			: await pagoStore.abonarPagoPagar(item.value.id, { monto });
+			? await pagoStore.abonarCobro(item.value.id, { monto, quien_paga })
+			: await pagoStore.abonarPagoPagar(item.value.id, { monto, quien_paga });
 		modalPagoInstance?.hide();
 		Swal.fire({ title: 'Abono registrado', icon: 'success', timer: 2000, showConfirmButton: false });
 	} catch (err) {
@@ -115,6 +117,9 @@ onMounted(async () => {
 
 					<dt class="col-sm-3">Código de referencia</dt>
 					<dd class="col-sm-9">{{ item.codigo_referencia || '-' }}</dd>
+
+					<dt class="col-sm-3">¿Quién paga?</dt>
+					<dd class="col-sm-9">{{ item.quien_paga || '-' }}</dd>
 
 					<dt class="col-sm-3">Estado</dt>
 					<dd class="col-sm-9">
@@ -177,6 +182,7 @@ onMounted(async () => {
 							<th>Monto</th>
 							<th>Tipo</th>
 							<th>Método</th>
+							<th>¿Quién paga?</th>
 							<th>Referencia</th>
 							<th>Observaciones</th>
 						</tr>
@@ -192,6 +198,7 @@ onMounted(async () => {
 								</span>
 							</td>
 							<td class="text-capitalize">{{ abono.metodo_pago || '-' }}</td>
+							<td>{{ abono.quien_paga || '-' }}</td>
 							<td>{{ abono.codigo_referencia || '-' }}</td>
 							<td>{{ abono.observaciones || '-' }}</td>
 						</tr>
@@ -247,8 +254,12 @@ onMounted(async () => {
 						<label class="form-label small">Monto</label>
 						<input type="number" step="0.01" class="form-control" v-model.number="pagoForm.monto">
 					</div>
-					<div v-else class="alert alert-info py-2 small mb-0">
+					<div v-else class="alert alert-info py-2 small">
 						Se cobrará <strong>{{ formatMoneda(saldoPendiente) }}</strong>
+					</div>
+					<div class="mb-3">
+						<label class="form-label small">¿Quién paga?</label>
+						<input type="text" class="form-control" v-model="pagoForm.quien_paga" placeholder="Ej: el cliente, un tercero, nombre...">
 					</div>
 				</div>
 				<div class="modal-footer">
