@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import api from '@/services/axios';
+import { useFormat } from '@/composables/formatos';
 
 export const useCajaStore = defineStore('caja', {
 	state:() => ({
@@ -39,7 +40,8 @@ export const useCajaStore = defineStore('caja', {
 			return this.cajaDetalles
 		},
 		async guardarDetalle(registro){
-			registro.fecha = new Date().toISOString();
+			const { ahora } = useFormat();
+			registro.fecha = ahora();
 			const resp = await api.post('/caja_detalles/', registro)
 			this.cajaDetalles?.internos.unshift(resp.data)
 			return this.cajaDetalles

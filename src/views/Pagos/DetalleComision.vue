@@ -5,6 +5,7 @@ import { Modal } from 'bootstrap';
 import api from '@/services/axios';
 import ModalSubirArchivo from '@/components/ModalSubirArchivo.vue';
 import { useComisionesStore } from '@/stores/comisionStore';
+import { useCajaStore } from '@/stores/cajaStore';
 import { useFormat } from '@/composables/formatos';
 import Swal from 'sweetalert2';
 
@@ -12,11 +13,17 @@ const props = defineProps({ id: String });
 const route = useRoute();
 const router = useRouter();
 const comisionStore = useComisionesStore();
+const cajaStore = useCajaStore();
 const { fechaLatamSimple, formatMoneda, rutaArchivo, capitalize } = useFormat();
 
 const item = ref(null);
+const cajaAbierta = ref(null);
+const cajaVerificada = ref(false);
+const actualizandoEstado = ref(false);
 const montoEdit = ref(0);
 let debounceTimer = null;
+
+const estadosPago = ['pendiente', 'adelantado', 'pagado', 'anulado'];
 
 const totalPagado = computed(() => {
 	return (item.value?.pagos || []).reduce((sum, p) => sum + Number(p.monto || 0), 0);
@@ -27,19 +34,60 @@ const saldoPendiente = computed(() => {
 });
 
 const pagoForm = ref({
-	tipo: 'adelanto',
 	monto: 0,
 });
 
-const pagoValido = computed(() => {
-	if (pagoForm.value.tipo === 'total') return true;
-	return (pagoForm.value.monto || 0) > 0;
+const montoPago = computed(() => Number(pagoForm.value.monto || 0));
+
+const esPagoTotal = computed(() => {
+	return montoPago.value > 0 &&
+		Math.round(montoPago.value * 100) / 100 >= Math.round(saldoPendiente.value * 100) / 100;
 });
+
+const pagoValido = computed(() => {
+	return montoPago.value > 0 && montoPago.value <= saldoPendiente.value;
+});
+
+const ajustarMonto = () => {
+	if (montoPago.value > saldoPendiente.value) {
+		pagoForm.value.monto = saldoPendiente.value;
+	} else if (montoPago.value < 0) {
+		pagoForm.value.monto = 0;
+	}
+};
 
 let modalPagoInstance = null;
 
-const abrirModalPago = () => {
-	pagoForm.value = { tipo: 'adelanto', monto: saldoPendiente.value };
+const cargarCajaAbierta = async () => {
+	try {
+		cajaAbierta.value = await cajaStore.obtenerCajaAbierta();
+	} catch (error) {
+		console.error('Error al verificar la caja abierta:', error);
+		cajaAbierta.value = null;
+	} finally {
+		cajaVerificada.value = true;
+	}
+};
+
+const verificarCajaAbierta = async () => {
+	await cargarCajaAbierta();
+
+	if (!cajaAbierta.value) {
+		Swal.fire({
+			title: 'No hay una caja abierta',
+			text: 'Debe aperturar una caja para registrar el pago.',
+			icon: 'warning',
+		});
+		return false;
+	}
+
+	return true;
+};
+
+const abrirModalPago = async () => {
+	if (!(await verificarCajaAbierta())) return;
+
+	pagoForm.value = { monto: saldoPendiente.value };
 	if (!modalPagoInstance) {
 		modalPagoInstance = new Modal(document.getElementById('modalPago'));
 	}
@@ -47,11 +95,17 @@ const abrirModalPago = () => {
 };
 
 const confirmarPago = async () => {
-	const monto = pagoForm.value.tipo === 'total' ? saldoPendiente.value : pagoForm.value.monto;
-	const nuevoEstado = pagoForm.value.tipo === 'total' ? 'pagado' : 'adelantado';
+	const monto = montoPago.value;
+	// El estado depende del total pagado acumulado:
+	// si el monto cubre todo el saldo pendiente, la comisión queda pagada.
+	const totalConPago = Math.round((totalPagado.value + Number(monto || 0)) * 100) / 100;
+	const nuevoEstado = totalConPago >= Number(item.value?.monto || 0) ? 'pagado' : 'adelantado';
 	const hoy = new Date().toISOString().split('T')[0];
 
 	try {
+		// Verificar nuevamente al confirmar, por si la caja se cerró con el modal abierto.
+		if (!(await verificarCajaAbierta())) return;
+
 		await api.post('/comision-pagos', {
 			comision_id: item.value.id,
 			fecha: hoy,
@@ -60,23 +114,17 @@ const confirmarPago = async () => {
 
 		await comisionStore.actualizar(item.value.id, { estado_pago: nuevoEstado });
 
-		const user = JSON.parse(localStorage.getItem('user') || '{}');
-		const cajasRes = await api.get('/cajas', { params: { estado: 'abierta', usuario_id: user.id } });
-		const caja = Array.isArray(cajasRes.data) ? cajasRes.data.find(c => c.estado === 'abierta') : null;
-
-		if (caja) {
-			await api.post('/caja_detalles', {
-				caja_id: caja.id,
-				tipo: 'egreso',
-				categoria: 'pago de comisión',
-				monto,
-				concepto: `Pago ${String(item.value.id).padStart(3, '0')} - ${nombreComisionable(item.value)}`,
-				fecha: hoy,
-				comprobante_pago: 'interno',
-				proveedor_id: 1,
-				observaciones: item.value.observaciones || '',
-			});
-		}
+		await api.post('/caja_detalles', {
+			caja_id: cajaAbierta.value.id,
+			tipo: 'egreso',
+			categoria: 'pago de comisión',
+			monto,
+			concepto: `Pago ${String(item.value.id).padStart(3, '0')} - ${nombreComisionable(item.value)}`,
+			fecha: hoy,
+			comprobante_pago: 'interno',
+			proveedor_id: 1,
+			observaciones: item.value.observaciones || '',
+		});
 
 		item.value = await comisionStore.obtenerPorId(item.value.id);
 
@@ -92,6 +140,7 @@ onMounted(async () => {
 	const id = props.id || route.params.id;
 	item.value = await comisionStore.obtenerPorId(id);
 	montoEdit.value = item.value.monto;
+	await cargarCajaAbierta();
 });
 
 const actualizarMonto = (val) => {
@@ -102,6 +151,38 @@ const actualizarMonto = (val) => {
 		await comisionStore.actualizar(item.value.id, { monto });
 		item.value.monto = monto;
 	}, 600);
+};
+
+const editandoEstadoPago = ref(false);
+const estadoPagoEdit = ref('pendiente');
+
+const iniciarEdicionEstadoPago = () => {
+	estadoPagoEdit.value = item.value.estado_pago || 'pendiente';
+	editandoEstadoPago.value = true;
+};
+
+const cancelarEdicionEstadoPago = () => {
+	editandoEstadoPago.value = false;
+};
+
+const guardarEstadoPago = async () => {
+	if (estadoPagoEdit.value === item.value.estado_pago) {
+		editandoEstadoPago.value = false;
+		return;
+	}
+
+	actualizandoEstado.value = true;
+	try {
+		await comisionStore.actualizar(item.value.id, { estado_pago: estadoPagoEdit.value });
+		item.value.estado_pago = estadoPagoEdit.value;
+		editandoEstadoPago.value = false;
+		Swal.fire({ title: 'Estado actualizado', icon: 'success', timer: 1500, showConfirmButton: false });
+	} catch (error) {
+		console.error('Error al actualizar el estado de pago:', error);
+		Swal.fire('Error', 'No se pudo actualizar el estado de pago', 'error');
+	} finally {
+		actualizandoEstado.value = false;
+	}
 };
 
 // ── Comisionable: Guia | Vehiculo | Proveedor ──
@@ -182,7 +263,27 @@ const rutaComisionable = (i) => {
 					</dd>
 
 					<dt class="col-sm-3">Estado pago</dt>
-					<dd class="col-sm-9 text-capitalize">{{ item.estado_pago }}</dd>
+					<dd class="col-sm-9">
+						<span v-if="!editandoEstadoPago" class="text-capitalize">
+							{{ item.estado_pago }}
+							<button class="btn btn-sm btn-link p-0 ms-1" @click="iniciarEdicionEstadoPago" title="Editar estado de pago">
+								<i class="bi bi-pencil"></i>
+							</button>
+						</span>
+						<div v-else class="d-flex align-items-center gap-1">
+							<select class="form-select form-select-sm w-auto" v-model="estadoPagoEdit" :disabled="actualizandoEstado">
+								<option v-for="estado in estadosPago" :key="estado" :value="estado">
+									{{ capitalize(estado) }}
+								</option>
+							</select>
+							<button class="btn btn-sm btn-success" @click="guardarEstadoPago" :disabled="actualizandoEstado" title="Guardar">
+								<i class="bi bi-check-lg"></i>
+							</button>
+							<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionEstadoPago" :disabled="actualizandoEstado" title="Cancelar">
+								<i class="bi bi-x-lg"></i>
+							</button>
+						</div>
+					</dd>
 				</dl>
 			</div>
 		</div>
@@ -219,9 +320,12 @@ const rutaComisionable = (i) => {
 							<p class="mb-1"><strong>Total pagado:</strong> {{ formatMoneda(totalPagado) }}</p>
 							<p class="mb-1"><strong>Saldo pendiente:</strong> {{ formatMoneda(saldoPendiente) }}</p>
 						</div>
-						<button v-if="saldoPendiente > 0" class="btn btn-primary mt-3" @click="abrirModalPago">
+						<button v-if="saldoPendiente > 0 && cajaVerificada && cajaAbierta" class="btn btn-primary mt-3" @click="abrirModalPago">
 							<i class="bi bi-cash"></i> Realizar pago
 						</button>
+						<div v-else-if="saldoPendiente > 0 && cajaVerificada && !cajaAbierta" class="alert alert-warning mt-3 mb-0 py-2 small">
+							<i class="bi bi-exclamation-triangle"></i> No hay una caja abierta
+						</div>
 					</div>
 				</div>
 			</div>
@@ -294,18 +398,12 @@ const rutaComisionable = (i) => {
 				</div>
 				<div class="modal-body">
 					<div class="mb-3">
-						<label class="form-label small">Tipo de pago</label>
-						<select class="form-select" v-model="pagoForm.tipo">
-							<option value="adelanto">Adelanto</option>
-							<option value="total">Pago total</option>
-						</select>
-					</div>
-					<div class="mb-3" v-if="pagoForm.tipo === 'adelanto'">
 						<label class="form-label small">Monto</label>
-						<input type="number" step="0.01" class="form-control" v-model.number="pagoForm.monto">
+						<input type="number" step="0.01" min="0.01" :max="saldoPendiente" class="form-control" v-model.number="pagoForm.monto" @blur="ajustarMonto">
 					</div>
-					<div v-else class="alert alert-info py-2 small mb-0">
-						Se pagará <strong>{{ formatMoneda(saldoPendiente) }}</strong>
+					<div v-if="montoPago > 0" class="alert py-2 small mb-0" :class="esPagoTotal ? 'alert-success' : 'alert-warning'">
+						<i class="bi" :class="esPagoTotal ? 'bi-check-circle' : 'bi-info-circle'"></i>
+						{{ esPagoTotal ? 'Se realizará el pago total' : 'Se realizará un adelanto' }}
 					</div>
 				</div>
 				<div class="modal-footer">

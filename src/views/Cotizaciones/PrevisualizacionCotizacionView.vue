@@ -148,7 +148,7 @@
 					<div id="pdf-footer" class="pdf-footer">
 						<div class="fila1">
 							<span class="txt">¡Reserva tu aventura hoy mismo con nosotros!.</span>
-							<span class="wa"><i class="bi bi-whatsapp"></i> CONFIRMAR POR WHATSAPP 9647614293</span>
+							<span class="wa"><i class="bi bi-whatsapp"></i> CONFIRMAR POR WHATSAPP 947614293</span>
 						</div>
 						<div class="fila2">
 							https://grupoeuroandino.com &middot; grupoeuroandino@hotmail.com

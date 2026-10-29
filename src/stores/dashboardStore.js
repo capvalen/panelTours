@@ -33,14 +33,12 @@ export const useDashboardStore = defineStore('dashboard', {
 				this.gastosHoy = Number(data.egresos_caja || 0);
 				this.saldoCaja = Number(data.saldo_caja || 0);
 				this.caja = data.caja || null;
+				this.pasajerosEnRuta = Number(data.pasajeros_en_ruta || 0);
 			} catch (error) {
 				console.error('Error al cargar estadísticas del dashboard:', error);
 			} finally {
 				this.cargando = false;
 			}
-
-			// Pasajeros en ruta (dato ficticio con variación)
-			this.pasajerosEnRuta = Math.floor(Math.random() * 30) + 25;
 		},
 	},
 });

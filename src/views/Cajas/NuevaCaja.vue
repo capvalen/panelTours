@@ -3,14 +3,14 @@ import { useRouter } from 'vue-router'
 import { useCajaStore } from '@/stores/cajaStore';
 import { onMounted } from 'vue';
 import { useFormat } from '@/composables/formatos'
-const {formatHoy, formatMoneda} = useFormat()
+const {ahora, formatMoneda} = useFormat()
 
 const cajaStore = useCajaStore()
 const router = useRouter()
 
 const usuario = JSON.parse(localStorage.getItem('user'))
 const cajaNueva = {
-	fecha_apertura: formatHoy(),
+	fecha_apertura: ahora(),
 	monto_inicial: 0,
 	observaciones: '',
 	usuario_id: usuario.id
@@ -49,7 +49,7 @@ async function aperturar(){
 						</div>
 						<div class="col-md-6">
 							<label for="fecha" class="form-label">Fecha</label>
-							<input type="date" class="form-control" id="fecha" v-model="cajaNueva.fecha_apertura" disabled>
+							<input type="date" class="form-control" id="fecha" :value="cajaNueva.fecha_apertura.slice(0, 10)" disabled>
 						</div>
 						<div class="col-md-6 mt-3">
 							<label for="fecha" class="form-label">Monto de apertura</label>

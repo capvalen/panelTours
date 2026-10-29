@@ -111,10 +111,7 @@ const resetFormTemporada = () => {
 	}
 };
 
-// ── Sistema (solo entorno de desarrollo) ──
-// La pestaña y su botón se muestran únicamente cuando el proyecto corre en
-// modo development; en la build de producción no aparecen.
-const esDesarrollo = import.meta.env.MODE === 'development';
+// ── Sistema ──
 const DESCOMPRIMIR_URL = 'https://panel.grupoeuroandino.com/descomprimir.php';
 
 const descomprimiendo = ref(false);
@@ -361,7 +358,7 @@ onMounted(() => {
 					<i class="bi bi-calendar-event me-1"></i> Contenido de temporadas
 				</button>
 			</li>
-			<li class="nav-item" v-if="esDesarrollo">
+			<li class="nav-item">
 				<button class="nav-link" :class="{ active: activeTab === 'sistema' }" @click="activeTab = 'sistema'">
 					<i class="bi bi-gear me-1"></i> Sistema
 				</button>
@@ -485,11 +482,11 @@ onMounted(() => {
 				</div>
 			</div>
 		</div>
-		<!-- ══════════ TAB: SISTEMA (solo desarrollo) ══════════ -->
-		<div class="config-section" v-if="activeTab === 'sistema' && esDesarrollo">
+		<!-- ══════════ TAB: SISTEMA ══════════ -->
+		<div class="config-section" v-if="activeTab === 'sistema'">
 			<h3>Sistema</h3>
 			<p class="text-muted mb-3">
-				Herramientas de despliegue disponibles únicamente en el entorno de desarrollo.
+				Herramientas de despliegue del sistema.
 			</p>
 			<div class="form-group">
 				<label>Descomprimir archivo de despliegue</label>

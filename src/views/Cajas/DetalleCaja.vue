@@ -20,6 +20,13 @@ const cierreSistema = computed(() => {
 	return parseFloat(cajaActual.value?.monto_final || 0) 
 })
 
+const nombreUsuario = computed(() => {
+	return cajaActual.value?.usuario?.nombre ||
+		cajaDetalles.value?.internos?.[0]?.usuario?.nombre ||
+		cajaDetalles.value?.especiales?.[0]?.usuario?.nombre ||
+		'-'
+})
+
 const efectivoFinal = computed(() => {
 	if (!cajaDetalles.value || !cajaActual.value) return 0
 	const ingresos = (cajaDetalles.value?.internos || [])
@@ -112,7 +119,7 @@ watch(() => route.params.id, (newId, oldId) => {
 					<p><strong>Fecha :</strong> <span class="text-capitalize">{{fechaLatamCorta(cajaActual?.fecha_apertura)}}</span></p>
 					<p><strong>Hora:</strong> {{horaCorta(cajaActual?.fecha_apertura)}}</p>
 					<p><strong>Monto:</strong> {{formatoMoneda(cajaActual?.monto_inicial)}}</p>
-					<p><strong>Usuario:</strong> Úrsula</p>
+					<p><strong>Usuario:</strong> {{ nombreUsuario }}</p>
 				</div>
 			</div>
 

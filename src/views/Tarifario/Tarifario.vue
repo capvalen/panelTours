@@ -8,8 +8,6 @@
 		</ol>
 	</nav>
 
-	<p class="text-muted">Acciones</p>
-
 	<div class="table-responsive mb-4">
 		<table class="table table-hover">
 		<thead>
