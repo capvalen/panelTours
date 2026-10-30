@@ -190,7 +190,10 @@ const configStore = useConfiguracionStore();
 const authStore = useAuthStore();
 const { fechaLatamSimple } = useFormat();
 
-const API_GRUPO = import.meta.env.VITE_API_GRUPO;
+const API_GRUPO = import.meta.env.VITE_API_GRUPO
+	|| (import.meta.env.MODE === 'production'
+		? 'https://grupoeuroandino.com/app/api/'
+		: 'http://localhost/appTours/api/');
 const FOTOS_BASE = 'https://grupoeuroandino.com/app/render/images/subidas/';
 
 const cotizacion = ref(null);

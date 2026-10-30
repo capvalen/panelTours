@@ -416,7 +416,10 @@ import { useCotizacionStore } from '@/stores/cotizacionStore';
 import { Modal } from 'bootstrap';
 import Swal from 'sweetalert2';
 
-const API_URL = import.meta.env.VITE_API_GRUPO;
+const API_URL = import.meta.env.VITE_API_GRUPO
+	|| (import.meta.env.MODE === 'production'
+		? 'https://grupoeuroandino.com/app/api/'
+		: 'http://localhost/appTours/api/');
 const route = useRoute();
 const router = useRouter();
 const clienteStore = useClienteStore();
