@@ -8,10 +8,16 @@
 		<!-- Filtros -->
 		<div class="card mb-3">
 			<div class="card-body">
-				<div class="row g-2">
-					<div class="col-md-2">
+				<div class="row g-2 align-items-end">
+					<!-- Filtro por fecha -->
+					<div class="col-md-3">
 						<label class="form-label small">Fecha</label>
-						<input type="date" class="form-control form-control-sm" v-model="filtros.fecha">
+						<div class="input-group input-group-sm">
+							<input type="date" class="form-control" v-model="filtros.fecha" @keyup.enter="buscarPorFecha">
+							<button class="btn btn-outline-primary" @click="buscarPorFecha" title="Filtrar por fecha">
+								<i class="bi bi-calendar-check"></i>
+							</button>
+						</div>
 					</div>
 					<div class="col-md-2">
 						<label class="form-label small">Estado</label>
@@ -21,23 +27,24 @@
 							<option value="convertido">Convertido</option>
 						</select>
 					</div>
+					<!-- Búsqueda por nombre / DNI / celular / COT- -->
 					<div class="col-md-4">
-						<label class="form-label small">Buscar</label>
-						<input
-							type="text"
-							class="form-control form-control-sm"
-							v-model="filtros.search"
-							placeholder="Nombre, DNI, celular o COT-001..."
-							@keyup.enter="handleSearch"
-						>
+						<label class="form-label small">Buscar por nombre, DNI o celular</label>
+						<div class="input-group input-group-sm">
+							<input
+								type="text"
+								class="form-control"
+								v-model="filtros.search"
+								placeholder="Nombre, DNI, celular o COT-001"
+								@keyup.enter="buscarPorNombre"
+							>
+							<button class="btn btn-primary" @click="buscarPorNombre">
+								<i class="bi bi-search"></i> Buscar
+							</button>
+						</div>
 					</div>
-					<div class="col-md-2 d-flex align-items-end">
-						<button class="btn btn-sm btn-primary w-100" @click="handleSearch">
-							<i class="bi bi-search"></i> Buscar
-						</button>
-					</div>
-					<div class="col-md-2 d-flex align-items-end justify-content-end">
-						<router-link to="/cotizacion/nueva" class="btn btn-sm btn-outline-primary w-100">
+					<div class="col-md-3 d-flex justify-content-end">
+						<router-link to="/cotizacion/nueva" class="btn btn-sm btn-outline-primary text-nowrap">
 							<i class="bi bi-star"></i> Nueva cotización
 						</router-link>
 					</div>
@@ -135,10 +142,10 @@ const formatPrecio = (val) => {
 	return isNaN(num) ? '0.00' : num.toFixed(2);
 };
 
-const cargarCotizaciones = async () => {
+const cargarCotizaciones = async ({ fecha = '', search = '', estado = '' } = {}) => {
 	cargando.value = true;
 	try {
-		const data = await cotizacionStore.listarConFiltros(filtros.fecha, filtros.search, filtros.estado);
+		const data = await cotizacionStore.listarConFiltros(fecha, search, estado);
 		cotizaciones.value = data;
 	} catch (error) {
 		console.error('Error al cargar cotizaciones:', error);
@@ -152,25 +159,28 @@ const irADetalle = (id) => {
 	router.push(`/cotizacion/detalle/${id}`);
 };
 
-const handleSearch = () => {
+// Filtro por fecha (independiente de la búsqueda por nombre)
+const buscarPorFecha = () => {
+	cargarCotizaciones({ fecha: filtros.fecha, estado: filtros.estado });
+};
+
+// Búsqueda por nombre / DNI / celular (independiente del filtro de fecha)
+const buscarPorNombre = () => {
 	const search = filtros.search.trim();
-	// Detectar formato COT-00{id}
-	const match = search.match(/^COT-00(\d+)$/i);
-	if (match) {
-		const id = parseInt(match[1], 10);
-		irADetalle(id);
-		return;
+
+	// Solo ir al detalle cuando el término tenga el prefijo COT-
+	if (/^COT-/i.test(search)) {
+		const id = parseInt(search.replace(/\D/g, ''), 10);
+		if (!isNaN(id)) {
+			irADetalle(id);
+			return;
+		}
 	}
-	// Si es numérico, ir directo al ID
-	if (/^\d+$/.test(search)) {
-		irADetalle(parseInt(search, 10));
-		return;
-	}
-	// Sino, buscar con filtros
-	cargarCotizaciones();
+
+	cargarCotizaciones({ search, estado: filtros.estado });
 };
 
 onMounted(() => {
-	cargarCotizaciones();
+	buscarPorFecha();
 });
 </script>
