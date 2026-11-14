@@ -75,6 +75,20 @@
 								<div><span class="fw-semibold">Nombre:</span> {{ logistica.guia.nombre || '-' }}</div>
 								<div><span class="fw-semibold">Celular:</span> {{ logistica.guia.celular || '-' }}</div>
 								<div><span class="fw-semibold">Especialidad:</span> {{ logistica.guia.especialidad || '-' }}</div>
+								<div class="mt-1 d-flex align-items-center gap-1">
+									<span class="fw-semibold">Comisión:</span>
+									<template v-if="editandoComisionTipo !== 'guia'">
+										<span>S/ {{ formatNum(comisionGuia?.monto) }}</span>
+										<button class="btn btn-sm btn-link p-0" @click="iniciarEdicionComision('guia')" title="Editar comisión">
+											<i class="bi bi-pencil"></i>
+										</button>
+									</template>
+									<template v-else>
+										<input type="number" step="1" min="0" class="form-control form-control-sm d-inline-block" style="width: 110px;" v-model="comisionEditMonto">
+										<button class="btn btn-sm btn-success" @click="guardarComision('guia')" title="Guardar"><i class="bi bi-check-lg"></i></button>
+										<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionComision" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+									</template>
+								</div>
 								<div class="mt-1 d-flex gap-1" v-if="logistica.estado !== 'finalizado'">
 									<button v-if="logistica.guia?.celular" class="btn btn-sm btn-outline-success" @click="compartirGuia">
 										<i class="bi bi-whatsapp"></i> Compartir link
@@ -98,6 +112,20 @@
 								<div><span class="fw-semibold">Conductor:</span> {{ logistica.vehiculo.nombre_conductor || '-' }}</div>
 								<div><span class="fw-semibold">DNI conductor:</span> {{ logistica.vehiculo.dni_conductor || '-' }}</div>
 								<div><span class="fw-semibold">Celular:</span> {{ logistica.vehiculo.celular || '-' }}</div>
+								<div class="mt-1 d-flex align-items-center gap-1">
+									<span class="fw-semibold">Comisión:</span>
+									<template v-if="editandoComisionTipo !== 'vehiculo'">
+										<span>S/ {{ formatNum(comisionVehiculo?.monto) }}</span>
+										<button class="btn btn-sm btn-link p-0" @click="iniciarEdicionComision('vehiculo')" title="Editar comisión">
+											<i class="bi bi-pencil"></i>
+										</button>
+									</template>
+									<template v-else>
+										<input type="number" step="1" min="0" class="form-control form-control-sm d-inline-block" style="width: 110px;" v-model="comisionEditMonto">
+										<button class="btn btn-sm btn-success" @click="guardarComision('vehiculo')" title="Guardar"><i class="bi bi-check-lg"></i></button>
+										<button class="btn btn-sm btn-outline-secondary" @click="cancelarEdicionComision" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+									</template>
+								</div>
 								<div class="mt-1 d-flex gap-1" v-if="logistica.estado !== 'finalizado'">
 									<button v-if="logistica.vehiculo?.celular" class="btn btn-sm btn-outline-success" @click="compartirVehiculo">
 										<i class="bi bi-whatsapp"></i> Compartir link
@@ -366,7 +394,7 @@ const buscarVehiculos = async () => {
 const asignarGuia = async (guia) => {
 	try {
 		await api.put(`/logistica/${route.params.id}`, { guia_id: guia.id });
-		logistica.value.guia = guia;
+		await cargarLogistica();
 		modalGuiaInstance?.hide();
 	} catch (err) {
 		console.error('Error al asignar guía:', err);
@@ -376,7 +404,7 @@ const asignarGuia = async (guia) => {
 const asignarVehiculo = async (vehiculo) => {
 	try {
 		await api.put(`/logistica/${route.params.id}`, { vehiculo_id: vehiculo.id });
-		logistica.value.vehiculo = vehiculo;
+		await cargarLogistica();
 		modalVehiculoInstance?.hide();
 	} catch (err) {
 		console.error('Error al asignar vehículo:', err);
@@ -386,7 +414,7 @@ const asignarVehiculo = async (vehiculo) => {
 const quitarGuia = async () => {
 	try {
 		await api.put(`/logistica/${route.params.id}`, { guia_id: null });
-		logistica.value.guia = null;
+		await cargarLogistica();
 	} catch (err) {
 		console.error('Error al quitar guía:', err);
 	}
@@ -395,7 +423,7 @@ const quitarGuia = async () => {
 const quitarVehiculo = async () => {
 	try {
 		await api.put(`/logistica/${route.params.id}`, { vehiculo_id: null });
-		logistica.value.vehiculo = null;
+		await cargarLogistica();
 	} catch (err) {
 		console.error('Error al quitar vehículo:', err);
 	}
@@ -447,6 +475,54 @@ const guardarHora = async () => {
 
 const cancelarEdicionHora = () => {
 	editandoHora.value = false;
+};
+
+// ── Comisión de guía / vehículo ────────────────────────────────
+const editandoComisionTipo = ref(null); // 'guia' | 'vehiculo' | null
+const comisionEditMonto = ref(0);
+
+const comisionDe = (entidad, tipo) => {
+	if (!entidad) return null;
+	return (logistica.value?.comisiones || []).find(
+		c => c.comisionable_type === tipo && Number(c.comisionable_id) === Number(entidad.id)
+	) || null;
+};
+
+const comisionGuia = computed(() => comisionDe(logistica.value?.guia, 'App\\Models\\Guia'));
+const comisionVehiculo = computed(() => comisionDe(logistica.value?.vehiculo, 'App\\Models\\Vehiculo'));
+
+const iniciarEdicionComision = (tipo) => {
+	const comision = tipo === 'guia' ? comisionGuia.value : comisionVehiculo.value;
+	comisionEditMonto.value = Number(comision?.monto ?? 0);
+	editandoComisionTipo.value = tipo;
+};
+
+const cancelarEdicionComision = () => {
+	editandoComisionTipo.value = null;
+};
+
+const actualizarComisionLocal = (comision) => {
+	if (!logistica.value) return;
+	if (!Array.isArray(logistica.value.comisiones)) logistica.value.comisiones = [];
+	const idx = logistica.value.comisiones.findIndex(c => c.id === comision.id);
+	if (idx >= 0) {
+		logistica.value.comisiones.splice(idx, 1, comision);
+	} else {
+		logistica.value.comisiones.push(comision);
+	}
+};
+
+const guardarComision = async (tipo) => {
+	try {
+		const monto = Math.max(0, Number(comisionEditMonto.value) || 0);
+		const res = await api.put(`/logistica/${route.params.id}/comision`, { tipo, monto });
+		actualizarComisionLocal(res.data);
+		editandoComisionTipo.value = null;
+		Swal.fire({ title: 'Comisión actualizada', icon: 'success', timer: 2000, showConfirmButton: false });
+	} catch (err) {
+		console.error('Error al guardar comisión:', err);
+		Swal.fire('Error', 'No se pudo guardar la comisión', 'error');
+	}
 };
 
 const obtenerUrlManifiesto = () => {
@@ -664,10 +740,14 @@ const indexGlobal = (currentVenta, pIdx) => {
 	return 0;
 };
 
+const cargarLogistica = async () => {
+	const res = await api.get(`/logistica/${route.params.id}`);
+	logistica.value = res.data;
+};
+
 onMounted(async () => {
 	try {
-		const res = await api.get(`/logistica/${route.params.id}`);
-		logistica.value = res.data;
+		await cargarLogistica();
 	} catch (err) {
 		console.error('Error al cargar logística:', err);
 	} finally {
